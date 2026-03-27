@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PTB Metadata Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0b;
+  --surface: #111114;
+  --surface2: #18181d;
+  --surface3: #1f1f26;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.14);
+  --accent: #e8ff47;
+  --accent2: #b8ff00;
+  --text: #f0f0f0;
+  --text-muted: #666;
+  --text-mid: #999;
+  --danger: #ff4757;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+.header { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; background: rgba(10,10,11,0.92); backdrop-filter: blur(12px); }
+.logo { display: flex; align-items: center; gap: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+.logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.logo-mark svg { width: 16px; height: 16px; }
+.logo-sub { color: var(--text-muted); font-size: 11px; font-weight: 400; margin-left: 4px; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+
+.layout { display: grid; grid-template-columns: 260px 1fr 280px; height: calc(100vh - 60px); }
+
+.track-rail { border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.rail-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.rail-title { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.track-list { flex: 1; overflow-y: auto; padding: 6px; }
+.track-item { border-radius: var(--radius); padding: 9px 12px; cursor: pointer; transition: background 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
+.track-item:hover { background: var(--surface2); }
+.track-item.active { background: var(--surface2); border-color: var(--border-hover); }
+.track-item-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+.track-item-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.alt-badge { display: inline-block; background: var(--surface3); color: var(--text-mid); font-size: 10px; font-family: 'DM Mono', monospace; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
+.alt-item { padding: 6px 12px 6px 26px; cursor: pointer; border-radius: var(--radius); margin-bottom: 1px; transition: background 0.15s; border: 1px solid transparent; display: flex; align-items: center; gap: 6px; }
+.alt-item:hover { background: var(--surface2); }
+.alt-item.active { background: var(--surface2); border-color: var(--border); }
+.alt-item-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
+.alt-item-name { font-size: 12px; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.empty-rail { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-muted); font-size: 13px; padding: 32px; text-align: center; }
+
+.main-form { overflow-y: auto; }
+.form-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
+.form-track-type { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+.form-actions { display: flex; gap: 8px; }
+.form-body { padding: 20px 24px 40px; }
+
+.section { margin-bottom: 28px; }
+.section-label { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.field-grid { display: grid; gap: 10px; }
+.field-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.field-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.field-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.field-label .req { color: var(--accent); margin-left: 2px; }
+
+input[type="text"], input[type="number"], select, textarea {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; padding: 7px 10px;
+  width: 100%; transition: border-color 0.15s; outline: none; appearance: none;
+}
+input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--border-hover); background: var(--surface3); }
+input[type="text"]::placeholder { color: var(--text-muted); }
+select option { background: #1f1f26; }
+textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
+
+/* Writer search dropdown */
+.writer-search-wrap { position: relative; }
+.writer-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface3); border: 1px solid var(--border-hover); border-radius: var(--radius); max-height: 200px; overflow-y: auto; z-index: 200; }
+.writer-option { padding: 7px 10px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+.writer-option:hover { background: var(--surface2); }
+.writer-option-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+/* Checkbox group */
+.checkbox-group { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); max-height: 160px; overflow-y: auto; padding: 4px; }
+.checkbox-group::-webkit-scrollbar { width: 4px; }
+.checkbox-group::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 2px; }
+.cb-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 5px; cursor: pointer; transition: background 0.1s; }
+.cb-item:hover { background: var(--surface3); }
+.cb-item input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.cb-item span { font-size: 12px; color: var(--text-mid); cursor: pointer; }
+
+/* Description tag chips */
+.desc-output { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); min-height: 44px; padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.desc-tag { background: var(--surface3); border: 1px solid var(--border-hover); border-radius: 20px; padding: 2px 10px 2px 10px; font-size: 11px; color: var(--text-mid); display: flex; align-items: center; gap: 5px; }
+.desc-tag-x { cursor: pointer; color: var(--text-muted); font-size: 13px; line-height: 1; }
+.desc-tag-x:hover { color: var(--danger); }
+
+/* Publisher / writer block */
+.party-block { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; margin-bottom: 8px; }
+.party-block-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.party-block-title { font-size: 11px; font-weight: 500; color: var(--text-mid); font-family: 'DM Mono', monospace; }
+
+/* Alt panel */
+.alt-panel { background: var(--surface); border-top: 1px solid var(--border); padding: 12px 24px; }
+.alt-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.alt-panel-title { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); font-family: 'Syne', sans-serif; }
+.alt-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.alt-chip { display: flex; align-items: center; gap: 5px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px 3px 12px; font-size: 12px; color: var(--text-mid); cursor: pointer; transition: all 0.15s; }
+.alt-chip:hover { border-color: var(--border-hover); color: var(--text); }
+.alt-chip.active-alt { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
+.alt-chip-x { font-size: 14px; color: var(--text-muted); line-height: 1; }
+.alt-chip-x:hover { color: var(--danger); }
+
+/* Queue rail */
+.queue-rail { border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.queue-items { flex: 1; overflow-y: auto; padding: 6px; }
+.queue-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px; margin-bottom: 5px; cursor: pointer; transition: border-color 0.15s; }
+.queue-item:hover { border-color: var(--border-hover); }
+.queue-item-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-item-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.queue-footer { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 7px; }
+.queue-count { font-size: 12px; color: var(--text-muted); text-align: center; }
+.queue-count span { color: var(--accent); font-weight: 500; font-family: 'DM Mono', monospace; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 13px; border-radius: var(--radius); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-mid); }
+.btn-ghost:hover { border-color: var(--border-hover); color: var(--text); background: var(--surface2); }
+.btn-accent { background: var(--accent); color: #0a0a0b; font-weight: 600; }
+.btn-accent:hover { background: var(--accent2); }
+.btn-surface { background: var(--surface2); border: 1px solid var(--border); color: var(--text-mid); }
+.btn-surface:hover { border-color: var(--border-hover); color: var(--text); }
+.btn-danger { background: transparent; border: 1px solid transparent; color: var(--danger); padding: 3px 7px; font-size: 12px; }
+.btn-danger:hover { background: rgba(255,71,87,0.08); }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-full { width: 100%; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text-muted); text-align: center; padding: 40px; }
+.empty-state-icon { width: 44px; height: 44px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 2px; }
+.empty-state h3 { font-family: 'Syne', sans-serif; font-size: 14px; color: var(--text-mid); }
+.empty-state p { font-size: 12px; max-width: 200px; line-height: 1.5; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface3); border: 1px solid var(--border-hover); border-radius: var(--radius-lg); padding: 10px 16px; font-size: 13px; color: var(--text); z-index: 1000; transform: translateY(80px); opacity: 0; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(--accent); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 2px; }
+
+.name-input-wrap input { flex: 1; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; background: transparent; border: none; border-bottom: 1px solid var(--border); border-radius: 0; padding: 3px 0; color: var(--text); width: 100%; outline: none; }
+.name-input-wrap input:focus { border-bottom-color: var(--accent); }
+
+/* Admin modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; display: none; align-items: center; justify-content: center; }
+.modal { background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius-lg); width: 560px; max-height: 80vh; overflow-y: auto; padding: 24px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.modal-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; }
+.admin-section { margin-bottom: 24px; }
+.admin-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-family: 'Syne', sans-serif; margin-bottom: 10px; }
+.admin-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 8px; background: var(--surface2); border-radius: var(--radius); margin-bottom: 4px; font-size: 12px; color: var(--text-mid); }
+.admin-input-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.admin-input-row input, .admin-input-row select { flex: 1; min-width: 100px; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="12" rx="1.5" fill="#0a0a0b"/><rect x="9" y="6" width="5" height="8" rx="1.5" fill="#0a0a0b"/></svg>
+    </div>
+    <span>Producer's Toolbox</span>
+    <span class="logo-sub">Metadata Builder</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openAdmin()">⚙ Admin</button>
+    <button class="btn btn-ghost btn-sm" onclick="clearAll()">Clear all</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportXLSX()">⬇ Export sheet</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="track-rail">
+    <div class="rail-header">
+      <span class="rail-title">Tracks</span>
+      <button class="btn btn-ghost btn-sm" onclick="newTrack()">+ New</button>
+    </div>
+    <div class="track-list" id="trackList">
+      <div class="empty-rail"><div style="font-size:22px;margin-bottom:4px">🎵</div><div>No tracks yet</div><div style="font-size:11px;margin-top:4px">Click "+ New" to start</div></div>
+    </div>
+  </aside>
+
+  <main class="main-form">
+    <div id="emptyForm" class="empty-state">
+      <div class="empty-state-icon">📋</div>
+      <h3>No track selected</h3>
+      <p>Create a new track or select one from the left.</p>
+      <button class="btn btn-accent" onclick="newTrack()" style="margin-top:8px">+ New track</button>
+    </div>
+
+    <div id="trackForm" style="display:none">
+      <div class="form-topbar">
+        <div style="flex:1;min-width:0">
+          <div class="name-input-wrap">
+            <input type="text" id="titleInput" placeholder="Track title..." oninput="onTitleChange(this.value)">
+          </div>
+          <div class="form-track-type" id="formTrackType">Full mix</div>
+        </div>
+        <div class="form-actions" style="margin-left:16px">
+          <button class="btn btn-ghost btn-sm" onclick="addAlternate()">+ Add alternate</button>
+          <button class="btn btn-surface btn-sm" onclick="addToQueue()">Add to queue →</button>
+        </div>
+      </div>
+
+      <div class="form-body">
+
+        <!-- BASIC INFO -->
+        <div class="section">
+          <div class="section-label">Basic info</div>
+          <div class="field-grid cols-2">
+            <div class="field"><label class="field-label">Album <span class="req">*</span></label>
+              <select id="f_album" onchange="onAlbumChange(this.value)">
+                <option value="">— Select album —</option>
+              </select>
+            </div>
+            <div class="field"><label class="field-label">Album Code</label><input type="text" id="f_albumCode" placeholder="auto-filled" readonly style="opacity:0.6;cursor:default"></div>
+            <div class="field"><label class="field-label">Artist</label>
+              <div class="writer-search-wrap" id="artistSearchWrap">
+                <input type="text" id="f_artist" placeholder="Type to search or enter..." oninput="onArtistSearch(this.value)" autocomplete="off">
+              </div>
+            </div>
+            <div class="field"><label class="field-label">Artist Description</label><input type="text" id="f_artistDesc" placeholder="Research Material" oninput="syncField('artistDesc',this.value)"></div>
+          </div>
+        </div>
+
+        <!-- MUSICAL -->
+        <div class="section">
+          <div class="section-label">Musical</div>
+          <div class="field-grid cols-3">
+            <div class="field"><label class="field-label">Tempo</label>
+              <select id="f_tempo" onchange="syncField('tempo',this.value)">
+                <option value="">—</option><option>Very Slow</option><option>Slow</option><option>Medium Slow</option><option>Medium</option><option>Fast</option><option>Very Fast</option>
+              </select>
+            </div>
+            <div class="field"><label class="field-label">BPM</label><input type="number" id="f_bpm" placeholder="120" oninput="onBpmChange(this.value)"></div>
+
+            <div class="field"><label class="field-label">Genre</label>
+              <select id="f_genre" onchange="syncField('genre',this.value)">
+                <option value="">—</option><option>Rock</option><option>Pop</option><option>Hip Hop</option><option>Funk</option><option>R&B</option><option>Electronic</option><option>Electronic Dance</option><option>Classical</option><option>Jazz</option><option>Country</option><option>Latin</option><option>World</option><option>Orchestral</option><option>Ambient</option><option>Folk</option><option>Soul</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-grid cols-3" style="margin-top:10px">
+            <div class="field"><label class="field-label">Has Vocals</label><select id="f_hasVocals" onchange="syncField('hasVocals',this.value)"><option value="No">No</option><option value="Yes">Yes</option></select></div>
+            <div class="field"><label class="field-label">Explicit</label><select id="f_explicit" onchange="syncField('explicit',this.value)"><option value="No">No</option><option value="Yes">Yes</option></select></div>
+            <div class="field"><label class="field-label">ISRC</label><input type="text" id="f_isrc" placeholder="e.g. USQY52100001" oninput="syncField('isrc',this.value)"></div>
+          </div>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="section">
+          <div class="section-label">Description</div>
+          <div class="desc-output" id="descOutput"><span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span></div>
+          <div class="checkbox-group" id="descGroup"></div>
+        </div>
+
+        <!-- STYLE OF -->
+        <div class="section">
+          <div class="section-label">Style Of (references)</div>
+          <div class="field"><input type="text" id="f_styleOf" placeholder="e.g. Blink-182, Bowling For Soup" oninput="syncField('styleOf',this.value)"></div>
+        </div>
+
+        <!-- MOODS -->
+        <div class="section">
+          <div class="section-label">Moods</div>
+          <div class="checkbox-group" id="moodsGroup"></div>
+        </div>
+
+        <!-- STYLES -->
+        <div class="section">
+          <div class="section-label">Styles</div>
+          <div class="checkbox-group" id="stylesGroup"></div>
+        </div>
+
+        <!-- INSTRUMENTS -->
+        <div class="section">
+          <div class="section-label">Instruments <span id="instrNote" style="font-size:10px;color:var(--text-muted);margin-left:6px;font-family:'DM Mono',monospace;font-weight:400;letter-spacing:0"></span></div>
+          <div class="checkbox-group" id="instrumentsGroup"></div>
+        </div>
+
+        <!-- PUBLISHER -->
+        <div class="section">
+          <div class="section-label">Publisher</div>
+          <div id="publisherBlocks"></div>
+          <button class="btn btn-ghost btn-sm" onclick="addPublisher()" style="margin-top:6px">+ Add publisher</button>
+        </div>
+
+        <!-- WRITERS -->
+        <div class="section">
+          <div class="section-label">Writers</div>
+          <div id="writerBlocks"></div>
+          <button class="btn btn-ghost btn-sm" onclick="addWriter()" style="margin-top:6px">+ Add writer</button>
+        </div>
+
+        <!-- FILM TV -->
+        <div class="section">
+          <div class="section-label">Film / TV Genre</div>
+          <div class="checkbox-group" id="filmGenreGroup"></div>
+        </div>
+
+        <!-- SUB GENRE -->
+        <div class="section">
+          <div class="section-label">Sub Genre</div>
+          <div class="checkbox-group" id="subGenreGroup"></div>
+        </div>
+
+      </div>
+
+      <div class="alt-panel" id="altPanel">
+        <div class="alt-panel-header">
+          <span class="alt-panel-title">Alternates</span>
+          <button class="btn btn-ghost btn-sm" onclick="addAlternate()">+ Add alternate</button>
+        </div>
+        <div class="alt-chips" id="altChips"></div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="queue-rail">
+    <div class="rail-header"><span class="rail-title">Export Queue</span></div>
+    <div class="queue-items" id="queueItems">
+      <div class="empty-state" style="height:200px"><div style="font-size:20px">📤</div><p style="font-size:12px">Add tracks to queue then export</p></div>
+    </div>
+    <div class="queue-footer">
+      <div class="queue-count" id="queueCount">Queue is empty</div>
+      <button class="btn btn-accent btn-full" onclick="exportXLSX()">⬇ Export to Excel</button>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── WRITER DATABASE ─────────────────────────────────────────────
+const WRITERS = [
+  { display: "Will Adler", first: "Will", last: "Adler", pro: "BMI", ipi: "00889390764", publisher: "Gandepub" },
+  { display: "Richard Agren", first: "Richard", last: "Agren", pro: "ASCAP", ipi: "588523016", publisher: "Gem Lab" },
+  { display: "Megan Aho Heronemus", first: "Megan", last: "Aho Heronemus", pro: "BMI", ipi: "550658030", publisher: "Gandepub" },
+  { display: "Bryan Akcasu", first: "Bryan", last: "Akcasu", pro: "BMI", ipi: "749172123", publisher: "Gandepub" },
+  { display: "Arielle Alexander", first: "Arielle", last: "Alexander", pro: "BMI", ipi: "552476441", publisher: "Gandepub" },
+  { display: "Catherine Lee Anderson", first: "Catherine Lee", last: "Anderson", pro: "ASCAP", ipi: "754585701", publisher: "Gem Lab" },
+  { display: "Paul Anstey", first: "Paul", last: "Anstey", pro: "APRA", ipi: "736511547", publisher: "Gem Lab" },
+  { display: "Ben Antelis", first: "Ben", last: "Antelis", pro: "BMI", ipi: "529285919", publisher: "Gandepub" },
+  { display: "Joanna Atherton", first: "Joanna", last: "Atherton", pro: "PRS", ipi: "814322176", publisher: "Gem Lab" },
+  { display: "Andre Atkins", first: "Andre", last: "Atkins", pro: "BMI", ipi: "433796924", publisher: "Gandepub" },
+  { display: "Kirth Atkins", first: "Kirth", last: "Atkins", pro: "BMI", ipi: "214686075", publisher: "Gandepub" },
+  { display: "Jonah Atkinson", first: "Jonah", last: "Atkinson", pro: "BMI", ipi: "433797039", publisher: "Gandepub" },
+  { display: "Bhauraw Avhad", first: "Bhauraw", last: "Avhad", pro: "ASCAP", ipi: "632997411", publisher: "Gem Lab" },
+  { display: "Denise Barbarita", first: "Denise", last: "Barbarita", pro: "BMI", ipi: "194279336", publisher: "Gandepub" },
+  { display: "Lee Barbour", first: "Lee", last: "Barbour", pro: "BMI", ipi: "450844067", publisher: "Gandepub" },
+  { display: "David Roy Baron", first: "David Roy", last: "Baron", pro: "ASCAP", ipi: "781699974", publisher: "Gem Lab" },
+  { display: "Matt Bednarsky", first: "Matt", last: "Bednarsky", pro: "BMI", ipi: "678435797", publisher: "Gandepub" },
+  { display: "André Berry", first: "André", last: "Berry", pro: "BMI", ipi: "231686373", publisher: "Gandepub" },
+  { display: "Jesse Billson", first: "Jesse", last: "Billson", pro: "ASCAP", ipi: "665271433", publisher: "Gem Lab" },
+  { display: "Ella Blicker", first: "Ella", last: "Blicker", pro: "BMI", ipi: "1087837904", publisher: "Gelly Pub" },
+  { display: "Erik Blicker", first: "Erik", last: "Blicker", pro: "BMI", ipi: "598327301", publisher: "Gelly Pub" },
+  { display: "Matthew Block", first: "Matthew", last: "Block", pro: "BMI", ipi: "739448994", publisher: "Gandepub" },
+  { display: "Lemarquis Bobo", first: "Lemarquis", last: "Bobo", pro: "BMI", ipi: "583093533", publisher: "Gandepub" },
+  { display: "Steve Booke", first: "Steve", last: "Booke", pro: "SESAC", ipi: "197793107", publisher: "G&E Music Group LLC" },
+  { display: "Raymond Boone", first: "Raymond", last: "Boone", pro: "BMI", ipi: "550142805", publisher: "Gandepub" },
+  { display: "Walter Bowie", first: "Walter", last: "Bowie", pro: "BMI", ipi: "862995971", publisher: "Gandepub" },
+  { display: "Sam Bradley", first: "Sam", last: "Bradley", pro: "APRA", ipi: "801407679", publisher: "Gem Lab" },
+  { display: "Charles Matthew Brandau", first: "Charles Matthew", last: "Brandau", pro: "BMI", ipi: "524814754", publisher: "Gandepub" },
+  { display: "Kortni Brannon", first: "Kortni", last: "Brannon", pro: "BMI", ipi: "580871231", publisher: "Gandepub" },
+  { display: "Skip Brevis", first: "Skip", last: "Brevis", pro: "SESAC", ipi: "292563641", publisher: "G&E Music Group LLC" },
+  { display: "Shaun Brown", first: "Shaun", last: "Brown", pro: "BMI", ipi: "1055826846", publisher: "Gandepub" },
+  { display: "Zach Calluori", first: "Zach", last: "Calluori", pro: "BMI", ipi: "829628697", publisher: "Gandepub" },
+  { display: "Kris Campbell", first: "Kris", last: "Campbell", pro: "ASCAP", ipi: "508590935", publisher: "Gem Lab" },
+  { display: "Alejandro Canellas", first: "Alejandro", last: "Canellas", pro: "BMI", ipi: "376439524", publisher: "Gandepub" },
+  { display: "Leo Capper", first: "Leo", last: "Capper", pro: "IMRO", ipi: "746391714", publisher: "Gem Lab" },
+  { display: "Dom Capuano", first: "Dom", last: "Capuano", pro: "ASCAP", ipi: "707611557", publisher: "Gem Lab" },
+  { display: "Nicholas Capuano", first: "Nicholas", last: "Capuano", pro: "BMI", ipi: "763865400", publisher: "Gandepub" },
+  { display: "Megan Carnes", first: "Megan", last: "Carnes", pro: "ASCAP", ipi: "648470814", publisher: "Gem Lab" },
+  { display: "Dave Cavalier", first: "Dave", last: "Cavalier", pro: "BMI", ipi: "713069364", publisher: "Gandepub" },
+  { display: "Matt Chertkoff", first: "Matt", last: "Chertkoff", pro: "SESAC", ipi: "609895698", publisher: "G&E Music Group LLC" },
+  { display: "Christopher Child", first: "Christopher", last: "Child", pro: "ASCAP", ipi: "470617850", publisher: "Gem Lab" },
+  { display: "Christopher Chorney", first: "Christopher", last: "Chorney", pro: "BMI", ipi: "628741528", publisher: "Gandepub" },
+  { display: "Timothy Cilento", first: "Timothy", last: "Cilento", pro: "BMI", ipi: "550406182", publisher: "Gandepub" },
+  { display: "John Cimino", first: "John", last: "Cimino", pro: "ASCAP", ipi: "465954903", publisher: "Gem Lab" },
+  { display: "Jesse Solomon Clark", first: "Jesse Solomon", last: "Clark", pro: "BMI", ipi: "731540176", publisher: "Gandepub" },
+  { display: "Carey Clayton", first: "Carey", last: "Clayton", pro: "ASCAP", ipi: "601713982", publisher: "Gem Lab" },
+  { display: "Jake Clayton", first: "Jake", last: "Clayton", pro: "BMI", ipi: "641565840", publisher: "Gandepub" },
+  { display: "Anthony Clint Jr.", first: "Anthony", last: "Clint Jr.", pro: "SESAC", ipi: "564107462", publisher: "G&E Music Group LLC" },
+  { display: "Brandy Cole", first: "Brandy", last: "Cole", pro: "BMI", ipi: "396973098", publisher: "Gandepub" },
+  { display: "Matthew Corry", first: "Matthew", last: "Corry", pro: "PRS", ipi: "676882288", publisher: "Gem Lab" },
+  { display: "Janelle Costa", first: "Janelle", last: "Costa", pro: "BMI", ipi: "374287434", publisher: "Gandepub" },
+  { display: "Paul Henry Croteau", first: "Paul Henry", last: "Croteau", pro: "BMI", ipi: "776265995", publisher: "Gandepub" },
+  { display: "Thomas Crowell", first: "Thomas", last: "Crowell", pro: "ASCAP", ipi: "465986986", publisher: "Gem Lab" },
+  { display: "Marvin Cruz", first: "Marvin", last: "Cruz", pro: "BMI", ipi: "00808454822", publisher: "Gandepub" },
+  { display: "Michael Anthony Cruz", first: "Michael Anthony", last: "Cruz", pro: "ASCAP", ipi: "419193059", publisher: "Gem Lab" },
+  { display: "David D'Angelo", first: "David", last: "D'Angelo", pro: "BMI", ipi: "724650940", publisher: "Gandepub" },
+  { display: "John Owen Danoff", first: "John Owen", last: "Danoff", pro: "ASCAP", ipi: "633702760", publisher: "Gem Lab" },
+  { display: "Jacqueline Willa Darrow", first: "Jacqueline Willa", last: "Darrow", pro: "BMI", ipi: "607654148", publisher: "Gandepub" },
+  { display: "Earnest David Davis", first: "Earnest David", last: "Davis", pro: "BMI", ipi: "587995069", publisher: "Gandepub" },
+  { display: "Patrick Deeney", first: "Patrick", last: "Deeney", pro: "ASCAP", ipi: "559562116", publisher: "Gem Lab" },
+  { display: "Habib Defoundoux", first: "Habib", last: "Defoundoux", pro: "SUISA", ipi: "769643586", publisher: "Gem Lab" },
+  { display: "Geoffrey Deitch", first: "Geoffrey", last: "Deitch", pro: "BMI", ipi: "760680140", publisher: "Gandepub" },
+  { display: "Joseph Delia", first: "Joseph", last: "Delia", pro: "BMI", ipi: "39621674", publisher: "Gandepub" },
+  { display: "Dennis Dembeck", first: "Dennis", last: "Dembeck", pro: "ASCAP", ipi: "722270180", publisher: "Gem Lab" },
+  { display: "Angelo Di Loreto", first: "Angelo", last: "Di Loreto", pro: "ASCAP", ipi: "640776241", publisher: "Gem Lab" },
+  { display: "Devon Dixon", first: "Devon", last: "Dixon", pro: "BMI", ipi: "687676571", publisher: "Gandepub" },
+  { display: "Craig Dodge", first: "Craig", last: "Dodge", pro: "SOCAN", ipi: "498686472", publisher: "Gem Lab" },
+  { display: "Paul Doust", first: "Paul", last: "Doust", pro: "APRA", ipi: "588695568", publisher: "Gem Lab" },
+  { display: "Ryan Dozer", first: "Ryan", last: "Dozer", pro: "BMI", ipi: "1103437405", publisher: "Gandepub" },
+  { display: "Jonathan Pierre DuBose III", first: "Jonathan Pierre", last: "DuBose III", pro: "BMI", ipi: "623765440", publisher: "Gandepub" },
+  { display: "Kevin Dubois", first: "Kevin", last: "Dubois", pro: "BMI", ipi: "845534521", publisher: "Gandepub" },
+  { display: "Keith Duplessis", first: "Keith", last: "Duplessis", pro: "ASCAP", ipi: "526893321", publisher: "Gem Lab" },
+  { display: "Keith Eaddy", first: "Keith", last: "Eaddy", pro: "BMI", ipi: "140225914", publisher: "Gandepub" },
+  { display: "Adam Ehrenpfort", first: "Adam", last: "Ehrenpfort", pro: "BMI", ipi: "789486851", publisher: "Gandepub" },
+  { display: "Heather Elle", first: "Heather", last: "Elle", pro: "BMI", ipi: "642838724", publisher: "Gandepub" },
+  { display: "Richard Emery", first: "Richard", last: "Emery", pro: "BMI", ipi: "898901668", publisher: "Gandepub" },
+  { display: "Michael Engelhardt", first: "Michael", last: "Engelhardt", pro: "BMI", ipi: "511599649", publisher: "Gandepub" },
+  { display: "Fima Ephron", first: "Fima", last: "Ephron", pro: "BMI", ipi: "244357176", publisher: "Gandepub" },
+  { display: "Elisha David Erskine", first: "Elisha David", last: "Erskine", pro: "BMI", ipi: "1006539975", publisher: "Gandepub" },
+  { display: "Hans Fahling", first: "Hans", last: "Fahling", pro: "BMI", ipi: "193311679", publisher: "Gandepub" },
+  { display: "Kevin Farrell", first: "Kevin", last: "Farrell", pro: "ASCAP", ipi: "510471200", publisher: "Gem Lab" },
+  { display: "Fabian Faupel", first: "Fabian", last: "Faupel", pro: "PRS", ipi: "665964886", publisher: "Gem Lab" },
+  { display: "Christopher Ficht", first: "Christopher", last: "Ficht", pro: "BMI", ipi: "632023496", publisher: "Gandepub" },
+  { display: "Austin Filingo", first: "Austin", last: "Filingo", pro: "BMI", ipi: "795271306", publisher: "Gandepub" },
+  { display: "Rauri Finan", first: "Rauri", last: "Finan", pro: "BMI", ipi: "439938112", publisher: "Gandepub" },
+  { display: "Matteo Fioriti", first: "Matteo", last: "Fioriti", pro: "SIAE", ipi: "803678234", publisher: "Gem Lab" },
+  { display: "David Flint", first: "David", last: "Flint", pro: "BMI", ipi: "143379176", publisher: "Gandepub" },
+  { display: "Salvador Fornieles", first: "Salvador", last: "Fornieles", pro: "SGAE", ipi: "435552558", publisher: "Gem Lab" },
+  { display: "Ty Frankel", first: "Ty", last: "Frankel", pro: "BMI", ipi: "707404464", publisher: "Gandepub" },
+  { display: "Richard Friedman", first: "Richard", last: "Friedman", pro: "ASCAP", ipi: "128741568", publisher: "Gem Lab" },
+  { display: "Iván Galván", first: "Iván", last: "Galván", pro: "ASCAP", ipi: "349650438", publisher: "Gem Lab" },
+  { display: "Caroline Gentry", first: "Caroline", last: "Gentry", pro: "BMI", ipi: "741949122", publisher: "Gandepub" },
+  { display: "Michael Getches", first: "Michael", last: "Getches", pro: "BMI", ipi: "515259754", publisher: "Gandepub" },
+  { display: "Jerry Brian Girley", first: "Jerry Brian", last: "Girley", pro: "BMI", ipi: "602564571", publisher: "Gandepub" },
+  { display: "Aaron Gittleman", first: "Aaron", last: "Gittleman", pro: "ASCAP", ipi: "658922306", publisher: "Gem Lab" },
+  { display: "Michael Glaser", first: "Michael", last: "Glaser", pro: "ASCAP", ipi: "526383252", publisher: "Gem Lab" },
+  { display: "Keith Glover", first: "Keith", last: "Glover", pro: "BMI", ipi: "653339243", publisher: "Gandepub" },
+  { display: "Thomas Greene", first: "Thomas", last: "Greene", pro: "ASCAP", ipi: "474522450", publisher: "Gem Lab" },
+  { display: "Rob Greenfield", first: "Rob", last: "Greenfield", pro: "ASCAP", ipi: "660165852", publisher: "Gem Lab" },
+  { display: "Todd Guarineri", first: "Todd", last: "Guarineri", pro: "SESAC", ipi: "681757999", publisher: "G&E Music Group LLC" },
+  { display: "Kyle Guffey", first: "Kyle", last: "Guffey", pro: "BMI", ipi: "747788184", publisher: "Gandepub" },
+  { display: "John Gundersen", first: "John", last: "Gundersen", pro: "BMI", ipi: "354875526", publisher: "Gandepub" },
+  { display: "William Hankins", first: "William", last: "Hankins", pro: "ASCAP", ipi: "847324915", publisher: "Gem Lab" },
+  { display: "Jeff Hanley", first: "Jeff", last: "Hanley", pro: "ASCAP", ipi: "372513863", publisher: "Gem Lab" },
+  { display: "Timothy Hare", first: "Timothy", last: "Hare", pro: "BMI", ipi: "769088487", publisher: "Gandepub" },
+  { display: "Nicholas Harris", first: "Nicholas", last: "Harris", pro: "BMI", ipi: "00864766978", publisher: "Gandepub" },
+  { display: "Christer Hellstrom", first: "Christer", last: "Hellstrom", pro: "SESAC", ipi: "662655525", publisher: "G&E Music Group LLC" },
+  { display: "Drew Henmi", first: "Drew", last: "Henmi", pro: "BMI", ipi: "1075204974", publisher: "Gandepub" },
+  { display: "Todd Herzog", first: "Todd", last: "Herzog", pro: "ASCAP", ipi: "342883547", publisher: "Gem Lab" },
+  { display: "Shaun Hettinger", first: "Shaun", last: "Hettinger", pro: "BMI", ipi: "529938405", publisher: "Gandepub" },
+  { display: "Hirobumi Hidaka", first: "Hirobumi", last: "Hidaka", pro: "BMI", ipi: "711963839", publisher: "Gandepub" },
+  { display: "Silas Hite", first: "Silas", last: "Hite", pro: "BMI", ipi: "443671063", publisher: "Gandepub" },
+  { display: "Jamil Houston", first: "Jamil", last: "Houston", pro: "BMI", ipi: "803985420", publisher: "Gandepub" },
+  { display: "Kim Jakubicki", first: "Kim", last: "Jakubicki", pro: "ASCAP", ipi: "347852042", publisher: "Gem Lab" },
+  { display: "Darcy Jeavons", first: "Darcy", last: "Jeavons", pro: "ASCAP", ipi: "692025154", publisher: "Gem Lab" },
+  { display: "Byron Johnson", first: "Byron", last: "Johnson", pro: "ASCAP", ipi: "530381777", publisher: "Gem Lab" },
+  { display: "Josh Johnson", first: "Josh", last: "Johnson", pro: "ASCAP", ipi: "607186253", publisher: "Gem Lab" },
+  { display: "Veronika Jokel", first: "Veronika", last: "Jokel", pro: "ASCAP", ipi: "665274032", publisher: "Gem Lab" },
+  { display: "Jared Joseph", first: "Jared", last: "Joseph", pro: "ASCAP", ipi: "572306558", publisher: "Gem Lab" },
+  { display: "Patrick Joseph", first: "Patrick", last: "Joseph", pro: "BMI", ipi: "657632715", publisher: "Gandepub" },
+  { display: "Kendall Joshua", first: "Kendall", last: "Joshua", pro: "BMI", ipi: "880272332", publisher: "Gandepub" },
+  { display: "Erik Jourgensen", first: "Erik", last: "Jourgensen", pro: "ASCAP", ipi: "731501483", publisher: "Gem Lab" },
+  { display: "Toby Karlin", first: "Toby", last: "Karlin", pro: "ASCAP", ipi: "738750708", publisher: "Gem Lab" },
+  { display: "Michael Katz", first: "Michael", last: "Katz", pro: "BMI", ipi: "566519714", publisher: "Gandepub" },
+  { display: "Joshua King", first: "Joshua", last: "King", pro: "APRA", ipi: "781042258", publisher: "Gem Lab" },
+  { display: "Martin Kirkhaug", first: "Martin", last: "Kirkhaug", pro: "TONO", ipi: "247061775", publisher: "Gandepub" },
+  { display: "Jonathan Knight", first: "Jonathan", last: "Knight", pro: "ASCAP", ipi: "735276039", publisher: "Gem Lab" },
+  { display: "Panos Kolias", first: "Panos", last: "Kolias", pro: "GEMA", ipi: "258990610", publisher: "Gem Lab" },
+  { display: "Micah Kovacs", first: "Micah", last: "Kovacs", pro: "ASCAP", ipi: "700860278", publisher: "Gem Lab" },
+  { display: "Edward Kumpel", first: "Edward", last: "Kumpel", pro: "SESAC", ipi: "253826263", publisher: "G&E Music Group LLC" },
+  { display: "Isik Kural", first: "Isik", last: "Kural", pro: "BMI", ipi: "811241292", publisher: "Gandepub" },
+  { display: "Amar Lal", first: "Amar", last: "Lal", pro: "SESAC", ipi: "738826798", publisher: "G&E Music Group LLC" },
+  { display: "William Latimer", first: "William", last: "Latimer", pro: "BMI", ipi: "395406831", publisher: "Gandepub" },
+  { display: "Joshua Lattanzi", first: "Joshua", last: "Lattanzi", pro: "ASCAP", ipi: "729015941", publisher: "Gem Lab" },
+  { display: "Jeremy Lawrence", first: "Jeremy", last: "Lawrence", pro: "BMI", ipi: "550320931", publisher: "Gandepub" },
+  { display: "Jeff Leauby", first: "Jeff", last: "Leauby", pro: "ASCAP", ipi: "460525178", publisher: "Gem Lab" },
+  { display: "Samuel Lee", first: "Samuel", last: "Lee", pro: "BMI", ipi: "553592336", publisher: "Gandepub" },
+  { display: "John Leitch III", first: "John", last: "Leitch III", pro: "BMI", ipi: "229908539", publisher: "Gandepub" },
+  { display: "Jeremy Levy", first: "Jeremy", last: "Levy", pro: "PRS", ipi: "552403674", publisher: "Gem Lab" },
+  { display: "Xiao'an Li", first: "Xiao'an", last: "Li", pro: "ASCAP", ipi: "713719447", publisher: "Gem Lab" },
+  { display: "Andrew Lipow", first: "Andrew", last: "Lipow", pro: "ASCAP", ipi: "1816810", publisher: "Gem Lab" },
+  { display: "Fiona Lunney", first: "Fiona", last: "Lunney", pro: "APRA", ipi: "608621751", publisher: "Gem Lab" },
+  { display: "Juliet Lyons", first: "Juliet", last: "Lyons", pro: "ASCAP", ipi: "501986355", publisher: "Gem Lab" },
+  { display: "Diane Frohman Magalong", first: "Diane Frohman", last: "Magalong", pro: "BMI", ipi: "621715766", publisher: "Gandepub" },
+  { display: "Nadeem Majdalany", first: "Nadeem", last: "Majdalany", pro: "ASCAP", ipi: "507181472", publisher: "Gem Lab" },
+  { display: "Ryan Majoris", first: "Ryan", last: "Majoris", pro: "ASCAP", ipi: "626908035", publisher: "Gem Lab" },
+  { display: "Charles Mallory", first: "Charles", last: "Mallory", pro: "ASCAP", ipi: "456201184", publisher: "Gem Lab" },
+  { display: "Neysa Malone", first: "Neysa", last: "Malone", pro: "SESAC", ipi: "430163010", publisher: "G&E Music Group LLC" },
+  { display: "Antoine Manning", first: "Antoine", last: "Manning", pro: "BMI", ipi: "480818830", publisher: "Gandepub" },
+  { display: "Brandon Marchant", first: "Brandon", last: "Marchant", pro: "SOCAN", ipi: "538731141", publisher: "Gem Lab" },
+  { display: "Jeffrey Martin", first: "Jeffrey", last: "Martin", pro: "BMI", ipi: "732998893", publisher: "Gandepub" },
+  { display: "Gregory Matthews", first: "Gregory", last: "Matthews", pro: "BMI", ipi: "719827800", publisher: "Gandepub" },
+  { display: "Lawerance May", first: "Lawerance", last: "May", pro: "BMI", ipi: "337967123", publisher: "Gandepub" },
+  { display: "William Mayo", first: "William", last: "Mayo", pro: "BMI", ipi: "625526248", publisher: "Gandepub" },
+  { display: "Christopher McDonald", first: "Christopher", last: "McDonald", pro: "SESAC", ipi: "568083619", publisher: "G&E Music Group LLC" },
+  { display: "Angel Mensah", first: "Angel", last: "Mensah", pro: "BMI", ipi: "772648505", publisher: "Gandepub" },
+  { display: "Noah Meyer", first: "Noah", last: "Meyer", pro: "BMI", ipi: "733489616", publisher: "Gandepub" },
+  { display: "Joseph Miralles", first: "Joseph", last: "Miralles", pro: "BMI", ipi: "195060763", publisher: "Gandepub" },
+  { display: "Steven Joseph Mochel", first: "Steven Joseph", last: "Mochel", pro: "ASCAP", ipi: "126312900", publisher: "Gem Lab" },
+  { display: "Sam Morrison", first: "Sam", last: "Morrison", pro: "APRA", ipi: "280379942", publisher: "Gem Lab" },
+  { display: "Harry Nagle", first: "Harry", last: "Nagle", pro: "ASCAP", ipi: "339497614", publisher: "Gem Lab" },
+  { display: "Michael Nappi", first: "Michael", last: "Nappi", pro: "ASCAP", ipi: "433561569", publisher: "Gem Lab" },
+  { display: "Nathan Nasby", first: "Nathan", last: "Nasby", pro: "SOCAN", ipi: "605590161", publisher: "Gem Lab" },
+  { display: "Frederick Neve", first: "Frederick", last: "Neve", pro: "PRS", ipi: "377564712", publisher: "Gem Lab" },
+  { display: "Jared Newman", first: "Jared", last: "Newman", pro: "ASCAP", ipi: "787484085", publisher: "Gem Lab" },
+  { display: "Derek Nievergelt", first: "Derek", last: "Nievergelt", pro: "SESAC", ipi: "514607276", publisher: "G&E Music Group LLC" },
+  { display: "Chase Nixon", first: "Chase", last: "Nixon", pro: "SESAC", ipi: "673633330", publisher: "G&E Music Group LLC" },
+  { display: "Natalynn Nunez", first: "Natalynn", last: "Nunez", pro: "BMI", ipi: "829624510", publisher: "Gandepub" },
+  { display: "Owen O'Mahony", first: "Owen", last: "O'Mahony", pro: "ASCAP", ipi: "529104567", publisher: "Gem Lab" },
+  { display: "Sarah Lynn Onyschuk", first: "Sarah Lynn", last: "Onyschuk", pro: "SOCAN", ipi: "672454923", publisher: "Gem Lab" },
+  { display: "Andrew Orkin", first: "Andrew", last: "Orkin", pro: "ASCAP", ipi: "693544020", publisher: "Gem Lab" },
+  { display: "Lawrence Orsini", first: "Lawrence", last: "Orsini", pro: "BMI", ipi: "718725033", publisher: "Gandepub" },
+  { display: "Cory Otis", first: "Cory", last: "Otis", pro: "BMI", ipi: "479516118", publisher: "Gandepub" },
+  { display: "Hasan Mehmet Can Ozbek", first: "Hasan Mehmet Can", last: "Ozbek", pro: "MSG", ipi: "741077749", publisher: "Gem Lab" },
+  { display: "Yaman Palak", first: "Yaman", last: "Palak", pro: "ASCAP", ipi: "796392973", publisher: "Gem Lab" },
+  { display: "Peter Palestina", first: "Peter", last: "Palestina", pro: "BMI", ipi: "00535605458", publisher: "Gandepub" },
+  { display: "Bjørn Palmqvist", first: "Bjørn", last: "Palmqvist", pro: "KODA", ipi: "285725238", publisher: "Gem Lab" },
+  { display: "Keith Patchel", first: "Keith", last: "Patchel", pro: "BMI", ipi: "469060344", publisher: "Gandepub" },
+  { display: "John Paterno", first: "John", last: "Paterno", pro: "ASCAP", ipi: "571348738", publisher: "Gem Lab" },
+  { display: "Christo Patricios", first: "Christo", last: "Patricios", pro: "SAMRO", ipi: "721287651", publisher: "Gem Lab" },
+  { display: "Moses Patrou", first: "Moses", last: "Patrou", pro: "ASCAP", ipi: "347522069", publisher: "Gem Lab" },
+  { display: "Jarrod Pedone", first: "Jarrod", last: "Pedone", pro: "ASCAP", ipi: "512812485", publisher: "Gem Lab" },
+  { display: "Fernando Perez", first: "Fernando", last: "Perez", pro: "BMI", ipi: "726483721", publisher: "Gandepub" },
+  { display: "Dennis James Perkins", first: "Dennis James", last: "Perkins", pro: "ASCAP", ipi: "763973497", publisher: "Gem Lab" },
+  { display: "Samuel Perry", first: "Samuel", last: "Perry", pro: "APRA", ipi: "655226935", publisher: "Gem Lab" },
+  { display: "Calvin Ross Pfeffer", first: "Calvin Ross", last: "Pfeffer", pro: "BMI", ipi: "725611849", publisher: "Gandepub" },
+  { display: "Nicholas Phelps", first: "Nicholas", last: "Phelps", pro: "BMI", ipi: "844108939", publisher: "Gandepub" },
+  { display: "Gabriel Pitaro", first: "Gabriel", last: "Pitaro", pro: "BMI", ipi: "00717553729", publisher: "Gandepub" },
+  { display: "Luca Poloni", first: "Luca", last: "Poloni", pro: "PRS", ipi: "886354394", publisher: "Gem Lab" },
+  { display: "Rahul Hiren Popawala", first: "Rahul Hiren", last: "Popawala", pro: "ASCAP", ipi: "792905207", publisher: "Gem Lab" },
+  { display: "Brian Quill", first: "Brian", last: "Quill", pro: "SESAC", ipi: "295466227", publisher: "G&E Music Group LLC" },
+  { display: "Jimmy Quinn", first: "Jimmy", last: "Quinn", pro: "ASCAP", ipi: "870700544", publisher: "Gem Lab" },
+  { display: "Joshua Raggatt", first: "Joshua", last: "Raggatt", pro: "PRS", ipi: "621400503", publisher: "Gem Lab" },
+  { display: "Harini Srinivasa Raghavan", first: "Harini Srinivasa", last: "Raghavan", pro: "ASCAP", ipi: "748047915", publisher: "Gem Lab" },
+  { display: "Lisa Remar", first: "Lisa", last: "Remar", pro: "ASCAP", ipi: "771686994", publisher: "Gem Lab" },
+  { display: "Keith Reynolds", first: "Keith", last: "Reynolds", pro: "BMI", ipi: "484689690", publisher: "Gandepub" },
+  { display: "Nathan Riebli", first: "Nathan", last: "Riebli", pro: "ASCAP", ipi: "544537346", publisher: "Gem Lab" },
+  { display: "Henning Riez", first: "Henning", last: "Riez", pro: "PRS", ipi: "750940834", publisher: "Gem Lab" },
+  { display: "Justin Roper", first: "Justin", last: "Roper", pro: "BMI", ipi: "631250685", publisher: "Gandepub" },
+  { display: "Jonathan Rosenfeld", first: "Jonathan", last: "Rosenfeld", pro: "BMI", ipi: "490475534", publisher: "Gandepub" },
+  { display: "Brandon Ross", first: "Brandon", last: "Ross", pro: "SESAC", ipi: "00572070073", publisher: "G&E Music Group LLC" },
+  { display: "Cory Ross", first: "Cory", last: "Ross", pro: "BMI", ipi: "734391537", publisher: "Gandepub" },
+  { display: "Gordon Rothbard", first: "Gordon", last: "Rothbard", pro: "BMI", ipi: "00743189134", publisher: "Gandepub" },
+  { display: "Andrew Russell", first: "Andrew", last: "Russell", pro: "ASCAP", ipi: "341438186", publisher: "Gem Lab" },
+  { display: "Jacque Ryal", first: "Jacque", last: "Ryal", pro: "BMI", ipi: "440992153", publisher: "Gandepub" },
+  { display: "Stephanie Sahi", first: "Stephanie", last: "Sahi", pro: "SOCAN", ipi: "738435912", publisher: "Gem Lab" },
+  { display: "Kevin Salchert", first: "Kevin", last: "Salchert", pro: "BMI", ipi: "650472849", publisher: "Gandepub" },
+  { display: "Byron Sampson", first: "Byron", last: "Sampson", pro: "BMI", ipi: "577412139", publisher: "Gandepub" },
+  { display: "Mardochee Sanon", first: "Mardochee", last: "Sanon", pro: "ASCAP", ipi: "529184339", publisher: "Gem Lab" },
+  { display: "Greg Savage", first: "Greg", last: "Savage", pro: "BMI", ipi: "722571456", publisher: "Gandepub" },
+  { display: "Lexi Scherr", first: "Lexi", last: "Scherr", pro: "ASCAP", ipi: "762903234", publisher: "Gem Lab" },
+  { display: "Shane Schlick", first: "Shane", last: "Schlick", pro: "BMI", ipi: "1099901714", publisher: "Gandepub" },
+  { display: "Glenn Schloss", first: "Glenn", last: "Schloss", pro: "BMI", ipi: "338867612", publisher: "Gelly Pub" },
+  { display: "Stefan Schnabel", first: "Stefan", last: "Schnabel", pro: "BMI", ipi: "676660701", publisher: "Gandepub" },
+  { display: "Rolf Schnyder", first: "Rolf", last: "Schnyder", pro: "BMI", ipi: "496085514", publisher: "Gandepub" },
+  { display: "Dean Schott", first: "Dean", last: "Schott", pro: "BMI", ipi: "1102126335", publisher: "Gandepub" },
+  { display: "Elena Dolsa Sciaky", first: "Elena Dolsa", last: "Sciaky", pro: "ASCAP", ipi: "128306785", publisher: "Gem Lab" },
+  { display: "Adrian Sealy", first: "Adrian", last: "Sealy", pro: "BMI", ipi: "604906067", publisher: "Gandepub" },
+  { display: "Jason Shepherd", first: "Jason", last: "Shepherd", pro: "BMI", ipi: "454394832", publisher: "Gandepub" },
+  { display: "Robert Sinclair", first: "Robert", last: "Sinclair", pro: "ASCAP", ipi: "428535448", publisher: "Gem Lab" },
+  { display: "James Slukhinsky", first: "James", last: "Slukhinsky", pro: "ASCAP", ipi: "730778038", publisher: "Gem Lab" },
+  { display: "Dmitra Smith", first: "Dmitra", last: "Smith", pro: "ASCAP", ipi: "615985809", publisher: "Gem Lab" },
+  { display: "Hugo Smith", first: "Hugo", last: "Smith", pro: "PRS", ipi: "789219390", publisher: "Gem Lab" },
+  { display: "Nathaniel Smith", first: "Nathaniel", last: "Smith", pro: "BMI", ipi: "701050117", publisher: "Gandepub" },
+  { display: "Sean Smith", first: "Sean", last: "Smith", pro: "BMI", ipi: "849318898", publisher: "Gandepub" },
+  { display: "Lisa Sniderman", first: "Lisa", last: "Sniderman", pro: "ASCAP", ipi: "506054094", publisher: "Gem Lab" },
+  { display: "Jonathan Spurney", first: "Jonathan", last: "Spurney", pro: "ASCAP", ipi: "337056469", publisher: "Gem Lab" },
+  { display: "Robert Stander", first: "Robert", last: "Stander", pro: "ASCAP", ipi: "126363292", publisher: "Gem Lab" },
+  { display: "Aaron Steinberg", first: "Aaron", last: "Steinberg", pro: "BMI", ipi: "186724341", publisher: "Gandepub" },
+  { display: "Spencer Stewart", first: "Spencer", last: "Stewart", pro: "BMI", ipi: "817685404", publisher: "Gandepub" },
+  { display: "Ian Brenden Stinson", first: "Ian Brenden", last: "Stinson", pro: "ASCAP", ipi: "768828085", publisher: "Gem Lab" },
+  { display: "Benjamin Stivers", first: "Benjamin", last: "Stivers", pro: "ASCAP", ipi: "594049228", publisher: "Gem Lab" },
+  { display: "Christopher Stoll", first: "Christopher", last: "Stoll", pro: "BMI", ipi: "465711644", publisher: "Gandepub" },
+  { display: "James Allen Street", first: "James Allen", last: "Street", pro: "BMI", ipi: "1130737", publisher: "Gandepub" },
+  { display: "Vincent Tancredi", first: "Vincent", last: "Tancredi", pro: "BMI", ipi: "730649248", publisher: "Gandepub" },
+  { display: "Sanjay Taverna", first: "Sanjay", last: "Taverna", pro: "APRA", ipi: "736511351", publisher: "Gem Lab" },
+  { display: "Corei Taylor", first: "Corei", last: "Taylor", pro: "SESAC", ipi: "547433433", publisher: "G&E Music Group LLC" },
+  { display: "Angelo Telan", first: "Angelo", last: "Telan", pro: "BMI", ipi: "766631023", publisher: "Gandepub" },
+  { display: "Nolan Thies", first: "Nolan", last: "Thies", pro: "ASCAP", ipi: "521883943", publisher: "Gem Lab" },
+  { display: "Camille Thomas", first: "Camille", last: "Thomas", pro: "SOCAN", ipi: "503974255", publisher: "Gem Lab" },
+  { display: "Carmen Thomas", first: "Carmen", last: "Thomas", pro: "SOCAN", ipi: "503973160", publisher: "Gem Lab" },
+  { display: "Mark Unthank", first: "Mark", last: "Unthank", pro: "BMI", ipi: "236418571", publisher: "Gandepub" },
+  { display: "Girish Varma", first: "Girish", last: "Varma", pro: "BMI", ipi: "378429810", publisher: "Gandepub" },
+  { display: "Josh Verbanets", first: "Josh", last: "Verbanets", pro: "ASCAP", ipi: "467663513", publisher: "Gem Lab" },
+  { display: "Vince Michael Villafan", first: "Vince Michael", last: "Villafan", pro: "ASCAP", ipi: "768817974", publisher: "Gem Lab" },
+  { display: "Daniel Villalobos", first: "Daniel", last: "Villalobos", pro: "APRA", ipi: "701032315", publisher: "Gem Lab" },
+  { display: "Matt Volpe", first: "Matt", last: "Volpe", pro: "ASCAP", ipi: "349390241", publisher: "Gem Lab" },
+  { display: "Alan Ward", first: "Alan", last: "Ward", pro: "BMI", ipi: "891870100", publisher: "Gandepub" },
+  { display: "Danny Ware", first: "Danny", last: "Ware", pro: "BMI", ipi: "730680553", publisher: "Gandepub" },
+  { display: "Brian Warren", first: "Brian", last: "Warren", pro: "BMI", ipi: "1131749864", publisher: "Gandepub" },
+  { display: "Arne Wendy", first: "Arne", last: "Wendy", pro: "ASCAP", ipi: "338831544", publisher: "Gem Lab" },
+  { display: "Greg Wieczorek", first: "Greg", last: "Wieczorek", pro: "BMI", ipi: "350787545", publisher: "Gandepub" },
+  { display: "Parker Wiksell", first: "Parker", last: "Wiksell", pro: "ASCAP", ipi: "730947631", publisher: "Gem Lab" },
+  { display: "Gregory Williams", first: "Gregory", last: "Williams", pro: "ASCAP", ipi: "611743081", publisher: "Gem Lab" },
+  { display: "Dyami Wilson", first: "Dyami", last: "Wilson", pro: "BMI", ipi: "360517674", publisher: "Gandepub" },
+  { display: "Kevin Wilson", first: "Kevin", last: "Wilson", pro: "BMI", ipi: "799319182", publisher: "Gandepub" },
+  { display: "Gareth Wong", first: "Gareth", last: "Wong", pro: "ASCAP", ipi: "867009615", publisher: "Gem Lab" },
+  { display: "Mirage Zamprioli", first: "Mirage", last: "Zamprioli", pro: "ASCAP", ipi: "733990320", publisher: "Gem Lab" },
+  { display: "David Zipse", first: "David", last: "Zipse", pro: "ASCAP", ipi: "1058469137", publisher: "Gem Lab" },
+  { display: "Ben Zwerin", first: "Ben", last: "Zwerin", pro: "ASCAP", ipi: "451532478", publisher: "Gem Lab" },
+];
+
+const PUBLISHERS = [
+  { name: "Gandepub", pro: "BMI", ipi: "584690604" },
+  { name: "Gem Lab", pro: "ASCAP", ipi: "581601361" },
+  { name: "Gelly Pub", pro: "BMI", ipi: "584690310" },
+  { name: "G&E Music Group LLC", pro: "SESAC", ipi: "280722865" },
+];
+
+const PROS = ["ASCAP","BMI","SESAC","SOCAN","APRA","PRS","GEMA","SACEM","SIAE","STIM","KODA","TONO","IMRO","SAMRO","SGAE","UBC","MSG","SUISA","Other"];
+
+const DESCRIPTION_PHRASES = ["Aggressive","Airy","Ambitious","Anticipation","Atmospheric","Austere","Bittersweet","Bold","Bouncy","Brash","Breezy","Bright","Brooding","Building","Calm","Campy","Carefree","Celebratory","Cerebral","Cheerful","Chill","Comforting","Confident","Confrontational","Contemplative","Content","Cool","Cozy","Cute","Dangerous","Dark","Delicate Calm","Determined","Dramatic","Dreamy","Driving","Dynamic","Earthy","Easy Going","Easy Listening","Eerie","Effervescent","Elegant","Energetic","Enigmatic","Ethereal","Exciting","Explosive","Feel Good","Festive","Fierce","Floating","Focused","Foreboding","Fulfilled","Fun","Funky","Gentle","Gentle Groove","Giddy","Gleeful","Gritty","Groovy","Gutsy","Happy","Hard-Hitting","Harsh","Haunting","Hazy","Heroic","Hopeful","Humorous","Intense","Introspective","Jazzy","Joyful","Laid Back","Light","Lively","Lo Fi","Majestic","Meditative","Melancholic","Mellow","Menacing","Minimal","Mysterious","Nostalgic","Ominous","Optimistic","Peaceful","Playful","Poignant","Positive","Pounding","Powerful","Purposeful","Quirky","Rambunctious","Reckless","Reflective","Refreshing","Regal","Relaxed","Relentless","Rollicking","Rootsy","Rousing","Rowdy","Scary","Searching","Sensitive","Sentimental","Serious","Sinister","Smooth","Soothing","Sophisticated","Soulful","Spacey","Sparkling","Spirited","Stirring","Strong","Stylish","Summery","Suspenseful","Sweet","Tender","Tense","Touching","Turbulent","Upbeat","Uplifting","Urgent","Volatile","Warm","Wholesome","Wistful"];
+
+const MOODS = ["Adventurous","Aggressive","Angry","Anxious","Athletic","Bouncy","Bright","Calm","Carefree","Celebratory","Cheerful","Cold","Confident","Contemplative","Cool","Courageous","Dark","Dramatic","Dreamy","Dynamic","Easygoing","Effervescent","Emotional","Empowering","Energetic","Epic","Euphoric","Exciting","Feel Good","Festive","Fierce","Flowing","Fun","Funky","Giddy","Gleeful","Gloomy","Groovy","Happy","Heavy","Hopeful","Humorous","Inspirational","Intense","Laid Back","Lively","Melancholic","Menacing","Moody","Motivational","Mysterious","Nostalgic","Optimistic","Peaceful","Playful","Powerful","Quirky","Rambunctious","Rollicking","Romantic","Rowdy","Sad","Sensual","Sentimental","Serene","Sinister","Smooth","Sophisticated","Spirited","Suspenseful","Tense","Triumphant","Upbeat","Uplifting","Urgent","Whimsical"];
+
+const STYLES = ["Acoustic","Aggressive","Ambient","Anthemic","Atmospheric","Bouncy","Cinematic","Dark","Delicate","Dirty","Driving","Dystopian","Eclectic","Electronic","Elegant","Epic","Ethereal","Experimental","Flowing","Funky","Futuristic","Gritty","Groovy","Heavy","Hypnotic","Industrial","Intense","Laid Back","Layered","Lush","Melodic","Minimalist","Modern","Moody","Orchestral","Organic","Pulsing","Raw","Rhythmic","Riff","Smooth","Soaring","Sparse","Syncopated","Upbeat"];
+
+const INSTRUMENTS = ["808","Acoustic Guitar","Banjo","Bass Guitar","Brass Section","Cello","Choir","Clavinet","Congas","Cowbell","Cymbals","Distorted Guitar","Drum Loop","Drum Machine","Drum Set","Electric Guitar","Electric Piano","Flute","French Horn","Glockenspiel","Hammond Organ","Harp","Horn Section","Kalimba","Keyboard","Marimba","Organ","Percussion","Piano","Rhodes","Saxophone","String Section","Strings","Synth Bass","Synth Lead","Synth Pad","Synthesizer","Tabla","Theremin","Timpani","Trombone","Trumpet","Tuba","Ukulele","Vibraphone","Violin","Vocals","Xylophone"];
+
+const FILM_GENRES = ["Action","Adventure","Animation","Awards","Background","Basketball","Behind the Scenes","Boxing","Business","Cartoon","Chase","Children","Christmas","Cinematic","Combat","Comedy","Commercial","Corporate","Crime","Documentary","Drama","Driving","Education","Fantasy","Fashion","Football","Gaming","Halloween","Historical","Horror","Investigation","Kids Show","Legal","Love Story","Montage","Mystery","Nature","Nightlife","Parade","Party","Political","Prom","Reality TV","Romance","Sci-Fi","Sitcom","Sports","Spy","Summer","Superhero","Teen Drama","Thriller","Travel","War","Western"];
+
+const SUB_GENRES = ["Acoustic Pop","Adult Contemporary","Alternative","Americana","Art Pop","Baroque Pop","Blues","Blues Rock","Bossa Nova","Celtic","Chamber Pop","Chillhop","Classic Rock","Classical","Club","Country","Dance Pop","Deep House","Disco","Drum and Bass","Dubstep","EDM","Electro","Electronic","Folk","Funk","Gospel","Grunge","Hip Hop","House","Indie Folk","Indie Pop","Indie Rock","Jazz","Lo-Fi","Motown","Neo Soul","Orchestral","Pop","Pop Punk","Pop Rock","Progressive Rock","R&B","Reggae","Rock","Singer Songwriter","Soul","Synthpop","Trap","Trip Hop","World Music"];
+
+// ─── STATE ────────────────────────────────────────────────────────
+let tracks = [], currentTrackId = null, currentAltIndex = null, queue = [];
+
+function getCurrentTrackGroup() { return tracks.find(t => t.id === currentTrackId) || null; }
+function getCurrentEntry() {
+  const g = getCurrentTrackGroup(); if (!g) return null;
+  return currentAltIndex === null ? g.fullMix : g.alternates[currentAltIndex] || null;
+}
+
+function freshEntry(title='', isAlt=false) {
+  return { title, isAlt, album:'', albumCode:'', artist:'', artistDesc:'', tempo:'', bpm:'', key:'', genre:'', hasVocals:'No', explicit:'No', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{ company:'', pro:'', ipi:'', share:'1', role:'OP' }], writers:[{ firstName:'', lastName:'', pro:'', ipi:'', share:'1', publisher:'', role:'C', searchVal:'' }] };
+}
+
+
+// ─── ALBUMS ──────────────────────────────────────────────────────
+const DEFAULT_ALBUMS = [
+  { name: "Electro Chill", code: "PTB035", catalog: "Producer's Toolbox" },
+  { name: "Feel Good Indie", code: "PTB039", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop (Atlanta Trap)", code: "PTB048", catalog: "Producer's Toolbox" },
+  { name: "Soulful & Sexy", code: "PTB067", catalog: "Producer's Toolbox" },
+  { name: "Lo-Fi Dream Beats", code: "PTB071", catalog: "Producer's Toolbox" },
+  { name: "Pop Rockers", code: "PTB077", catalog: "Producer's Toolbox" },
+  { name: "Punk Rockers", code: "PTB079", catalog: "Producer's Toolbox" },
+  { name: "Sports Rock", code: "PTB088", catalog: "Producer's Toolbox" },
+  { name: "Epic Sports Trailers", code: "PTB117", catalog: "Producer's Toolbox" },
+  { name: "Sports Hip Hop", code: "PTB126", catalog: "Producer's Toolbox" },
+  { name: "Sports Hybrid", code: "PTB129", catalog: "Producer's Toolbox" },
+  { name: "Sports Hip Hop Volume 4", code: "PTB133", catalog: "Producer's Toolbox" },
+  { name: "Ambient Scoring Volume 20", code: "PTB134", catalog: "Ambient Scoring" },
+  { name: "Lo-Fi Chill Beats", code: "PTB149", catalog: "Producer's Toolbox" },
+  { name: "Chill Bedroom Pop", code: "PTB150", catalog: "Producer's Toolbox" },
+];
+
+function getAlbums() {
+  try { const s = localStorage.getItem('ptb_custom_albums'); return s ? [...DEFAULT_ALBUMS, ...JSON.parse(s)] : DEFAULT_ALBUMS; } catch(e) { return DEFAULT_ALBUMS; }
+}
+function getWriters() {
+  try { const s = localStorage.getItem('ptb_custom_writers'); return s ? [...WRITERS, ...JSON.parse(s)] : WRITERS; } catch(e) { return WRITERS; }
+}
+function getArtists() {
+  try { const s = localStorage.getItem('ptb_custom_artists'); return s ? JSON.parse(s) : []; } catch(e) { return []; }
+}
+
+function populateAlbumDropdown() {
+  const sel = document.getElementById('f_album');
+  if (!sel) return;
+  const entry = getCurrentEntry();
+  const current = entry ? entry.album : '';
+  sel.innerHTML = '<option value="">— Select album —</option>' +
+    getAlbums().map(a => `<option value="${a.name}" ${current===a.name?'selected':''}>${a.name} (${a.code})</option>`).join('');
+}
+
+function onAlbumChange(val) {
+  const e = getCurrentEntry(); if (!e) return;
+  e.album = val;
+  const album = getAlbums().find(a => a.name === val);
+  if (album) {
+    e.albumCode = album.code;
+    e.catalog = album.catalog;
+    document.getElementById('f_albumCode').value = album.code;
+  }
+  saveToStorage();
+}
+
+function onBpmChange(val) {
+  const e = getCurrentEntry(); if (!e) return;
+  e.bpm = val;
+  const bpm = parseInt(val);
+  if (!isNaN(bpm)) {
+    let tempo = '';
+    if (bpm <= 89) tempo = 'Slow';
+    else if (bpm <= 110) tempo = 'Medium';
+    else if (bpm <= 130) tempo = 'Fast';
+    else tempo = 'Very Fast';
+    e.tempo = tempo;
+    const sel = document.getElementById('f_tempo');
+    if (sel) sel.value = tempo;
+  }
+  saveToStorage();
+}
+
+function onArtistSearch(val) {
+  const e = getCurrentEntry(); if (!e) return;
+  e.artist = val;
+  saveToStorage();
+  const wrap = document.getElementById('artistSearchWrap');
+  let drop = document.getElementById('artistDrop');
+  if (drop) drop.remove();
+  if (!val.trim()) return;
+  const customArtists = getArtists();
+  // Build suggestions: custom artists + writer-based suggestions
+  const allWriters = getWriters();
+  const writerSuggestions = allWriters
+    .filter(w => (w.display + ' - Flavorlab PTB').toLowerCase().includes(val.toLowerCase()))
+    .map(w => w.display + ' - Flavorlab PTB')
+    .slice(0, 6);
+  const customMatches = customArtists.filter(a => a.toLowerCase().includes(val.toLowerCase())).slice(0,4);
+  const suggestions = [...new Set([...customMatches, ...writerSuggestions])].slice(0, 10);
+  if (!suggestions.length) return;
+  drop = document.createElement('div');
+  drop.className = 'writer-dropdown'; drop.id = 'artistDrop';
+  drop.innerHTML = suggestions.map(s => `<div class="writer-option" onclick="selectArtist('${s.replace(/'/g,"\'")}')">${s}</div>`).join('');
+  wrap.appendChild(drop);
+}
+
+function selectArtist(val) {
+  const e = getCurrentEntry(); if (!e) return;
+  e.artist = val;
+  document.getElementById('f_artist').value = val;
+  const drop = document.getElementById('artistDrop');
+  if (drop) drop.remove();
+  saveToStorage();
+}
+
+// ─── ADMIN PANEL ─────────────────────────────────────────────────
+function openAdmin() {
+  document.getElementById('adminModal').style.display = 'flex';
+  renderAdminWriters(); renderAdminAlbums(); renderAdminArtists();
+}
+function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; }
+
+function renderAdminWriters() {
+  const custom = getWriters().filter(w => !WRITERS.find(d => d.ipi === w.ipi));
+  document.getElementById('adminWriterList').innerHTML = custom.length
+    ? custom.map((w,i) => `<div class="admin-row"><span>${w.display} · ${w.pro} · ${w.ipi}</span><button class="btn btn-danger btn-sm" onclick="removeCustomWriter(${i})">×</button></div>`).join('')
+    : '<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No custom writers added yet</div>';
+}
+
+function addCustomWriter() {
+  const first = document.getElementById('aw_first').value.trim();
+  const last = document.getElementById('aw_last').value.trim();
+  const pro = document.getElementById('aw_pro').value.trim();
+  const ipi = document.getElementById('aw_ipi').value.trim();
+  const pub = document.getElementById('aw_pub').value.trim();
+  if (!first || !last || !ipi) { showToast('First name, last name, and IPI required'); return; }
+  const existing = JSON.parse(localStorage.getItem('ptb_custom_writers') || '[]');
+  existing.push({ display: first+' '+last, first, last, pro, ipi, publisher: pub });
+  localStorage.setItem('ptb_custom_writers', JSON.stringify(existing));
+  ['aw_first','aw_last','aw_pro','aw_ipi','aw_pub'].forEach(id => document.getElementById(id).value = '');
+  renderAdminWriters(); showToast('Writer added ✓', true);
+}
+
+function removeCustomWriter(idx) {
+  const existing = JSON.parse(localStorage.getItem('ptb_custom_writers') || '[]');
+  existing.splice(idx, 1);
+  localStorage.setItem('ptb_custom_writers', JSON.stringify(existing));
+  renderAdminWriters();
+}
+
+function renderAdminAlbums() {
+  const custom = JSON.parse(localStorage.getItem('ptb_custom_albums') || '[]');
+  document.getElementById('adminAlbumList').innerHTML = custom.length
+    ? custom.map((a,i) => `<div class="admin-row"><span>${a.name} · ${a.code}</span><button class="btn btn-danger btn-sm" onclick="removeCustomAlbum(${i})">×</button></div>`).join('')
+    : '<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No custom albums added yet</div>';
+}
+
+function addCustomAlbum() {
+  const name = document.getElementById('aa_name').value.trim();
+  const code = document.getElementById('aa_code').value.trim();
+  const catalog = document.getElementById('aa_catalog').value.trim() || "Producer's Toolbox";
+  if (!name || !code) { showToast('Album name and code required'); return; }
+  const existing = JSON.parse(localStorage.getItem('ptb_custom_albums') || '[]');
+  existing.push({ name, code, catalog });
+  localStorage.setItem('ptb_custom_albums', JSON.stringify(existing));
+  ['aa_name','aa_code','aa_catalog'].forEach(id => document.getElementById(id).value = '');
+  renderAdminAlbums(); populateAlbumDropdown(); showToast('Album added ✓', true);
+}
+
+function removeCustomAlbum(idx) {
+  const existing = JSON.parse(localStorage.getItem('ptb_custom_albums') || '[]');
+  existing.splice(idx, 1);
+  localStorage.setItem('ptb_custom_albums', JSON.stringify(existing));
+  renderAdminAlbums(); populateAlbumDropdown();
+}
+
+function renderAdminArtists() {
+  const artists = getArtists();
+  document.getElementById('adminArtistList').innerHTML = artists.length
+    ? artists.map((a,i) => `<div class="admin-row"><span>${a}</span><button class="btn btn-danger btn-sm" onclick="removeCustomArtist(${i})">×</button></div>`).join('')
+    : '<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No saved artists yet</div>';
+}
+
+function addCustomArtist() {
+  const val = document.getElementById('aa_artist').value.trim();
+  if (!val) return;
+  const existing = getArtists();
+  if (!existing.includes(val)) { existing.push(val); localStorage.setItem('ptb_custom_artists', JSON.stringify(existing)); }
+  document.getElementById('aa_artist').value = '';
+  renderAdminArtists(); showToast('Artist saved ✓', true);
+}
+
+function removeCustomArtist(idx) {
+  const existing = getArtists(); existing.splice(idx,1);
+  localStorage.setItem('ptb_custom_artists', JSON.stringify(existing));
+  renderAdminArtists();
+}
+
+function init() {
+  buildCheckboxGroup('descGroup', DESCRIPTION_PHRASES, 'description', true);
+  buildCheckboxGroup('moodsGroup', MOODS, 'moods');
+  buildCheckboxGroup('stylesGroup', STYLES, 'styles');
+  buildCheckboxGroup('instrumentsGroup', INSTRUMENTS, 'instruments');
+  buildCheckboxGroup('filmGenreGroup', FILM_GENRES, 'filmGenres');
+  buildCheckboxGroup('subGenreGroup', SUB_GENRES, 'subGenres');
+  populateAlbumDropdown();
+  loadFromStorage();
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.writer-search-wrap') && !e.target.closest('#artistSearchWrap')) {
+      document.querySelectorAll('.writer-dropdown').forEach(d => d.remove());
+    }
+  });
+}
+
+function buildCheckboxGroup(containerId, items, field, isDesc=false) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(item => `
+    <label class="cb-item">
+      <input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="onCheckChange('${field}','${item.replace(/'/g,"\\'")}',this.checked,${isDesc})">
+      <span>${item}</span>
+    </label>`).join('');
+}
+
+// ─── TRACK MANAGEMENT ─────────────────────────────────────────────
+function newTrack() {
+  const id = Date.now().toString();
+  tracks.push({ id, fullMix: freshEntry('Untitled track'), alternates: [] });
+  currentTrackId = id; currentAltIndex = null;
+  renderTrackList(); loadEntryIntoForm();
+  document.getElementById('titleInput').focus();
+  saveToStorage();
+}
+
+function selectTrack(id, altIdx=null) {
+  currentTrackId = id; currentAltIndex = altIdx;
+  renderTrackList(); loadEntryIntoForm();
+}
+
+function addAlternate() {
+  const g = getCurrentTrackGroup(); if (!g) return;
+  const alt = JSON.parse(JSON.stringify(g.fullMix));
+  alt.title = g.fullMix.title + ' (Alternate ' + (g.alternates.length + 1) + ')';
+  alt.isAlt = true;
+  g.alternates.push(alt);
+  currentAltIndex = g.alternates.length - 1;
+  renderTrackList(); loadEntryIntoForm(); saveToStorage();
+}
+
+function removeAlternate(idx) {
+  const g = getCurrentTrackGroup(); if (!g) return;
+  g.alternates.splice(idx, 1);
+  if (currentAltIndex === idx) { currentAltIndex = null; loadEntryIntoForm(); }
+  else if (currentAltIndex > idx) currentAltIndex--;
+  renderTrackList(); renderAltChips(); saveToStorage();
+}
+
+// ─── FORM ──────────────────────────────────────────────────────────
+function loadEntryIntoForm() {
+  const entry = getCurrentEntry();
+  if (!entry) { document.getElementById('emptyForm').style.display='flex'; document.getElementById('trackForm').style.display='none'; return; }
+  document.getElementById('emptyForm').style.display='none'; document.getElementById('trackForm').style.display='block';
+  document.getElementById('titleInput').value = entry.title || '';
+  document.getElementById('formTrackType').textContent = entry.isAlt ? 'Alternate version' : 'Full mix';
+  populateAlbumDropdown();
+  ['albumCode','artist','artistDesc','tempo','bpm','genre','hasVocals','explicit','isrc','styleOf'].forEach(f => {
+    const el = document.getElementById('f_' + f); if (el) el.value = entry[f] || '';
+  });
+  const fieldMap = { description:'descGroup', moods:'moodsGroup', styles:'stylesGroup', instruments:'instrumentsGroup', filmGenres:'filmGenreGroup', subGenres:'subGenreGroup' };
+  Object.entries(fieldMap).forEach(([field, groupId]) => {
+    const container = document.getElementById(groupId);
+    if (!container) return;
+    container.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = (entry[field] || []).includes(cb.value); });
+  });
+  renderDescOutput();
+  document.getElementById('instrNote').textContent = entry.isAlt ? '✦ edit for this version only' : '';
+  renderPublisherBlocks(); renderWriterBlocks(); renderAltChips();
+}
+
+function onTitleChange(val) { const e = getCurrentEntry(); if (e) { e.title = val; renderTrackList(); renderAltChips(); saveToStorage(); } }
+function syncField(field, val) { const e = getCurrentEntry(); if (e) { e[field] = val; saveToStorage(); } }
+
+function onCheckChange(field, val, checked, isDesc=false) {
+  const e = getCurrentEntry(); if (!e) return;
+  if (checked) { if (!e[field].includes(val)) e[field].push(val); }
+  else { e[field] = e[field].filter(v => v !== val); }
+  if (isDesc) renderDescOutput();
+  saveToStorage();
+}
+
+function renderDescOutput() {
+  const e = getCurrentEntry();
+  const container = document.getElementById('descOutput');
+  if (!e || !e.description || e.description.length === 0) {
+    container.innerHTML = '<span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span>';
+    return;
+  }
+  container.innerHTML = e.description.map(p => `<div class="desc-tag">${p}<span class="desc-tag-x" onclick="removeDescPhrase('${p.replace(/'/g,"\\'")}')">×</span></div>`).join('');
+}
+
+function removeDescPhrase(phrase) {
+  const e = getCurrentEntry(); if (!e) return;
+  e.description = e.description.filter(p => p !== phrase);
+  const container = document.getElementById('descGroup');
+  const cb = container.querySelector(`input[value="${phrase}"]`);
+  if (cb) cb.checked = false;
+  renderDescOutput(); saveToStorage();
+}
+
+// ─── WRITER SEARCH ─────────────────────────────────────────────────
+function writerSearch(idx, val) {
+  const e = getCurrentEntry(); if (!e) return;
+  e.writers[idx].searchVal = val;
+  const wrap = document.getElementById(`writerSearchWrap_${idx}`);
+  let drop = document.getElementById(`writerDrop_${idx}`);
+  if (drop) drop.remove();
+  if (!val.trim()) return;
+  const matches = WRITERS.filter(w => w.display.toLowerCase().includes(val.toLowerCase())).slice(0, 12);
+  if (!matches.length) return;
+  drop = document.createElement('div');
+  drop.className = 'writer-dropdown'; drop.id = `writerDrop_${idx}`;
+  drop.innerHTML = matches.map(w => `
+    <div class="writer-option" onclick="selectWriter(${idx}, '${w.display.replace(/'/g,"\\'")}')">
+      <span>${w.display}</span>
+      <span class="writer-option-meta">${w.pro} · ${w.ipi}</span>
+    </div>`).join('');
+  wrap.appendChild(drop);
+}
+
+function selectWriter(idx, displayName) {
+  const e = getCurrentEntry(); if (!e) return;
+  const w = WRITERS.find(x => x.display === displayName); if (!w) return;
+  e.writers[idx] = { ...e.writers[idx], searchVal: w.display, firstName: w.first, lastName: w.last, pro: w.pro, ipi: w.ipi, publisher: w.publisher, role: 'C' };
+  renderWriterBlocks(); saveToStorage();
+}
+
+// ─── PUBLISHERS ────────────────────────────────────────────────────
+function renderPublisherBlocks() {
+  const e = getCurrentEntry(); if (!e) return;
+  document.getElementById('publisherBlocks').innerHTML = e.publishers.map((pub, i) => `
+    <div class="party-block">
+      <div class="party-block-header"><span class="party-block-title">Publisher ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removePublisher(${i})">Remove</button>`:''}</div>
+      <div class="field-grid cols-2">
+        <div class="field"><label class="field-label">Company</label>
+          <select onchange="updatePublisher(${i},'company',this.value)">
+            <option value="">— Select —</option>
+            ${PUBLISHERS.map(p=>`<option value="${p.name}" ${pub.company===p.name?'selected':''}>${p.name}</option>`).join('')}
+            <option value="__other__" ${pub.company&&!PUBLISHERS.find(p=>p.name===pub.company)?'selected':''}>Other...</option>
+          </select>
+          ${pub.company&&!PUBLISHERS.find(p=>p.name===pub.company)&&pub.company!=='__other__'?`<input type="text" value="${pub.company}" oninput="updatePublisherRaw(${i},'company',this.value)" placeholder="Publisher name" style="margin-top:4px">`:''}</div>
+        <div class="field"><label class="field-label">PRO</label>
+          <select onchange="updatePublisher(${i},'pro',this.value)">${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${pub.ipi||''}" oninput="updatePublisher(${i},'ipi',this.value)" placeholder="e.g. 584690604"></div>
+        <div class="field"><label class="field-label">Ownership Share</label><input type="text" value="${pub.share||'1'}" oninput="updatePublisher(${i},'share',this.value)"></div>
+      </div></div>`).join('');
+}
+
+function updatePublisher(idx, field, val) {
+  const e = getCurrentEntry(); if (!e) return;
+  if (field === 'company') {
+    const known = PUBLISHERS.find(p => p.name === val);
+    if (known) { e.publishers[idx].company = known.name; e.publishers[idx].pro = known.pro; e.publishers[idx].ipi = known.ipi; }
+    else { e.publishers[idx].company = val === '__other__' ? '' : val; }
+    renderPublisherBlocks();
+  } else { e.publishers[idx][field] = val; }
+  saveToStorage();
+}
+function updatePublisherRaw(idx, field, val) { const e = getCurrentEntry(); if (e) { e.publishers[idx][field] = val; saveToStorage(); } }
+function addPublisher() { const e = getCurrentEntry(); if (!e) return; e.publishers.push({company:'',pro:'',ipi:'',share:'',role:'OP'}); renderPublisherBlocks(); saveToStorage(); }
+function removePublisher(idx) { const e = getCurrentEntry(); if (!e) return; e.publishers.splice(idx,1); renderPublisherBlocks(); saveToStorage(); }
+
+// ─── WRITERS ──────────────────────────────────────────────────────
+function renderWriterBlocks() {
+  const e = getCurrentEntry(); if (!e) return;
+  document.getElementById('writerBlocks').innerHTML = e.writers.map((w, i) => `
+    <div class="party-block">
+      <div class="party-block-header"><span class="party-block-title">Writer ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removeWriter(${i})">Remove</button>`:''}</div>
+      <div class="field-grid cols-2">
+        <div class="field" style="grid-column:span 2">
+          <label class="field-label">Search writer</label>
+          <div class="writer-search-wrap" id="writerSearchWrap_${i}">
+            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="writerSearch(${i},this.value)" placeholder="Type name to search..." autocomplete="off">
+          </div>
+        </div>
+        <div class="field"><label class="field-label">First Name</label><input type="text" value="${w.firstName||''}" oninput="updateWriter(${i},'firstName',this.value)" placeholder="First name"></div>
+        <div class="field"><label class="field-label">Last Name</label><input type="text" value="${w.lastName||''}" oninput="updateWriter(${i},'lastName',this.value)" placeholder="Last name"></div>
+        <div class="field"><label class="field-label">PRO</label>
+          <select onchange="updateWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${w.ipi||''}" oninput="updateWriter(${i},'ipi',this.value)" placeholder="IPI number"></div>
+        <div class="field"><label class="field-label">Ownership Share</label><input type="text" value="${w.share||''}" oninput="updateWriter(${i},'share',this.value)" placeholder="0.5"></div>
+        <div class="field"><label class="field-label">Publisher</label>
+          <select onchange="updateWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
+      </div></div>`).join('');
+}
+
+function updateWriter(idx, field, val) { const e = getCurrentEntry(); if (!e) return; e.writers[idx][field] = val; saveToStorage(); }
+function addWriter() { const e = getCurrentEntry(); if (!e) return; e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C',searchVal:''}); renderWriterBlocks(); saveToStorage(); }
+function removeWriter(idx) { const e = getCurrentEntry(); if (!e) return; e.writers.splice(idx,1); renderWriterBlocks(); saveToStorage(); }
+
+// ─── ALT CHIPS ────────────────────────────────────────────────────
+function renderAltChips() {
+  const g = getCurrentTrackGroup(); if (!g) return;
+  document.getElementById('altChips').innerHTML = g.alternates.map((alt,i) => `
+    <div class="alt-chip ${currentAltIndex===i?'active-alt':''}" onclick="selectTrack('${g.id}',${i})">
+      ${alt.title||'Untitled alternate'}
+      <span class="alt-chip-x" onclick="event.stopPropagation();removeAlternate(${i})">×</span>
+    </div>`).join('');
+}
+
+// ─── TRACK LIST ───────────────────────────────────────────────────
+function renderTrackList() {
+  const container = document.getElementById('trackList');
+  if (!tracks.length) { container.innerHTML = `<div class="empty-rail"><div style="font-size:22px;margin-bottom:4px">🎵</div><div>No tracks yet</div><div style="font-size:11px;margin-top:4px">Click "+ New" to start</div></div>`; return; }
+  container.innerHTML = tracks.map(g => {
+    const isActive = g.id === currentTrackId;
+    return `<div>
+      <div class="track-item ${isActive&&currentAltIndex===null?'active':''}" onclick="selectTrack('${g.id}')">
+        <div class="track-item-name">${g.fullMix.title||'Untitled track'}</div>
+        <div class="track-item-meta">${g.fullMix.albumCode||'—'} · ${g.fullMix.genre||'no genre'}</div>
+        ${g.alternates.length?`<div class="alt-badge">${g.alternates.length} alt${g.alternates.length>1?'s':''}</div>`:''}
+      </div>
+      ${isActive?g.alternates.map((alt,i)=>`
+        <div class="alt-item ${currentAltIndex===i?'active':''}" onclick="selectTrack('${g.id}',${i})">
+          <div class="alt-item-dot"></div>
+          <div class="alt-item-name">${alt.title||'Untitled alternate'}</div>
+        </div>`).join(''):''}
+    </div>`;
+  }).join('');
+}
+
+// ─── QUEUE ────────────────────────────────────────────────────────
+function addToQueue() {
+  const g = getCurrentTrackGroup(); if (!g) return;
+  if (queue.find(q => q.id === g.id)) { showToast('Already in queue'); return; }
+  queue.push(JSON.parse(JSON.stringify(g)));
+  renderQueue(); showToast('Added to export queue ✓', true); saveToStorage();
+}
+
+function renderQueue() {
+  const container = document.getElementById('queueItems'), countEl = document.getElementById('queueCount');
+  if (!queue.length) { container.innerHTML = `<div class="empty-state" style="height:200px"><div style="font-size:20px">📤</div><p style="font-size:12px">Add tracks to queue then export</p></div>`; countEl.innerHTML = 'Queue is empty'; return; }
+  container.innerHTML = queue.map((g,i) => `
+    <div class="queue-item">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="overflow:hidden"><div class="queue-item-name">${g.fullMix.title||'Untitled'}</div><div class="queue-item-meta">${1+g.alternates.length} version${g.alternates.length?'s':''} · ${g.fullMix.genre||'—'}</div></div>
+        <button class="btn btn-danger btn-sm" onclick="removeFromQueue(${i})" style="padding:2px 6px;flex-shrink:0">×</button>
+      </div></div>`).join('');
+  const total = queue.reduce((s,g)=>s+1+g.alternates.length,0);
+  countEl.innerHTML = `<span>${queue.length}</span> track${queue.length>1?'s':''} · <span>${total}</span> rows`;
+}
+
+function removeFromQueue(idx) { queue.splice(idx,1); renderQueue(); saveToStorage(); }
+
+// ─── STORAGE ──────────────────────────────────────────────────────
+function saveToStorage() { try { localStorage.setItem('ptb_tracks',JSON.stringify(tracks)); localStorage.setItem('ptb_queue',JSON.stringify(queue)); } catch(e){} }
+function loadFromStorage() { try { const t=localStorage.getItem('ptb_tracks'),q=localStorage.getItem('ptb_queue'); if(t) tracks=JSON.parse(t); if(q) queue=JSON.parse(q); } catch(e){} renderTrackList(); renderQueue(); }
+function clearAll() { if(!confirm('Clear everything?')) return; tracks=[]; queue=[]; currentTrackId=null; currentAltIndex=null; localStorage.removeItem('ptb_tracks'); localStorage.removeItem('ptb_queue'); renderTrackList(); renderQueue(); document.getElementById('emptyForm').style.display='flex'; document.getElementById('trackForm').style.display='none'; }
+
+// ─── EXPORT ───────────────────────────────────────────────────────
+const PTB_HEADERS = ['Source Audio ID',' Title','Filename','Catalog','Label','Album','Album Code','Album Description','Album Release Date','Album Artist','Album Genre','Track Number','Artist','Artist Description','Tempo','BPM','Key','Genre','Cue Type','Release Date','Date Uploaded','Admin Only','Length','Description','Moods','Styles','Style Of','Lyrics','Has Vocals','Explicit','ISRC','ISWC','Master ID','Has MP3','Has AIFF','Has WAV','Publisher 1 Company','Publisher 1 Pro Affiliation','Publisher 1 CAE/IPI','Publisher 1 Ownership Share','Publisher 1 Role','Publisher 1 Collection Share Percentage 1','Publisher 1 Collection Share Territory 1','Publisher 2 Company','Publisher 2 Pro Affiliation','Publisher 2 CAE/IPI','Publisher 2 Ownership Share','Publisher 2 Role','Publisher 2 Collection Share Percentage 1','Publisher 2 Collection Share Territory 1','Publisher 3 Company','Publisher 3 Pro Affiliation','Publisher 3 CAE/IPI','Publisher 3 Ownership Share','Publisher 3 Role','Publisher 3 Collection Share Percentage 1','Publisher 3 Collection Share Territory 1','Writer 1 First Name','Writer 1 Last Name','Writer 1 Company','Writer 1 Pro Affiliation','Writer 1 CAE/IPI','Writer 1 Ownership Share','Writer 1 Publisher','Writer 1 Role','Writer 2 First Name','Writer 2 Last Name','Writer 2 Company','Writer 2 Pro Affiliation','Writer 2 CAE/IPI','Writer 2 Ownership Share','Writer 2 Publisher','Writer 2 Role','Writer 3 First Name','Writer 3 Last Name','Writer 3 Company','Writer 3 Pro Affiliation','Writer 3 CAE/IPI','Writer 3 Ownership Share','Writer 3 Publisher','Writer 3 Role','Writer 4 First Name','Writer 4 Last Name','Writer 4 Company','Writer 4 Pro Affiliation','Writer 4 CAE/IPI','Writer 4 Ownership Share','Writer 4 Publisher','Writer 4 Role','','Instruments','Sub Genre','Film/TV Genre','Weighting','PRO Work ID Number','BMG Date Added','Netmix Date Added','Protunes Date Added'];
+
+function entryToRow(entry) {
+  const row = new Array(PTB_HEADERS.length).fill('');
+  const set = (h,v) => { const i=PTB_HEADERS.indexOf(h); if(i>=0) row[i]=v??''; };
+  set(' Title', entry.title);
+  set('Filename', (entry.title||'Untitled')+' FLAVORLAB PTB.wav');
+  set('Catalog', "Producer's Toolbox"); set('Label', "Producer's Toolbox");
+  set('Album', entry.album); set('Album Code', entry.albumCode);
+  set('Artist', entry.artist); set('Artist Description', entry.artistDesc);
+  set('Tempo', entry.tempo); set('BPM', entry.bpm); set('Key', entry.key); set('Genre', entry.genre);
+  set('Has Vocals', entry.hasVocals); set('Explicit', entry.explicit); set('ISRC', entry.isrc);
+  set('Description', (entry.description||[]).join(', '));
+  set('Moods', (entry.moods||[]).join(', '));
+  set('Styles', (entry.styles||[]).join(', '));
+  set('Style Of', entry.styleOf);
+  set('Instruments', (entry.instruments||[]).join(', '));
+  set('Sub Genre', (entry.subGenres||[]).join(', '));
+  set('Film/TV Genre', (entry.filmGenres||[]).join(', '));
+  set('Has MP3','Yes'); set('Has AIFF','Yes'); set('Has WAV','Yes');
+  const pubs = ['Publisher 1','Publisher 2','Publisher 3'];
+  (entry.publishers||[]).slice(0,3).forEach((pub,i) => {
+    const p=pubs[i];
+    set(`${p} Company`,pub.company); set(`${p} Pro Affiliation`,pub.pro); set(`${p} CAE/IPI`,pub.ipi); set(`${p} Ownership Share`,pub.share); set(`${p} Role`,pub.role||'OP');
+  });
+  const wrs = ['Writer 1','Writer 2','Writer 3','Writer 4'];
+  (entry.writers||[]).slice(0,4).forEach((w,i) => {
+    const wr=wrs[i];
+    set(`${wr} First Name`,w.firstName); set(`${wr} Last Name`,w.lastName); set(`${wr} Pro Affiliation`,w.pro); set(`${wr} CAE/IPI`,w.ipi); set(`${wr} Ownership Share`,w.share); set(`${wr} Publisher`,w.publisher); set(`${wr} Role`,w.role||'C');
+  });
+  return row;
+}
+
+function exportXLSX() {
+  if (!queue.length) { showToast('Queue is empty — add tracks first'); return; }
+  const rows = [PTB_HEADERS];
+  queue.forEach(g => { rows.push(entryToRow(g.fullMix)); g.alternates.forEach(alt => rows.push(entryToRow(alt))); });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = PTB_HEADERS.map((_,i) => i===1?{wch:35}:i===2?{wch:50}:i===23?{wch:60}:{wch:18});
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'CBS Sports March Madness');
+  XLSX.writeFile(wb, 'PTB_Metadata_Export.xlsx');
+  showToast('Exported successfully ✓', true);
+}
+
+function showToast(msg, success=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show'+(success?' success':'');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>{ t.className='toast'; }, 2800);
+}
+
+init();
+</script>
+
+<div class="modal-overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">⚙ Admin Panel</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeAdmin()">Close</button>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">Writers</div>
+      <div id="adminWriterList"></div>
+      <div class="admin-input-row">
+        <input type="text" id="aw_first" placeholder="First name">
+        <input type="text" id="aw_last" placeholder="Last name">
+        <select id="aw_pro"><option value="">PRO</option><option>ASCAP</option><option>BMI</option><option>SESAC</option><option>SOCAN</option><option>APRA</option><option>PRS</option><option>GEMA</option><option>Other</option></select>
+        <input type="text" id="aw_ipi" placeholder="IPI">
+        <select id="aw_pub"><option value="">Publisher</option><option>Gandepub</option><option>Gem Lab</option><option>Gelly Pub</option><option>G&E Music Group LLC</option></select>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="addCustomWriter()" style="margin-top:8px">+ Add writer</button>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">Albums</div>
+      <div id="adminAlbumList"></div>
+      <div class="admin-input-row">
+        <input type="text" id="aa_name" placeholder="Album name" style="flex:2">
+        <input type="text" id="aa_code" placeholder="PTB###">
+        <input type="text" id="aa_catalog" placeholder="Catalog (opt)">
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="addCustomAlbum()" style="margin-top:8px">+ Add album</button>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">Saved Artist Names</div>
+      <div id="adminArtistList"></div>
+      <div class="admin-input-row">
+        <input type="text" id="aa_artist" placeholder="e.g. Calvin Ross - Flavorlab PTB" style="flex:3">
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="addCustomArtist()" style="margin-top:8px">+ Save artist</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
