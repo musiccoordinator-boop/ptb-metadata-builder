@@ -4,122 +4,180 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PTB Metadata Builder</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
-  --bg: #0a0a0b;
-  --surface: #111114;
-  --surface2: #18181d;
-  --surface3: #1f1f26;
-  --border: rgba(255,255,255,0.07);
-  --border-hover: rgba(255,255,255,0.14);
-  --accent: #e8ff47;
-  --accent2: #b8ff00;
-  --text: #f0f0f0;
-  --text-muted: #666;
-  --text-mid: #999;
-  --danger: #ff4757;
-  --radius: 8px;
-  --radius-lg: 12px;
+  --ptb-navy: #0a1628;
+  --ptb-blue: #1a3a6b;
+  --ptb-teal: #0e7fa8;
+  --ptb-teal-bright: #12a3d4;
+  --ptb-teal-glow: rgba(14,127,168,0.15);
+  --surface: #0d1f3c;
+  --surface2: #112347;
+  --surface3: #153060;
+  --border: rgba(14,127,168,0.2);
+  --border-hover: rgba(14,127,168,0.5);
+  --text: #e8f4f8;
+  --text-muted: #5a8aaa;
+  --text-mid: #8ab4cc;
+  --danger: #ff4444;
+  --radius: 6px;
+  --radius-lg: 10px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+body { font-family: 'Barlow', sans-serif; background: var(--ptb-navy); color: var(--text); min-height: 100vh; font-size: 14px; }
 
-.header { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; background: rgba(10,10,11,0.92); backdrop-filter: blur(12px); }
-.logo { display: flex; align-items: center; gap: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
-.logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
-.logo-mark svg { width: 16px; height: 16px; }
-.logo-sub { color: var(--text-muted); font-size: 11px; font-weight: 400; margin-left: 4px; }
-.header-actions { display: flex; align-items: center; gap: 10px; }
+/* ── HEADER ── */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 58px;
+  background: linear-gradient(135deg, #061020 0%, #0a1e3d 50%, #0d2a52 100%);
+  border-bottom: 2px solid var(--ptb-teal);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 20px rgba(14,127,168,0.3);
+}
+.logo-area { display: flex; align-items: center; gap: 12px; }
+.logo-icon { display: flex; align-items: center; gap: 0; }
+.logo-icon .headphone-icon { width: 38px; height: 38px; }
+.logo-text-block { display: flex; flex-direction: column; line-height: 1; }
+.logo-flavorlab { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.15em; color: var(--text-muted); text-transform: uppercase; }
+.logo-ptb { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.05em; color: var(--ptb-teal-bright); text-transform: uppercase; line-height: 1; }
+.logo-ptb .toolbox { color: #fff; }
+.logo-tagline { font-family: 'Barlow Condensed', sans-serif; font-size: 8px; font-weight: 500; letter-spacing: 0.2em; color: var(--ptb-teal); text-transform: uppercase; margin-top: 1px; }
+.logo-divider { width: 1px; height: 32px; background: var(--border); margin: 0 12px; }
+.logo-module { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: var(--text-mid); text-transform: uppercase; }
 
-.layout { display: grid; grid-template-columns: 260px 1fr 280px; height: calc(100vh - 60px); }
+.header-actions { display: flex; align-items: center; gap: 8px; }
 
-.track-rail { border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
-.rail-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.rail-title { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+/* ── PAGE TABS ── */
+.page-tabs {
+  display: flex; align-items: center; gap: 2px;
+  padding: 0 24px; height: 44px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.page-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 16px; border-radius: var(--radius);
+  font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.2s; color: var(--text-muted); border: 1px solid transparent;
+}
+.page-tab:hover { color: var(--text-mid); background: var(--surface2); }
+.page-tab.active {
+  color: var(--ptb-teal-bright); background: var(--ptb-teal-glow);
+  border-color: var(--border-hover);
+}
+.page-tab .tab-icon { font-size: 14px; }
+.tab-badge { background: var(--ptb-teal); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; font-family: 'DM Mono', monospace; }
+
+/* ── LAYOUT ── */
+.layout { display: grid; grid-template-columns: 240px 1fr 260px; height: calc(100vh - 102px); }
+
+/* ── TRACK RAIL ── */
+.track-rail { border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
+.rail-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.rail-title { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
 .track-list { flex: 1; overflow-y: auto; padding: 6px; }
-.track-item { border-radius: var(--radius); padding: 9px 12px; cursor: pointer; transition: background 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
+.track-item { border-radius: var(--radius); padding: 9px 12px; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
 .track-item:hover { background: var(--surface2); }
-.track-item.active { background: var(--surface2); border-color: var(--border-hover); }
+.track-item.active { background: var(--surface2); border-color: var(--border-hover); box-shadow: inset 2px 0 0 var(--ptb-teal); }
 .track-item-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
 .track-item-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
-.alt-badge { display: inline-block; background: var(--surface3); color: var(--text-mid); font-size: 10px; font-family: 'DM Mono', monospace; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
-.alt-item { padding: 6px 12px 6px 26px; cursor: pointer; border-radius: var(--radius); margin-bottom: 1px; transition: background 0.15s; border: 1px solid transparent; display: flex; align-items: center; gap: 6px; }
+.alt-badge { display: inline-block; background: rgba(14,127,168,0.15); color: var(--ptb-teal-bright); font-size: 10px; font-family: 'DM Mono', monospace; padding: 1px 6px; border-radius: 4px; margin-top: 3px; border: 1px solid rgba(14,127,168,0.3); }
+.alt-item { padding: 5px 12px 5px 24px; cursor: pointer; border-radius: var(--radius); margin-bottom: 1px; transition: background 0.15s; border: 1px solid transparent; display: flex; align-items: center; gap: 6px; }
 .alt-item:hover { background: var(--surface2); }
 .alt-item.active { background: var(--surface2); border-color: var(--border); }
-.alt-item-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
-.alt-item-name { font-size: 12px; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.empty-rail { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-muted); font-size: 13px; padding: 32px; text-align: center; }
+.alt-item-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--ptb-teal); flex-shrink: 0; }
+.alt-item-name { font-size: 11px; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.empty-rail { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--text-muted); font-size: 12px; padding: 24px; text-align: center; }
 
-.main-form { overflow-y: auto; }
-.form-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
-.form-track-type { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+/* ── MAIN FORM ── */
+.main-form { overflow-y: auto; background: var(--ptb-navy); }
+.form-topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--ptb-navy); z-index: 10; }
+.form-track-type { font-size: 10px; color: var(--ptb-teal); font-family: 'DM Mono', monospace; margin-top: 2px; letter-spacing: 0.05em; }
 .form-actions { display: flex; gap: 8px; }
-.form-body { padding: 20px 24px 40px; }
+.form-body { padding: 18px 24px 40px; }
 
-.section { margin-bottom: 28px; }
-.section-label { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+/* ── PAGE NOTICE ── */
+.page-notice {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--ptb-teal-glow); border: 1px solid var(--border-hover);
+  border-radius: var(--radius); padding: 10px 14px; margin-bottom: 18px;
+  font-size: 12px; color: var(--text-mid);
+}
+.page-notice-icon { font-size: 16px; flex-shrink: 0; }
+.page-notice strong { color: var(--ptb-teal-bright); }
+
+/* ── SECTION ── */
+.section { margin-bottom: 22px; }
+.section-label {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ptb-teal);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
 .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-.field-grid { display: grid; gap: 10px; }
+.field-grid { display: grid; gap: 8px; }
 .field-grid.cols-2 { grid-template-columns: 1fr 1fr; }
 .field-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
 .field-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
 .field { display: flex; flex-direction: column; gap: 4px; }
-.field-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
-.field-label .req { color: var(--accent); margin-left: 2px; }
+.field-label { font-size: 11px; color: var(--text-muted); font-weight: 500; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.05em; text-transform: uppercase; }
+.field-label .req { color: var(--ptb-teal-bright); margin-left: 2px; }
 
 input[type="text"], input[type="number"], select, textarea {
   background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
-  color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; padding: 7px 10px;
+  color: var(--text); font-family: 'Barlow', sans-serif; font-size: 13px; padding: 7px 10px;
   width: 100%; transition: border-color 0.15s; outline: none; appearance: none;
 }
-input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--border-hover); background: var(--surface3); }
-input[type="text"]::placeholder { color: var(--text-muted); }
-select option { background: #1f1f26; }
-textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
+input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+  border-color: var(--ptb-teal); background: var(--surface3);
+  box-shadow: 0 0 0 2px rgba(14,127,168,0.1);
+}
+input::placeholder { color: var(--text-muted); }
+select option { background: #112347; }
+textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 
-/* Writer search dropdown */
+/* Writer dropdown */
 .writer-search-wrap { position: relative; }
-.writer-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface3); border: 1px solid var(--border-hover); border-radius: var(--radius); max-height: 200px; overflow-y: auto; z-index: 200; }
+.writer-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface3); border: 1px solid var(--border-hover); border-radius: var(--radius); max-height: 200px; overflow-y: auto; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 .writer-option { padding: 7px 10px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 .writer-option:hover { background: var(--surface2); }
 .writer-option-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
 
 /* Checkbox group */
-.checkbox-group { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); max-height: 160px; overflow-y: auto; padding: 4px; }
-.checkbox-group::-webkit-scrollbar { width: 4px; }
-.checkbox-group::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 2px; }
-.cb-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 5px; cursor: pointer; transition: background 0.1s; }
+.checkbox-group { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); max-height: 150px; overflow-y: auto; padding: 4px; }
+.cb-item { display: flex; align-items: center; gap: 8px; padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: background 0.1s; }
 .cb-item:hover { background: var(--surface3); }
-.cb-item input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.cb-item input[type="checkbox"] { width: 13px; height: 13px; accent-color: var(--ptb-teal-bright); cursor: pointer; flex-shrink: 0; }
 .cb-item span { font-size: 12px; color: var(--text-mid); cursor: pointer; }
 
-/* Description tag chips */
-.desc-output { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); min-height: 44px; padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-.desc-tag { background: var(--surface3); border: 1px solid var(--border-hover); border-radius: 20px; padding: 2px 10px 2px 10px; font-size: 11px; color: var(--text-mid); display: flex; align-items: center; gap: 5px; }
-.desc-tag-x { cursor: pointer; color: var(--text-muted); font-size: 13px; line-height: 1; }
+/* Desc tags */
+.desc-output { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); min-height: 40px; padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.desc-tag { background: rgba(14,127,168,0.12); border: 1px solid rgba(14,127,168,0.3); border-radius: 20px; padding: 2px 10px; font-size: 11px; color: var(--text-mid); display: flex; align-items: center; gap: 5px; }
+.desc-tag-x { cursor: pointer; color: var(--text-muted); font-size: 12px; }
 .desc-tag-x:hover { color: var(--danger); }
 
-/* Publisher / writer block */
+/* Party block */
 .party-block { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; margin-bottom: 8px; }
 .party-block-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.party-block-title { font-size: 11px; font-weight: 500; color: var(--text-mid); font-family: 'DM Mono', monospace; }
+.party-block-title { font-size: 11px; font-weight: 600; color: var(--ptb-teal); font-family: 'DM Mono', monospace; }
 
 /* Alt panel */
-.alt-panel { background: var(--surface); border-top: 1px solid var(--border); padding: 12px 24px; }
+.alt-panel { background: var(--surface); border-top: 1px solid var(--border); padding: 10px 24px; }
 .alt-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.alt-panel-title { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); font-family: 'Syne', sans-serif; }
+.alt-panel-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-family: 'Barlow Condensed', sans-serif; }
 .alt-chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .alt-chip { display: flex; align-items: center; gap: 5px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px 3px 12px; font-size: 12px; color: var(--text-mid); cursor: pointer; transition: all 0.15s; }
-.alt-chip:hover { border-color: var(--border-hover); color: var(--text); }
-.alt-chip.active-alt { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
+.alt-chip:hover { border-color: var(--border-hover); }
+.alt-chip.active-alt { border-color: var(--ptb-teal); color: var(--ptb-teal-bright); background: var(--ptb-teal-glow); }
 .alt-chip-x { font-size: 14px; color: var(--text-muted); line-height: 1; }
 .alt-chip-x:hover { color: var(--danger); }
 
 /* Queue rail */
-.queue-rail { border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.queue-rail { border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
 .queue-items { flex: 1; overflow-y: auto; padding: 6px; }
 .queue-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px; margin-bottom: 5px; cursor: pointer; transition: border-color 0.15s; }
 .queue-item:hover { border-color: var(--border-hover); }
@@ -127,43 +185,53 @@ textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
 .queue-item-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
 .queue-footer { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 7px; }
 .queue-count { font-size: 12px; color: var(--text-muted); text-align: center; }
-.queue-count span { color: var(--accent); font-weight: 500; font-family: 'DM Mono', monospace; }
+.queue-count span { color: var(--ptb-teal-bright); font-weight: 600; font-family: 'DM Mono', monospace; }
 
 /* Buttons */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 13px; border-radius: var(--radius); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 13px; border-radius: var(--radius); font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap; }
 .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-mid); }
 .btn-ghost:hover { border-color: var(--border-hover); color: var(--text); background: var(--surface2); }
-.btn-accent { background: var(--accent); color: #0a0a0b; font-weight: 600; }
-.btn-accent:hover { background: var(--accent2); }
+.btn-teal { background: var(--ptb-teal); color: #fff; font-weight: 700; letter-spacing: 0.03em; }
+.btn-teal:hover { background: var(--ptb-teal-bright); box-shadow: 0 0 12px rgba(14,127,168,0.4); }
 .btn-surface { background: var(--surface2); border: 1px solid var(--border); color: var(--text-mid); }
 .btn-surface:hover { border-color: var(--border-hover); color: var(--text); }
 .btn-danger { background: transparent; border: 1px solid transparent; color: var(--danger); padding: 3px 7px; font-size: 12px; }
-.btn-danger:hover { background: rgba(255,71,87,0.08); }
+.btn-danger:hover { background: rgba(255,68,68,0.08); }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 .btn-full { width: 100%; }
+.btn-export {
+  background: linear-gradient(135deg, var(--ptb-teal) 0%, var(--ptb-teal-bright) 100%);
+  color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; padding: 9px 14px;
+  border-radius: var(--radius); border: none; cursor: pointer; width: 100%;
+  transition: all 0.2s; box-shadow: 0 2px 10px rgba(14,127,168,0.3);
+}
+.btn-export:hover { box-shadow: 0 4px 20px rgba(14,127,168,0.5); transform: translateY(-1px); }
 
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text-muted); text-align: center; padding: 40px; }
-.empty-state-icon { width: 44px; height: 44px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 2px; }
-.empty-state h3 { font-family: 'Syne', sans-serif; font-size: 14px; color: var(--text-mid); }
+.empty-state h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; color: var(--text-mid); letter-spacing: 0.05em; text-transform: uppercase; }
 .empty-state p { font-size: 12px; max-width: 200px; line-height: 1.5; }
 
 .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface3); border: 1px solid var(--border-hover); border-radius: var(--radius-lg); padding: 10px 16px; font-size: 13px; color: var(--text); z-index: 1000; transform: translateY(80px); opacity: 0; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .toast.show { transform: translateY(0); opacity: 1; }
-.toast.success { border-color: var(--accent); }
+.toast.success { border-color: var(--ptb-teal); color: var(--ptb-teal-bright); }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 2px; }
 
-.name-input-wrap input { flex: 1; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; background: transparent; border: none; border-bottom: 1px solid var(--border); border-radius: 0; padding: 3px 0; color: var(--text); width: 100%; outline: none; }
-.name-input-wrap input:focus { border-bottom-color: var(--accent); }
+.name-input-wrap input { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; background: transparent; border: none; border-bottom: 1px solid var(--border); border-radius: 0; padding: 3px 0; color: var(--text); width: 100%; outline: none; }
+.name-input-wrap input:focus { border-bottom-color: var(--ptb-teal); }
 
-/* Admin modal */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; display: none; align-items: center; justify-content: center; }
-.modal { background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius-lg); width: 560px; max-height: 80vh; overflow-y: auto; padding: 24px; }
+/* Tunesat-specific field hint */
+.field-hint { font-size: 10px; color: var(--text-muted); margin-top: 2px; font-style: italic; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 500; display: none; align-items: center; justify-content: center; }
+.modal { background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius-lg); width: 560px; max-height: 80vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
 .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.modal-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; }
+.modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ptb-teal-bright); }
 .admin-section { margin-bottom: 24px; }
-.admin-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-family: 'Syne', sans-serif; margin-bottom: 10px; }
+.admin-section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
 .admin-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 8px; background: var(--surface2); border-radius: var(--radius); margin-bottom: 4px; font-size: 12px; color: var(--text-mid); }
 .admin-input-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .admin-input-row input, .admin-input-row select { flex: 1; min-width: 100px; }
@@ -172,19 +240,38 @@ textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
 <body>
 
 <header class="header">
-  <div class="logo">
-    <div class="logo-mark">
-      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="12" rx="1.5" fill="#0a0a0b"/><rect x="9" y="6" width="5" height="8" rx="1.5" fill="#0a0a0b"/></svg>
+  <div class="logo-area">
+    <div class="logo-icon">
+      <svg class="headphone-icon" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="19" r="18" stroke="#0e7fa8" stroke-width="1.5"/>
+        <path d="M9 20C9 14.477 13.477 10 19 10s10 4.477 10 10" stroke="#12a3d4" stroke-width="2" stroke-linecap="round"/>
+        <rect x="7" y="20" width="5" height="9" rx="2.5" fill="#0e7fa8"/>
+        <rect x="26" y="20" width="5" height="9" rx="2.5" fill="#0e7fa8"/>
+      </svg>
     </div>
-    <span>Producer's Toolbox</span>
-    <span class="logo-sub">Metadata Builder</span>
+    <div class="logo-text-block">
+      <span class="logo-flavorlab">Flavorlab</span>
+      <span class="logo-ptb">Producer's <span class="toolbox">Toolbox</span></span>
+      <span class="logo-tagline">The Power of Music</span>
+    </div>
+    <div class="logo-divider"></div>
+    <span class="logo-module">Metadata Builder</span>
   </div>
   <div class="header-actions">
     <button class="btn btn-ghost btn-sm" onclick="openAdmin()">⚙ Admin</button>
     <button class="btn btn-ghost btn-sm" onclick="clearAll()">Clear all</button>
-    <button class="btn btn-ghost btn-sm" onclick="exportXLSX()">⬇ Export sheet</button>
   </div>
 </header>
+
+<!-- PAGE TABS -->
+<div class="page-tabs">
+  <div class="page-tab active" id="tab-sourceaudio" onclick="switchPage('sourceaudio')">
+    <span class="tab-icon">🎵</span> SourceAudio / ProTunes
+  </div>
+  <div class="page-tab" id="tab-tunesat" onclick="switchPage('tunesat')">
+    <span class="tab-icon">📡</span> Tunesat
+  </div>
+</div>
 
 <div class="layout">
   <aside class="track-rail">
@@ -199,19 +286,19 @@ textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
 
   <main class="main-form">
     <div id="emptyForm" class="empty-state">
-      <div class="empty-state-icon">📋</div>
+      <div style="font-size:36px;margin-bottom:8px">🎛️</div>
       <h3>No track selected</h3>
       <p>Create a new track or select one from the left.</p>
-      <button class="btn btn-accent" onclick="newTrack()" style="margin-top:8px">+ New track</button>
+      <button class="btn btn-teal" onclick="newTrack()" style="margin-top:12px">+ New track</button>
     </div>
 
     <div id="trackForm" style="display:none">
       <div class="form-topbar">
         <div style="flex:1;min-width:0">
           <div class="name-input-wrap">
-            <input type="text" id="titleInput" placeholder="Track title..." oninput="onTitleChange(this.value)">
+            <input type="text" id="titleInput" placeholder="TRACK TITLE..." oninput="onTitleChange(this.value)">
           </div>
-          <div class="form-track-type" id="formTrackType">Full mix</div>
+          <div class="form-track-type" id="formTrackType">FULL MIX</div>
         </div>
         <div class="form-actions" style="margin-left:16px">
           <button class="btn btn-ghost btn-sm" onclick="addAlternate()">+ Add alternate</button>
@@ -219,28 +306,29 @@ textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
         </div>
       </div>
 
-      <div class="form-body">
+      <!-- SOURCEAUDIO PAGE -->
+      <div id="page-sourceaudio" class="form-body">
+        <div class="page-notice">
+          <span class="page-notice-icon">🎵</span>
+          <div>Export format for <strong>SourceAudio / ProTunes</strong> — fills all fields for PTB catalog upload including writers, publishers, moods, and film/TV genres.</div>
+        </div>
 
-        <!-- BASIC INFO -->
         <div class="section">
-          <div class="section-label">Basic info</div>
+          <div class="section-label">Basic Info</div>
           <div class="field-grid cols-2">
             <div class="field"><label class="field-label">Album <span class="req">*</span></label>
-              <select id="f_album" onchange="onAlbumChange(this.value)">
-                <option value="">— Select album —</option>
-              </select>
+              <select id="f_album" onchange="onAlbumChange(this.value)"><option value="">— Select album —</option></select>
             </div>
             <div class="field"><label class="field-label">Album Code</label><input type="text" id="f_albumCode" placeholder="auto-filled" readonly style="opacity:0.6;cursor:default"></div>
             <div class="field"><label class="field-label">Artist</label>
               <div class="writer-search-wrap" id="artistSearchWrap">
-                <input type="text" id="f_artist" placeholder="Type to search or enter..." oninput="onArtistSearch(this.value)" autocomplete="off">
+                <input type="text" id="f_artist" placeholder="Type to search..." oninput="onArtistSearch(this.value)" autocomplete="off">
               </div>
             </div>
             <div class="field"><label class="field-label">Artist Description</label><input type="text" id="f_artistDesc" placeholder="Research Material" oninput="syncField('artistDesc',this.value)"></div>
           </div>
         </div>
 
-        <!-- MUSICAL -->
         <div class="section">
           <div class="section-label">Musical</div>
           <div class="field-grid cols-3">
@@ -250,77 +338,131 @@ textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
               </select>
             </div>
             <div class="field"><label class="field-label">BPM</label><input type="number" id="f_bpm" placeholder="120" oninput="onBpmChange(this.value)"></div>
-
             <div class="field"><label class="field-label">Genre</label>
               <select id="f_genre" onchange="syncField('genre',this.value)">
                 <option value="">—</option><option>Rock</option><option>Pop</option><option>Hip Hop</option><option>Funk</option><option>R&B</option><option>Electronic</option><option>Electronic Dance</option><option>Classical</option><option>Jazz</option><option>Country</option><option>Latin</option><option>World</option><option>Orchestral</option><option>Ambient</option><option>Folk</option><option>Soul</option>
               </select>
             </div>
           </div>
-          <div class="field-grid cols-3" style="margin-top:10px">
+          <div class="field-grid cols-3" style="margin-top:8px">
             <div class="field"><label class="field-label">Has Vocals</label><select id="f_hasVocals" onchange="syncField('hasVocals',this.value)"><option value="No">No</option><option value="Yes">Yes</option></select></div>
             <div class="field"><label class="field-label">Explicit</label><select id="f_explicit" onchange="syncField('explicit',this.value)"><option value="No">No</option><option value="Yes">Yes</option></select></div>
             <div class="field"><label class="field-label">ISRC</label><input type="text" id="f_isrc" placeholder="e.g. USQY52100001" oninput="syncField('isrc',this.value)"></div>
           </div>
         </div>
 
-        <!-- DESCRIPTION -->
         <div class="section">
           <div class="section-label">Description</div>
           <div class="desc-output" id="descOutput"><span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span></div>
           <div class="checkbox-group" id="descGroup"></div>
         </div>
 
-        <!-- STYLE OF -->
         <div class="section">
-          <div class="section-label">Style Of (references)</div>
+          <div class="section-label">Style Of (References)</div>
           <div class="field"><input type="text" id="f_styleOf" placeholder="e.g. Blink-182, Bowling For Soup" oninput="syncField('styleOf',this.value)"></div>
         </div>
 
-        <!-- MOODS -->
         <div class="section">
           <div class="section-label">Moods</div>
           <div class="checkbox-group" id="moodsGroup"></div>
         </div>
 
-        <!-- STYLES -->
         <div class="section">
           <div class="section-label">Styles</div>
           <div class="checkbox-group" id="stylesGroup"></div>
         </div>
 
-        <!-- INSTRUMENTS -->
         <div class="section">
           <div class="section-label">Instruments <span id="instrNote" style="font-size:10px;color:var(--text-muted);margin-left:6px;font-family:'DM Mono',monospace;font-weight:400;letter-spacing:0"></span></div>
           <div class="checkbox-group" id="instrumentsGroup"></div>
         </div>
 
-        <!-- PUBLISHER -->
         <div class="section">
           <div class="section-label">Publisher</div>
           <div id="publisherBlocks"></div>
           <button class="btn btn-ghost btn-sm" onclick="addPublisher()" style="margin-top:6px">+ Add publisher</button>
         </div>
 
-        <!-- WRITERS -->
         <div class="section">
           <div class="section-label">Writers</div>
           <div id="writerBlocks"></div>
           <button class="btn btn-ghost btn-sm" onclick="addWriter()" style="margin-top:6px">+ Add writer</button>
         </div>
 
-        <!-- FILM TV -->
         <div class="section">
           <div class="section-label">Film / TV Genre</div>
           <div class="checkbox-group" id="filmGenreGroup"></div>
         </div>
 
-        <!-- SUB GENRE -->
         <div class="section">
           <div class="section-label">Sub Genre</div>
           <div class="checkbox-group" id="subGenreGroup"></div>
         </div>
+      </div>
 
+      <!-- TUNESAT PAGE -->
+      <div id="page-tunesat" class="form-body" style="display:none">
+        <div class="page-notice">
+          <span class="page-notice-icon">📡</span>
+          <div>Export format for <strong>Tunesat</strong> registration — generates the CSV with Work Title, Alternate Titles, ISRC, writers, and publisher fields required for fingerprint registration.</div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Work Info</div>
+          <div class="field-grid cols-2">
+            <div class="field">
+              <label class="field-label">Work Title <span class="req">*</span></label>
+              <input type="text" id="t_workTitle" placeholder="e.g. Like Only They Could" oninput="syncTunesatField('workTitle',this.value)">
+              <div class="field-hint">Main track title only — no "FLAVORLAB PTB"</div>
+            </div>
+            <div class="field">
+              <label class="field-label">ISRC</label>
+              <input type="text" id="t_isrc" placeholder="e.g. USQY52100001" oninput="syncTunesatField('ts_isrc',this.value)">
+            </div>
+            <div class="field">
+              <label class="field-label">Alternate Title 1</label>
+              <input type="text" id="t_altTitle1" placeholder="e.g. Like Only They Could (Underscore)" oninput="syncTunesatField('altTitle1',this.value)">
+            </div>
+            <div class="field">
+              <label class="field-label">Alternate Title 2</label>
+              <input type="text" id="t_altTitle2" placeholder="e.g. Like Only They Could (Drums & Bass)" oninput="syncTunesatField('altTitle2',this.value)">
+            </div>
+            <div class="field">
+              <label class="field-label">Alternate Title 3</label>
+              <input type="text" id="t_altTitle3" placeholder="Optional" oninput="syncTunesatField('altTitle3',this.value)">
+            </div>
+            <div class="field">
+              <label class="field-label">Alternate Title 4</label>
+              <input type="text" id="t_altTitle4" placeholder="Optional" oninput="syncTunesatField('altTitle4',this.value)">
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Writers / Composers</div>
+          <div id="ts_writerBlocks"></div>
+          <button class="btn btn-ghost btn-sm" onclick="addTunesatWriter()" style="margin-top:6px">+ Add writer</button>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Publisher</div>
+          <div id="ts_publisherBlocks"></div>
+          <button class="btn btn-ghost btn-sm" onclick="addTunesatPublisher()" style="margin-top:6px">+ Add publisher</button>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Additional Info</div>
+          <div class="field-grid cols-2">
+            <div class="field">
+              <label class="field-label">Duration (mm:ss)</label>
+              <input type="text" id="t_duration" placeholder="e.g. 2:34" oninput="syncTunesatField('duration',this.value)">
+            </div>
+            <div class="field">
+              <label class="field-label">Library / Catalog</label>
+              <input type="text" id="t_library" value="Producer's Toolbox" oninput="syncTunesatField('library',this.value)">
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="alt-panel" id="altPanel">
@@ -334,13 +476,19 @@ textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
   </main>
 
   <aside class="queue-rail">
-    <div class="rail-header"><span class="rail-title">Export Queue</span></div>
+    <div class="rail-header">
+      <span class="rail-title">Export Queue</span>
+      <span id="queuePageBadge" class="tab-badge" style="font-size:9px">SA</span>
+    </div>
     <div class="queue-items" id="queueItems">
-      <div class="empty-state" style="height:200px"><div style="font-size:20px">📤</div><p style="font-size:12px">Add tracks to queue then export</p></div>
+      <div class="empty-state" style="height:200px">
+        <div style="font-size:20px">📤</div>
+        <p style="font-size:12px">Add tracks to queue then export</p>
+      </div>
     </div>
     <div class="queue-footer">
       <div class="queue-count" id="queueCount">Queue is empty</div>
-      <button class="btn btn-accent btn-full" onclick="exportXLSX()">⬇ Export to Excel</button>
+      <button class="btn-export" onclick="exportCurrent()">⬇ Export to Excel</button>
     </div>
   </aside>
 </div>
@@ -348,7 +496,7 @@ textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── WRITER DATABASE ─────────────────────────────────────────────
+// ─── DATA ─────────────────────────────────────────────────────────
 const WRITERS = [
   { display: "Will Adler", first: "Will", last: "Adler", pro: "BMI", ipi: "00889390764", publisher: "Gandepub" },
   { display: "Richard Agren", first: "Richard", last: "Agren", pro: "ASCAP", ipi: "588523016", publisher: "Gem Lab" },
@@ -622,32 +770,12 @@ const PUBLISHERS = [
 const PROS = ["ASCAP","BMI","SESAC","SOCAN","APRA","PRS","GEMA","SACEM","SIAE","STIM","KODA","TONO","IMRO","SAMRO","SGAE","UBC","MSG","SUISA","Other"];
 
 const DESCRIPTION_PHRASES = ["Aggressive","Airy","Ambitious","Anticipation","Atmospheric","Austere","Bittersweet","Bold","Bouncy","Brash","Breezy","Bright","Brooding","Building","Calm","Campy","Carefree","Celebratory","Cerebral","Cheerful","Chill","Comforting","Confident","Confrontational","Contemplative","Content","Cool","Cozy","Cute","Dangerous","Dark","Delicate Calm","Determined","Dramatic","Dreamy","Driving","Dynamic","Earthy","Easy Going","Easy Listening","Eerie","Effervescent","Elegant","Energetic","Enigmatic","Ethereal","Exciting","Explosive","Feel Good","Festive","Fierce","Floating","Focused","Foreboding","Fulfilled","Fun","Funky","Gentle","Gentle Groove","Giddy","Gleeful","Gritty","Groovy","Gutsy","Happy","Hard-Hitting","Harsh","Haunting","Hazy","Heroic","Hopeful","Humorous","Intense","Introspective","Jazzy","Joyful","Laid Back","Light","Lively","Lo Fi","Majestic","Meditative","Melancholic","Mellow","Menacing","Minimal","Mysterious","Nostalgic","Ominous","Optimistic","Peaceful","Playful","Poignant","Positive","Pounding","Powerful","Purposeful","Quirky","Rambunctious","Reckless","Reflective","Refreshing","Regal","Relaxed","Relentless","Rollicking","Rootsy","Rousing","Rowdy","Scary","Searching","Sensitive","Sentimental","Serious","Sinister","Smooth","Soothing","Sophisticated","Soulful","Spacey","Sparkling","Spirited","Stirring","Strong","Stylish","Summery","Suspenseful","Sweet","Tender","Tense","Touching","Turbulent","Upbeat","Uplifting","Urgent","Volatile","Warm","Wholesome","Wistful"];
-
 const MOODS = ["Adventurous","Aggressive","Angry","Anxious","Athletic","Bouncy","Bright","Calm","Carefree","Celebratory","Cheerful","Cold","Confident","Contemplative","Cool","Courageous","Dark","Dramatic","Dreamy","Dynamic","Easygoing","Effervescent","Emotional","Empowering","Energetic","Epic","Euphoric","Exciting","Feel Good","Festive","Fierce","Flowing","Fun","Funky","Giddy","Gleeful","Gloomy","Groovy","Happy","Heavy","Hopeful","Humorous","Inspirational","Intense","Laid Back","Lively","Melancholic","Menacing","Moody","Motivational","Mysterious","Nostalgic","Optimistic","Peaceful","Playful","Powerful","Quirky","Rambunctious","Rollicking","Romantic","Rowdy","Sad","Sensual","Sentimental","Serene","Sinister","Smooth","Sophisticated","Spirited","Suspenseful","Tense","Triumphant","Upbeat","Uplifting","Urgent","Whimsical"];
-
 const STYLES = ["Acoustic","Aggressive","Ambient","Anthemic","Atmospheric","Bouncy","Cinematic","Dark","Delicate","Dirty","Driving","Dystopian","Eclectic","Electronic","Elegant","Epic","Ethereal","Experimental","Flowing","Funky","Futuristic","Gritty","Groovy","Heavy","Hypnotic","Industrial","Intense","Laid Back","Layered","Lush","Melodic","Minimalist","Modern","Moody","Orchestral","Organic","Pulsing","Raw","Rhythmic","Riff","Smooth","Soaring","Sparse","Syncopated","Upbeat"];
-
 const INSTRUMENTS = ["808","Acoustic Guitar","Banjo","Bass Guitar","Brass Section","Cello","Choir","Clavinet","Congas","Cowbell","Cymbals","Distorted Guitar","Drum Loop","Drum Machine","Drum Set","Electric Guitar","Electric Piano","Flute","French Horn","Glockenspiel","Hammond Organ","Harp","Horn Section","Kalimba","Keyboard","Marimba","Organ","Percussion","Piano","Rhodes","Saxophone","String Section","Strings","Synth Bass","Synth Lead","Synth Pad","Synthesizer","Tabla","Theremin","Timpani","Trombone","Trumpet","Tuba","Ukulele","Vibraphone","Violin","Vocals","Xylophone"];
-
 const FILM_GENRES = ["Action","Adventure","Animation","Awards","Background","Basketball","Behind the Scenes","Boxing","Business","Cartoon","Chase","Children","Christmas","Cinematic","Combat","Comedy","Commercial","Corporate","Crime","Documentary","Drama","Driving","Education","Fantasy","Fashion","Football","Gaming","Halloween","Historical","Horror","Investigation","Kids Show","Legal","Love Story","Montage","Mystery","Nature","Nightlife","Parade","Party","Political","Prom","Reality TV","Romance","Sci-Fi","Sitcom","Sports","Spy","Summer","Superhero","Teen Drama","Thriller","Travel","War","Western"];
-
 const SUB_GENRES = ["Acoustic Pop","Adult Contemporary","Alternative","Americana","Art Pop","Baroque Pop","Blues","Blues Rock","Bossa Nova","Celtic","Chamber Pop","Chillhop","Classic Rock","Classical","Club","Country","Dance Pop","Deep House","Disco","Drum and Bass","Dubstep","EDM","Electro","Electronic","Folk","Funk","Gospel","Grunge","Hip Hop","House","Indie Folk","Indie Pop","Indie Rock","Jazz","Lo-Fi","Motown","Neo Soul","Orchestral","Pop","Pop Punk","Pop Rock","Progressive Rock","R&B","Reggae","Rock","Singer Songwriter","Soul","Synthpop","Trap","Trip Hop","World Music"];
 
-// ─── STATE ────────────────────────────────────────────────────────
-let tracks = [], currentTrackId = null, currentAltIndex = null, queue = [];
-
-function getCurrentTrackGroup() { return tracks.find(t => t.id === currentTrackId) || null; }
-function getCurrentEntry() {
-  const g = getCurrentTrackGroup(); if (!g) return null;
-  return currentAltIndex === null ? g.fullMix : g.alternates[currentAltIndex] || null;
-}
-
-function freshEntry(title='', isAlt=false) {
-  return { title, isAlt, album:'', albumCode:'', artist:'', artistDesc:'', tempo:'', bpm:'', key:'', genre:'', hasVocals:'No', explicit:'No', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{ company:'', pro:'', ipi:'', share:'1', role:'OP' }], writers:[{ firstName:'', lastName:'', pro:'', ipi:'', share:'1', publisher:'', role:'C', searchVal:'' }] };
-}
-
-
-// ─── ALBUMS ──────────────────────────────────────────────────────
 const DEFAULT_ALBUMS = [
   { name: "Electro Chill", code: "PTB035", catalog: "Producer's Toolbox" },
   { name: "Feel Good Indie", code: "PTB039", catalog: "Producer's Toolbox" },
@@ -666,311 +794,163 @@ const DEFAULT_ALBUMS = [
   { name: "Chill Bedroom Pop", code: "PTB150", catalog: "Producer's Toolbox" },
 ];
 
-function getAlbums() {
-  try { const s = localStorage.getItem('ptb_custom_albums'); return s ? [...DEFAULT_ALBUMS, ...JSON.parse(s)] : DEFAULT_ALBUMS; } catch(e) { return DEFAULT_ALBUMS; }
-}
-function getWriters() {
-  try { const s = localStorage.getItem('ptb_custom_writers'); return s ? [...WRITERS, ...JSON.parse(s)] : WRITERS; } catch(e) { return WRITERS; }
-}
-function getArtists() {
-  try { const s = localStorage.getItem('ptb_custom_artists'); return s ? JSON.parse(s) : []; } catch(e) { return []; }
+// ─── STATE ────────────────────────────────────────────────────────
+let tracks = [], currentTrackId = null, currentAltIndex = null, queue = [];
+let currentPage = 'sourceaudio';
+
+function getAlbums() { try { const s=localStorage.getItem('ptb_custom_albums'); return s?[...DEFAULT_ALBUMS,...JSON.parse(s)]:DEFAULT_ALBUMS; } catch(e){return DEFAULT_ALBUMS;} }
+function getArtists() { try { const s=localStorage.getItem('ptb_custom_artists'); return s?JSON.parse(s):[]; } catch(e){return [];} }
+function getCurrentTrackGroup() { return tracks.find(t=>t.id===currentTrackId)||null; }
+function getCurrentEntry() { const g=getCurrentTrackGroup(); if(!g)return null; return currentAltIndex===null?g.fullMix:g.alternates[currentAltIndex]||null; }
+
+function freshEntry(title='',isAlt=false) {
+  return { title, isAlt, album:'', albumCode:'', artist:'', artistDesc:'', tempo:'', bpm:'', genre:'', hasVocals:'No', explicit:'No', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'1',role:'OP'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'1',publisher:'',role:'C',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
 }
 
+// ─── PAGE SWITCHING ────────────────────────────────────────────────
+function switchPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+page).classList.add('active');
+  document.getElementById('page-sourceaudio').style.display = page==='sourceaudio'?'block':'none';
+  document.getElementById('page-tunesat').style.display = page==='tunesat'?'block':'none';
+  document.getElementById('queuePageBadge').textContent = page==='sourceaudio'?'SA':'TS';
+  renderQueue();
+}
+
+// ─── ALBUMS ──────────────────────────────────────────────────────
 function populateAlbumDropdown() {
-  const sel = document.getElementById('f_album');
-  if (!sel) return;
-  const entry = getCurrentEntry();
-  const current = entry ? entry.album : '';
-  sel.innerHTML = '<option value="">— Select album —</option>' +
-    getAlbums().map(a => `<option value="${a.name}" ${current===a.name?'selected':''}>${a.name} (${a.code})</option>`).join('');
+  const sel=document.getElementById('f_album'); if(!sel)return;
+  const entry=getCurrentEntry(); const current=entry?entry.album:'';
+  sel.innerHTML='<option value="">— Select album —</option>'+getAlbums().map(a=>`<option value="${a.name}" ${current===a.name?'selected':''}>${a.name} (${a.code})</option>`).join('');
 }
-
 function onAlbumChange(val) {
-  const e = getCurrentEntry(); if (!e) return;
-  e.album = val;
-  const album = getAlbums().find(a => a.name === val);
-  if (album) {
-    e.albumCode = album.code;
-    e.catalog = album.catalog;
-    document.getElementById('f_albumCode').value = album.code;
-  }
+  const e=getCurrentEntry(); if(!e)return; e.album=val;
+  const album=getAlbums().find(a=>a.name===val);
+  if(album){e.albumCode=album.code;e.catalog=album.catalog;document.getElementById('f_albumCode').value=album.code;}
   saveToStorage();
 }
-
 function onBpmChange(val) {
-  const e = getCurrentEntry(); if (!e) return;
-  e.bpm = val;
-  const bpm = parseInt(val);
-  if (!isNaN(bpm)) {
-    let tempo = '';
-    if (bpm <= 89) tempo = 'Slow';
-    else if (bpm <= 110) tempo = 'Medium';
-    else if (bpm <= 130) tempo = 'Fast';
-    else tempo = 'Very Fast';
-    e.tempo = tempo;
-    const sel = document.getElementById('f_tempo');
-    if (sel) sel.value = tempo;
-  }
+  const e=getCurrentEntry(); if(!e)return; e.bpm=val;
+  const bpm=parseInt(val); if(!isNaN(bpm)){let t=''; if(bpm<=89)t='Slow';else if(bpm<=110)t='Medium';else if(bpm<=130)t='Fast';else t='Very Fast'; e.tempo=t; const sel=document.getElementById('f_tempo');if(sel)sel.value=t;}
   saveToStorage();
 }
-
 function onArtistSearch(val) {
-  const e = getCurrentEntry(); if (!e) return;
-  e.artist = val;
-  saveToStorage();
-  const wrap = document.getElementById('artistSearchWrap');
-  let drop = document.getElementById('artistDrop');
-  if (drop) drop.remove();
-  if (!val.trim()) return;
-  const customArtists = getArtists();
-  // Build suggestions: custom artists + writer-based suggestions
-  const allWriters = getWriters();
-  const writerSuggestions = allWriters
-    .filter(w => (w.display + ' - Flavorlab PTB').toLowerCase().includes(val.toLowerCase()))
-    .map(w => w.display + ' - Flavorlab PTB')
-    .slice(0, 6);
-  const customMatches = customArtists.filter(a => a.toLowerCase().includes(val.toLowerCase())).slice(0,4);
-  const suggestions = [...new Set([...customMatches, ...writerSuggestions])].slice(0, 10);
-  if (!suggestions.length) return;
-  drop = document.createElement('div');
-  drop.className = 'writer-dropdown'; drop.id = 'artistDrop';
-  drop.innerHTML = suggestions.map(s => `<div class="writer-option" onclick="selectArtist('${s.replace(/'/g,"\'")}')">${s}</div>`).join('');
+  const e=getCurrentEntry();if(!e)return;e.artist=val;saveToStorage();
+  const wrap=document.getElementById('artistSearchWrap');let drop=document.getElementById('artistDrop');if(drop)drop.remove();if(!val.trim())return;
+  const customArtists=getArtists();
+  const writerSuggestions=WRITERS.filter(w=>(w.display+' - Flavorlab PTB').toLowerCase().includes(val.toLowerCase())).map(w=>w.display+' - Flavorlab PTB').slice(0,6);
+  const customMatches=customArtists.filter(a=>a.toLowerCase().includes(val.toLowerCase())).slice(0,4);
+  const suggestions=[...new Set([...customMatches,...writerSuggestions])].slice(0,10);
+  if(!suggestions.length)return;
+  drop=document.createElement('div');drop.className='writer-dropdown';drop.id='artistDrop';
+  drop.innerHTML=suggestions.map(s=>`<div class="writer-option" onclick="selectArtist('${s.replace(/'/g,"\\'")}')">${s}</div>`).join('');
   wrap.appendChild(drop);
 }
-
 function selectArtist(val) {
-  const e = getCurrentEntry(); if (!e) return;
-  e.artist = val;
-  document.getElementById('f_artist').value = val;
-  const drop = document.getElementById('artistDrop');
-  if (drop) drop.remove();
-  saveToStorage();
-}
-
-// ─── ADMIN PANEL ─────────────────────────────────────────────────
-function openAdmin() {
-  document.getElementById('adminModal').style.display = 'flex';
-  renderAdminWriters(); renderAdminAlbums(); renderAdminArtists();
-}
-function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; }
-
-function renderAdminWriters() {
-  const custom = getWriters().filter(w => !WRITERS.find(d => d.ipi === w.ipi));
-  document.getElementById('adminWriterList').innerHTML = custom.length
-    ? custom.map((w,i) => `<div class="admin-row"><span>${w.display} · ${w.pro} · ${w.ipi}</span><button class="btn btn-danger btn-sm" onclick="removeCustomWriter(${i})">×</button></div>`).join('')
-    : '<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No custom writers added yet</div>';
-}
-
-function addCustomWriter() {
-  const first = document.getElementById('aw_first').value.trim();
-  const last = document.getElementById('aw_last').value.trim();
-  const pro = document.getElementById('aw_pro').value.trim();
-  const ipi = document.getElementById('aw_ipi').value.trim();
-  const pub = document.getElementById('aw_pub').value.trim();
-  if (!first || !last || !ipi) { showToast('First name, last name, and IPI required'); return; }
-  const existing = JSON.parse(localStorage.getItem('ptb_custom_writers') || '[]');
-  existing.push({ display: first+' '+last, first, last, pro, ipi, publisher: pub });
-  localStorage.setItem('ptb_custom_writers', JSON.stringify(existing));
-  ['aw_first','aw_last','aw_pro','aw_ipi','aw_pub'].forEach(id => document.getElementById(id).value = '');
-  renderAdminWriters(); showToast('Writer added ✓', true);
-}
-
-function removeCustomWriter(idx) {
-  const existing = JSON.parse(localStorage.getItem('ptb_custom_writers') || '[]');
-  existing.splice(idx, 1);
-  localStorage.setItem('ptb_custom_writers', JSON.stringify(existing));
-  renderAdminWriters();
-}
-
-function renderAdminAlbums() {
-  const custom = JSON.parse(localStorage.getItem('ptb_custom_albums') || '[]');
-  document.getElementById('adminAlbumList').innerHTML = custom.length
-    ? custom.map((a,i) => `<div class="admin-row"><span>${a.name} · ${a.code}</span><button class="btn btn-danger btn-sm" onclick="removeCustomAlbum(${i})">×</button></div>`).join('')
-    : '<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No custom albums added yet</div>';
-}
-
-function addCustomAlbum() {
-  const name = document.getElementById('aa_name').value.trim();
-  const code = document.getElementById('aa_code').value.trim();
-  const catalog = document.getElementById('aa_catalog').value.trim() || "Producer's Toolbox";
-  if (!name || !code) { showToast('Album name and code required'); return; }
-  const existing = JSON.parse(localStorage.getItem('ptb_custom_albums') || '[]');
-  existing.push({ name, code, catalog });
-  localStorage.setItem('ptb_custom_albums', JSON.stringify(existing));
-  ['aa_name','aa_code','aa_catalog'].forEach(id => document.getElementById(id).value = '');
-  renderAdminAlbums(); populateAlbumDropdown(); showToast('Album added ✓', true);
-}
-
-function removeCustomAlbum(idx) {
-  const existing = JSON.parse(localStorage.getItem('ptb_custom_albums') || '[]');
-  existing.splice(idx, 1);
-  localStorage.setItem('ptb_custom_albums', JSON.stringify(existing));
-  renderAdminAlbums(); populateAlbumDropdown();
-}
-
-function renderAdminArtists() {
-  const artists = getArtists();
-  document.getElementById('adminArtistList').innerHTML = artists.length
-    ? artists.map((a,i) => `<div class="admin-row"><span>${a}</span><button class="btn btn-danger btn-sm" onclick="removeCustomArtist(${i})">×</button></div>`).join('')
-    : '<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No saved artists yet</div>';
-}
-
-function addCustomArtist() {
-  const val = document.getElementById('aa_artist').value.trim();
-  if (!val) return;
-  const existing = getArtists();
-  if (!existing.includes(val)) { existing.push(val); localStorage.setItem('ptb_custom_artists', JSON.stringify(existing)); }
-  document.getElementById('aa_artist').value = '';
-  renderAdminArtists(); showToast('Artist saved ✓', true);
-}
-
-function removeCustomArtist(idx) {
-  const existing = getArtists(); existing.splice(idx,1);
-  localStorage.setItem('ptb_custom_artists', JSON.stringify(existing));
-  renderAdminArtists();
-}
-
-function init() {
-  buildCheckboxGroup('descGroup', DESCRIPTION_PHRASES, 'description', true);
-  buildCheckboxGroup('moodsGroup', MOODS, 'moods');
-  buildCheckboxGroup('stylesGroup', STYLES, 'styles');
-  buildCheckboxGroup('instrumentsGroup', INSTRUMENTS, 'instruments');
-  buildCheckboxGroup('filmGenreGroup', FILM_GENRES, 'filmGenres');
-  buildCheckboxGroup('subGenreGroup', SUB_GENRES, 'subGenres');
-  populateAlbumDropdown();
-  loadFromStorage();
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.writer-search-wrap') && !e.target.closest('#artistSearchWrap')) {
-      document.querySelectorAll('.writer-dropdown').forEach(d => d.remove());
-    }
-  });
-}
-
-function buildCheckboxGroup(containerId, items, field, isDesc=false) {
-  const el = document.getElementById(containerId);
-  el.innerHTML = items.map(item => `
-    <label class="cb-item">
-      <input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="onCheckChange('${field}','${item.replace(/'/g,"\\'")}',this.checked,${isDesc})">
-      <span>${item}</span>
-    </label>`).join('');
+  const e=getCurrentEntry();if(!e)return;e.artist=val;document.getElementById('f_artist').value=val;const drop=document.getElementById('artistDrop');if(drop)drop.remove();saveToStorage();
 }
 
 // ─── TRACK MANAGEMENT ─────────────────────────────────────────────
 function newTrack() {
-  const id = Date.now().toString();
-  tracks.push({ id, fullMix: freshEntry('Untitled track'), alternates: [] });
-  currentTrackId = id; currentAltIndex = null;
-  renderTrackList(); loadEntryIntoForm();
-  document.getElementById('titleInput').focus();
-  saveToStorage();
+  const id=Date.now().toString();
+  tracks.push({id,fullMix:freshEntry('Untitled track'),alternates:[]});
+  currentTrackId=id;currentAltIndex=null;
+  renderTrackList();loadEntryIntoForm();document.getElementById('titleInput').focus();saveToStorage();
 }
-
-function selectTrack(id, altIdx=null) {
-  currentTrackId = id; currentAltIndex = altIdx;
-  renderTrackList(); loadEntryIntoForm();
-}
-
+function selectTrack(id,altIdx=null) { currentTrackId=id;currentAltIndex=altIdx;renderTrackList();loadEntryIntoForm(); }
 function addAlternate() {
-  const g = getCurrentTrackGroup(); if (!g) return;
-  const alt = JSON.parse(JSON.stringify(g.fullMix));
-  alt.title = g.fullMix.title + ' (Alternate ' + (g.alternates.length + 1) + ')';
-  alt.isAlt = true;
-  g.alternates.push(alt);
-  currentAltIndex = g.alternates.length - 1;
-  renderTrackList(); loadEntryIntoForm(); saveToStorage();
+  const g=getCurrentTrackGroup();if(!g)return;
+  const alt=JSON.parse(JSON.stringify(g.fullMix));
+  alt.title=g.fullMix.title+' (Alt '+(g.alternates.length+1)+')';alt.isAlt=true;
+  g.alternates.push(alt);currentAltIndex=g.alternates.length-1;
+  renderTrackList();loadEntryIntoForm();saveToStorage();
 }
-
 function removeAlternate(idx) {
-  const g = getCurrentTrackGroup(); if (!g) return;
-  g.alternates.splice(idx, 1);
-  if (currentAltIndex === idx) { currentAltIndex = null; loadEntryIntoForm(); }
-  else if (currentAltIndex > idx) currentAltIndex--;
-  renderTrackList(); renderAltChips(); saveToStorage();
+  const g=getCurrentTrackGroup();if(!g)return;g.alternates.splice(idx,1);
+  if(currentAltIndex===idx){currentAltIndex=null;loadEntryIntoForm();}else if(currentAltIndex>idx)currentAltIndex--;
+  renderTrackList();renderAltChips();saveToStorage();
 }
 
 // ─── FORM ──────────────────────────────────────────────────────────
 function loadEntryIntoForm() {
-  const entry = getCurrentEntry();
-  if (!entry) { document.getElementById('emptyForm').style.display='flex'; document.getElementById('trackForm').style.display='none'; return; }
-  document.getElementById('emptyForm').style.display='none'; document.getElementById('trackForm').style.display='block';
-  document.getElementById('titleInput').value = entry.title || '';
-  document.getElementById('formTrackType').textContent = entry.isAlt ? 'Alternate version' : 'Full mix';
+  const entry=getCurrentEntry();
+  if(!entry){document.getElementById('emptyForm').style.display='flex';document.getElementById('trackForm').style.display='none';return;}
+  document.getElementById('emptyForm').style.display='none';document.getElementById('trackForm').style.display='block';
+  document.getElementById('titleInput').value=entry.title||'';
+  document.getElementById('formTrackType').textContent=entry.isAlt?'ALTERNATE VERSION':'FULL MIX';
   populateAlbumDropdown();
-  ['albumCode','artist','artistDesc','tempo','bpm','genre','hasVocals','explicit','isrc','styleOf'].forEach(f => {
-    const el = document.getElementById('f_' + f); if (el) el.value = entry[f] || '';
-  });
-  const fieldMap = { description:'descGroup', moods:'moodsGroup', styles:'stylesGroup', instruments:'instrumentsGroup', filmGenres:'filmGenreGroup', subGenres:'subGenreGroup' };
-  Object.entries(fieldMap).forEach(([field, groupId]) => {
-    const container = document.getElementById(groupId);
-    if (!container) return;
-    container.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = (entry[field] || []).includes(cb.value); });
-  });
+  ['albumCode','artist','artistDesc','tempo','bpm','genre','hasVocals','explicit','isrc','styleOf'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=entry[f]||'';});
+  const fieldMap={description:'descGroup',moods:'moodsGroup',styles:'stylesGroup',instruments:'instrumentsGroup',filmGenres:'filmGenreGroup',subGenres:'subGenreGroup'};
+  Object.entries(fieldMap).forEach(([field,groupId])=>{const c=document.getElementById(groupId);if(!c)return;c.querySelectorAll('input[type=checkbox]').forEach(cb=>{cb.checked=(entry[field]||[]).includes(cb.value);});});
   renderDescOutput();
-  document.getElementById('instrNote').textContent = entry.isAlt ? '✦ edit for this version only' : '';
-  renderPublisherBlocks(); renderWriterBlocks(); renderAltChips();
+  document.getElementById('instrNote').textContent=entry.isAlt?'✦ edit for this version only':'';
+  renderPublisherBlocks();renderWriterBlocks();renderAltChips();
+  // Tunesat fields
+  ['workTitle','altTitle1','altTitle2','altTitle3','altTitle4','ts_isrc','duration','library'].forEach(f=>{const el=document.getElementById('t_'+f.replace('ts_',''));if(el)el.value=entry[f]||'';});
+  if(document.getElementById('t_isrc'))document.getElementById('t_isrc').value=entry.ts_isrc||'';
+  renderTunesatWriterBlocks();renderTunesatPublisherBlocks();
 }
 
-function onTitleChange(val) { const e = getCurrentEntry(); if (e) { e.title = val; renderTrackList(); renderAltChips(); saveToStorage(); } }
-function syncField(field, val) { const e = getCurrentEntry(); if (e) { e[field] = val; saveToStorage(); } }
+function onTitleChange(val){const e=getCurrentEntry();if(e){e.title=val;renderTrackList();renderAltChips();saveToStorage();}}
+function syncField(field,val){const e=getCurrentEntry();if(e){e[field]=val;saveToStorage();}}
+function syncTunesatField(field,val){const e=getCurrentEntry();if(e){e[field]=val;saveToStorage();}}
 
-function onCheckChange(field, val, checked, isDesc=false) {
-  const e = getCurrentEntry(); if (!e) return;
-  if (checked) { if (!e[field].includes(val)) e[field].push(val); }
-  else { e[field] = e[field].filter(v => v !== val); }
-  if (isDesc) renderDescOutput();
-  saveToStorage();
+function onCheckChange(field,val,checked,isDesc=false){
+  const e=getCurrentEntry();if(!e)return;
+  if(checked){if(!e[field].includes(val))e[field].push(val);}else{e[field]=e[field].filter(v=>v!==val);}
+  if(isDesc)renderDescOutput();saveToStorage();
 }
 
-function renderDescOutput() {
-  const e = getCurrentEntry();
-  const container = document.getElementById('descOutput');
-  if (!e || !e.description || e.description.length === 0) {
-    container.innerHTML = '<span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span>';
-    return;
-  }
-  container.innerHTML = e.description.map(p => `<div class="desc-tag">${p}<span class="desc-tag-x" onclick="removeDescPhrase('${p.replace(/'/g,"\\'")}')">×</span></div>`).join('');
+function renderDescOutput(){
+  const e=getCurrentEntry();const container=document.getElementById('descOutput');
+  if(!e||!e.description||e.description.length===0){container.innerHTML='<span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span>';return;}
+  container.innerHTML=e.description.map(p=>`<div class="desc-tag">${p}<span class="desc-tag-x" onclick="removeDescPhrase('${p.replace(/'/g,"\\'")}')">×</span></div>`).join('');
 }
-
-function removeDescPhrase(phrase) {
-  const e = getCurrentEntry(); if (!e) return;
-  e.description = e.description.filter(p => p !== phrase);
-  const container = document.getElementById('descGroup');
-  const cb = container.querySelector(`input[value="${phrase}"]`);
-  if (cb) cb.checked = false;
-  renderDescOutput(); saveToStorage();
+function removeDescPhrase(phrase){
+  const e=getCurrentEntry();if(!e)return;e.description=e.description.filter(p=>p!==phrase);
+  const container=document.getElementById('descGroup');const cb=container.querySelector(`input[value="${phrase}"]`);if(cb)cb.checked=false;
+  renderDescOutput();saveToStorage();
 }
 
 // ─── WRITER SEARCH ─────────────────────────────────────────────────
-function writerSearch(idx, val) {
-  const e = getCurrentEntry(); if (!e) return;
-  e.writers[idx].searchVal = val;
-  const wrap = document.getElementById(`writerSearchWrap_${idx}`);
-  let drop = document.getElementById(`writerDrop_${idx}`);
-  if (drop) drop.remove();
-  if (!val.trim()) return;
-  const matches = WRITERS.filter(w => w.display.toLowerCase().includes(val.toLowerCase())).slice(0, 12);
-  if (!matches.length) return;
-  drop = document.createElement('div');
-  drop.className = 'writer-dropdown'; drop.id = `writerDrop_${idx}`;
-  drop.innerHTML = matches.map(w => `
-    <div class="writer-option" onclick="selectWriter(${idx}, '${w.display.replace(/'/g,"\\'")}')">
-      <span>${w.display}</span>
-      <span class="writer-option-meta">${w.pro} · ${w.ipi}</span>
-    </div>`).join('');
+function writerSearch(idx,val){
+  const e=getCurrentEntry();if(!e)return;e.writers[idx].searchVal=val;
+  const wrap=document.getElementById(`writerSearchWrap_${idx}`);let drop=document.getElementById(`writerDrop_${idx}`);if(drop)drop.remove();
+  if(!val.trim())return;
+  const matches=WRITERS.filter(w=>w.display.toLowerCase().includes(val.toLowerCase())).slice(0,12);
+  if(!matches.length)return;
+  drop=document.createElement('div');drop.className='writer-dropdown';drop.id=`writerDrop_${idx}`;
+  drop.innerHTML=matches.map(w=>`<div class="writer-option" onclick="selectWriter(${idx},'${w.display.replace(/'/g,"\\'")}')"><span>${w.display}</span><span class="writer-option-meta">${w.pro} · ${w.ipi}</span></div>`).join('');
   wrap.appendChild(drop);
 }
-
-function selectWriter(idx, displayName) {
-  const e = getCurrentEntry(); if (!e) return;
-  const w = WRITERS.find(x => x.display === displayName); if (!w) return;
-  e.writers[idx] = { ...e.writers[idx], searchVal: w.display, firstName: w.first, lastName: w.last, pro: w.pro, ipi: w.ipi, publisher: w.publisher, role: 'C' };
-  renderWriterBlocks(); saveToStorage();
+function selectWriter(idx,displayName){
+  const e=getCurrentEntry();if(!e)return;const w=WRITERS.find(x=>x.display===displayName);if(!w)return;
+  e.writers[idx]={...e.writers[idx],searchVal:w.display,firstName:w.first,lastName:w.last,pro:w.pro,ipi:w.ipi,publisher:w.publisher,role:'C'};
+  renderWriterBlocks();saveToStorage();
 }
 
-// ─── PUBLISHERS ────────────────────────────────────────────────────
-function renderPublisherBlocks() {
-  const e = getCurrentEntry(); if (!e) return;
-  document.getElementById('publisherBlocks').innerHTML = e.publishers.map((pub, i) => `
+// ─── TUNESAT WRITER SEARCH ────────────────────────────────────────
+function tsWriterSearch(idx,val){
+  const e=getCurrentEntry();if(!e)return;e.ts_writers[idx].searchVal=val;
+  const wrap=document.getElementById(`tsWriterWrap_${idx}`);let drop=document.getElementById(`tsWriterDrop_${idx}`);if(drop)drop.remove();
+  if(!val.trim())return;
+  const matches=WRITERS.filter(w=>w.display.toLowerCase().includes(val.toLowerCase())).slice(0,12);
+  if(!matches.length)return;
+  drop=document.createElement('div');drop.className='writer-dropdown';drop.id=`tsWriterDrop_${idx}`;
+  drop.innerHTML=matches.map(w=>`<div class="writer-option" onclick="selectTsWriter(${idx},'${w.display.replace(/'/g,"\\'")}')"><span>${w.display}</span><span class="writer-option-meta">${w.pro} · ${w.ipi}</span></div>`).join('');
+  wrap.appendChild(drop);
+}
+function selectTsWriter(idx,displayName){
+  const e=getCurrentEntry();if(!e)return;const w=WRITERS.find(x=>x.display===displayName);if(!w)return;
+  e.ts_writers[idx]={...e.ts_writers[idx],searchVal:w.display,firstName:w.first,lastName:w.last,pro:w.pro,ipi:w.ipi,publisher:w.publisher,role:'C'};
+  renderTunesatWriterBlocks();saveToStorage();
+}
+
+// ─── PUBLISHERS (SA) ──────────────────────────────────────────────
+function renderPublisherBlocks(){
+  const e=getCurrentEntry();if(!e)return;
+  document.getElementById('publisherBlocks').innerHTML=e.publishers.map((pub,i)=>`
     <div class="party-block">
       <div class="party-block-header"><span class="party-block-title">Publisher ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removePublisher(${i})">Remove</button>`:''}</div>
       <div class="field-grid cols-2">
@@ -978,62 +958,97 @@ function renderPublisherBlocks() {
           <select onchange="updatePublisher(${i},'company',this.value)">
             <option value="">— Select —</option>
             ${PUBLISHERS.map(p=>`<option value="${p.name}" ${pub.company===p.name?'selected':''}>${p.name}</option>`).join('')}
-            <option value="__other__" ${pub.company&&!PUBLISHERS.find(p=>p.name===pub.company)?'selected':''}>Other...</option>
-          </select>
-          ${pub.company&&!PUBLISHERS.find(p=>p.name===pub.company)&&pub.company!=='__other__'?`<input type="text" value="${pub.company}" oninput="updatePublisherRaw(${i},'company',this.value)" placeholder="Publisher name" style="margin-top:4px">`:''}</div>
-        <div class="field"><label class="field-label">PRO</label>
-          <select onchange="updatePublisher(${i},'pro',this.value)">${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${pub.ipi||''}" oninput="updatePublisher(${i},'ipi',this.value)" placeholder="e.g. 584690604"></div>
+            <option value="__other__">Other...</option>
+          </select></div>
+        <div class="field"><label class="field-label">PRO</label><select onchange="updatePublisher(${i},'pro',this.value)">${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${pub.ipi||''}" oninput="updatePublisher(${i},'ipi',this.value)"></div>
         <div class="field"><label class="field-label">Ownership Share</label><input type="text" value="${pub.share||'1'}" oninput="updatePublisher(${i},'share',this.value)"></div>
       </div></div>`).join('');
 }
-
-function updatePublisher(idx, field, val) {
-  const e = getCurrentEntry(); if (!e) return;
-  if (field === 'company') {
-    const known = PUBLISHERS.find(p => p.name === val);
-    if (known) { e.publishers[idx].company = known.name; e.publishers[idx].pro = known.pro; e.publishers[idx].ipi = known.ipi; }
-    else { e.publishers[idx].company = val === '__other__' ? '' : val; }
-    renderPublisherBlocks();
-  } else { e.publishers[idx][field] = val; }
-  saveToStorage();
+function updatePublisher(idx,field,val){
+  const e=getCurrentEntry();if(!e)return;
+  if(field==='company'){const known=PUBLISHERS.find(p=>p.name===val);if(known){e.publishers[idx].company=known.name;e.publishers[idx].pro=known.pro;e.publishers[idx].ipi=known.ipi;}else{e.publishers[idx].company=val==='__other__'?'':val;}renderPublisherBlocks();}
+  else{e.publishers[idx][field]=val;}saveToStorage();
 }
-function updatePublisherRaw(idx, field, val) { const e = getCurrentEntry(); if (e) { e.publishers[idx][field] = val; saveToStorage(); } }
-function addPublisher() { const e = getCurrentEntry(); if (!e) return; e.publishers.push({company:'',pro:'',ipi:'',share:'',role:'OP'}); renderPublisherBlocks(); saveToStorage(); }
-function removePublisher(idx) { const e = getCurrentEntry(); if (!e) return; e.publishers.splice(idx,1); renderPublisherBlocks(); saveToStorage(); }
+function addPublisher(){const e=getCurrentEntry();if(!e)return;e.publishers.push({company:'',pro:'',ipi:'',share:'',role:'OP'});renderPublisherBlocks();saveToStorage();}
+function removePublisher(idx){const e=getCurrentEntry();if(!e)return;e.publishers.splice(idx,1);renderPublisherBlocks();saveToStorage();}
 
-// ─── WRITERS ──────────────────────────────────────────────────────
-function renderWriterBlocks() {
-  const e = getCurrentEntry(); if (!e) return;
-  document.getElementById('writerBlocks').innerHTML = e.writers.map((w, i) => `
+// ─── WRITERS (SA) ──────────────────────────────────────────────────
+function renderWriterBlocks(){
+  const e=getCurrentEntry();if(!e)return;
+  document.getElementById('writerBlocks').innerHTML=e.writers.map((w,i)=>`
     <div class="party-block">
       <div class="party-block-header"><span class="party-block-title">Writer ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removeWriter(${i})">Remove</button>`:''}</div>
       <div class="field-grid cols-2">
-        <div class="field" style="grid-column:span 2">
-          <label class="field-label">Search writer</label>
+        <div class="field" style="grid-column:span 2"><label class="field-label">Search writer</label>
           <div class="writer-search-wrap" id="writerSearchWrap_${i}">
             <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="writerSearch(${i},this.value)" placeholder="Type name to search..." autocomplete="off">
-          </div>
-        </div>
-        <div class="field"><label class="field-label">First Name</label><input type="text" value="${w.firstName||''}" oninput="updateWriter(${i},'firstName',this.value)" placeholder="First name"></div>
-        <div class="field"><label class="field-label">Last Name</label><input type="text" value="${w.lastName||''}" oninput="updateWriter(${i},'lastName',this.value)" placeholder="Last name"></div>
-        <div class="field"><label class="field-label">PRO</label>
-          <select onchange="updateWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${w.ipi||''}" oninput="updateWriter(${i},'ipi',this.value)" placeholder="IPI number"></div>
-        <div class="field"><label class="field-label">Ownership Share</label><input type="text" value="${w.share||''}" oninput="updateWriter(${i},'share',this.value)" placeholder="0.5"></div>
-        <div class="field"><label class="field-label">Publisher</label>
-          <select onchange="updateWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
+          </div></div>
+        <div class="field"><label class="field-label">First Name</label><input type="text" value="${w.firstName||''}" oninput="updateWriter(${i},'firstName',this.value)"></div>
+        <div class="field"><label class="field-label">Last Name</label><input type="text" value="${w.lastName||''}" oninput="updateWriter(${i},'lastName',this.value)"></div>
+        <div class="field"><label class="field-label">PRO</label><select onchange="updateWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${w.ipi||''}" oninput="updateWriter(${i},'ipi',this.value)"></div>
+        <div class="field"><label class="field-label">Ownership Share</label><input type="text" value="${w.share||''}" oninput="updateWriter(${i},'share',this.value)"></div>
+        <div class="field"><label class="field-label">Publisher</label><select onchange="updateWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
       </div></div>`).join('');
 }
+function updateWriter(idx,field,val){const e=getCurrentEntry();if(!e)return;e.writers[idx][field]=val;saveToStorage();}
+function addWriter(){const e=getCurrentEntry();if(!e)return;e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C',searchVal:''});renderWriterBlocks();saveToStorage();}
+function removeWriter(idx){const e=getCurrentEntry();if(!e)return;e.writers.splice(idx,1);renderWriterBlocks();saveToStorage();}
 
-function updateWriter(idx, field, val) { const e = getCurrentEntry(); if (!e) return; e.writers[idx][field] = val; saveToStorage(); }
-function addWriter() { const e = getCurrentEntry(); if (!e) return; e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C',searchVal:''}); renderWriterBlocks(); saveToStorage(); }
-function removeWriter(idx) { const e = getCurrentEntry(); if (!e) return; e.writers.splice(idx,1); renderWriterBlocks(); saveToStorage(); }
+// ─── PUBLISHERS / WRITERS (TUNESAT) ───────────────────────────────
+function renderTunesatWriterBlocks(){
+  const e=getCurrentEntry();if(!e)return;
+  if(!e.ts_writers||!e.ts_writers.length)e.ts_writers=[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}];
+  document.getElementById('ts_writerBlocks').innerHTML=e.ts_writers.map((w,i)=>`
+    <div class="party-block">
+      <div class="party-block-header"><span class="party-block-title">Writer ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removeTsWriter(${i})">Remove</button>`:''}</div>
+      <div class="field-grid cols-2">
+        <div class="field" style="grid-column:span 2"><label class="field-label">Search writer</label>
+          <div class="writer-search-wrap" id="tsWriterWrap_${i}">
+            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="tsWriterSearch(${i},this.value)" placeholder="Type name..." autocomplete="off">
+          </div></div>
+        <div class="field"><label class="field-label">First Name</label><input type="text" value="${w.firstName||''}" oninput="updateTsWriter(${i},'firstName',this.value)"></div>
+        <div class="field"><label class="field-label">Last Name</label><input type="text" value="${w.lastName||''}" oninput="updateTsWriter(${i},'lastName',this.value)"></div>
+        <div class="field"><label class="field-label">PRO</label><select onchange="updateTsWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">IPI</label><input type="text" value="${w.ipi||''}" oninput="updateTsWriter(${i},'ipi',this.value)"></div>
+        <div class="field"><label class="field-label">Share %</label><input type="text" value="${w.share||''}" oninput="updateTsWriter(${i},'share',this.value)" placeholder="50"></div>
+        <div class="field"><label class="field-label">Publisher</label><select onchange="updateTsWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
+      </div></div>`).join('');
+}
+function updateTsWriter(idx,field,val){const e=getCurrentEntry();if(!e)return;e.ts_writers[idx][field]=val;saveToStorage();}
+function addTunesatWriter(){const e=getCurrentEntry();if(!e)return;if(!e.ts_writers)e.ts_writers=[];e.ts_writers.push({searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'});renderTunesatWriterBlocks();saveToStorage();}
+function removeTsWriter(idx){const e=getCurrentEntry();if(!e)return;e.ts_writers.splice(idx,1);renderTunesatWriterBlocks();saveToStorage();}
+
+function renderTunesatPublisherBlocks(){
+  const e=getCurrentEntry();if(!e)return;
+  if(!e.ts_publishers||!e.ts_publishers.length)e.ts_publishers=[{company:'',pro:'',ipi:'',share:''}];
+  document.getElementById('ts_publisherBlocks').innerHTML=e.ts_publishers.map((pub,i)=>`
+    <div class="party-block">
+      <div class="party-block-header"><span class="party-block-title">Publisher ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removeTsPublisher(${i})">Remove</button>`:''}</div>
+      <div class="field-grid cols-2">
+        <div class="field"><label class="field-label">Company</label>
+          <select onchange="updateTsPublisher(${i},'company',this.value)">
+            <option value="">— Select —</option>
+            ${PUBLISHERS.map(p=>`<option value="${p.name}" ${pub.company===p.name?'selected':''}>${p.name}</option>`).join('')}
+          </select></div>
+        <div class="field"><label class="field-label">PRO</label><select onchange="updateTsPublisher(${i},'pro',this.value)">${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">IPI</label><input type="text" value="${pub.ipi||''}" oninput="updateTsPublisher(${i},'ipi',this.value)"></div>
+        <div class="field"><label class="field-label">Share %</label><input type="text" value="${pub.share||''}" oninput="updateTsPublisher(${i},'share',this.value)" placeholder="100"></div>
+      </div></div>`).join('');
+}
+function updateTsPublisher(idx,field,val){
+  const e=getCurrentEntry();if(!e)return;
+  if(field==='company'){const known=PUBLISHERS.find(p=>p.name===val);if(known){e.ts_publishers[idx].company=known.name;e.ts_publishers[idx].pro=known.pro;e.ts_publishers[idx].ipi=known.ipi;}else{e.ts_publishers[idx].company=val;}renderTunesatPublisherBlocks();}
+  else{e.ts_publishers[idx][field]=val;}saveToStorage();
+}
+function addTunesatPublisher(){const e=getCurrentEntry();if(!e)return;if(!e.ts_publishers)e.ts_publishers=[];e.ts_publishers.push({company:'',pro:'',ipi:'',share:''});renderTunesatPublisherBlocks();saveToStorage();}
+function removeTsPublisher(idx){const e=getCurrentEntry();if(!e)return;e.ts_publishers.splice(idx,1);renderTunesatPublisherBlocks();saveToStorage();}
 
 // ─── ALT CHIPS ────────────────────────────────────────────────────
-function renderAltChips() {
-  const g = getCurrentTrackGroup(); if (!g) return;
-  document.getElementById('altChips').innerHTML = g.alternates.map((alt,i) => `
+function renderAltChips(){
+  const g=getCurrentTrackGroup();if(!g)return;
+  document.getElementById('altChips').innerHTML=g.alternates.map((alt,i)=>`
     <div class="alt-chip ${currentAltIndex===i?'active-alt':''}" onclick="selectTrack('${g.id}',${i})">
       ${alt.title||'Untitled alternate'}
       <span class="alt-chip-x" onclick="event.stopPropagation();removeAlternate(${i})">×</span>
@@ -1041,11 +1056,11 @@ function renderAltChips() {
 }
 
 // ─── TRACK LIST ───────────────────────────────────────────────────
-function renderTrackList() {
-  const container = document.getElementById('trackList');
-  if (!tracks.length) { container.innerHTML = `<div class="empty-rail"><div style="font-size:22px;margin-bottom:4px">🎵</div><div>No tracks yet</div><div style="font-size:11px;margin-top:4px">Click "+ New" to start</div></div>`; return; }
-  container.innerHTML = tracks.map(g => {
-    const isActive = g.id === currentTrackId;
+function renderTrackList(){
+  const container=document.getElementById('trackList');
+  if(!tracks.length){container.innerHTML=`<div class="empty-rail"><div style="font-size:22px;margin-bottom:4px">🎵</div><div>No tracks yet</div><div style="font-size:11px;margin-top:4px">Click "+ New" to start</div></div>`;return;}
+  container.innerHTML=tracks.map(g=>{
+    const isActive=g.id===currentTrackId;
     return `<div>
       <div class="track-item ${isActive&&currentAltIndex===null?'active':''}" onclick="selectTrack('${g.id}')">
         <div class="track-item-name">${g.fullMix.title||'Untitled track'}</div>
@@ -1062,109 +1077,144 @@ function renderTrackList() {
 }
 
 // ─── QUEUE ────────────────────────────────────────────────────────
-function addToQueue() {
-  const g = getCurrentTrackGroup(); if (!g) return;
-  if (queue.find(q => q.id === g.id)) { showToast('Already in queue'); return; }
+function addToQueue(){
+  const g=getCurrentTrackGroup();if(!g)return;
+  if(queue.find(q=>q.id===g.id)){showToast('Already in queue');return;}
   queue.push(JSON.parse(JSON.stringify(g)));
-  renderQueue(); showToast('Added to export queue ✓', true); saveToStorage();
+  renderQueue();showToast('Added to export queue ✓',true);saveToStorage();
 }
-
-function renderQueue() {
-  const container = document.getElementById('queueItems'), countEl = document.getElementById('queueCount');
-  if (!queue.length) { container.innerHTML = `<div class="empty-state" style="height:200px"><div style="font-size:20px">📤</div><p style="font-size:12px">Add tracks to queue then export</p></div>`; countEl.innerHTML = 'Queue is empty'; return; }
-  container.innerHTML = queue.map((g,i) => `
+function renderQueue(){
+  const container=document.getElementById('queueItems'),countEl=document.getElementById('queueCount');
+  if(!queue.length){container.innerHTML=`<div class="empty-state" style="height:200px"><div style="font-size:20px">📤</div><p style="font-size:12px">Add tracks to queue then export</p></div>`;countEl.innerHTML='Queue is empty';return;}
+  container.innerHTML=queue.map((g,i)=>`
     <div class="queue-item">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
         <div style="overflow:hidden"><div class="queue-item-name">${g.fullMix.title||'Untitled'}</div><div class="queue-item-meta">${1+g.alternates.length} version${g.alternates.length?'s':''} · ${g.fullMix.genre||'—'}</div></div>
         <button class="btn btn-danger btn-sm" onclick="removeFromQueue(${i})" style="padding:2px 6px;flex-shrink:0">×</button>
       </div></div>`).join('');
-  const total = queue.reduce((s,g)=>s+1+g.alternates.length,0);
-  countEl.innerHTML = `<span>${queue.length}</span> track${queue.length>1?'s':''} · <span>${total}</span> rows`;
+  const total=queue.reduce((s,g)=>s+1+g.alternates.length,0);
+  countEl.innerHTML=`<span>${queue.length}</span> track${queue.length>1?'s':''} · <span>${total}</span> rows`;
 }
-
-function removeFromQueue(idx) { queue.splice(idx,1); renderQueue(); saveToStorage(); }
+function removeFromQueue(idx){queue.splice(idx,1);renderQueue();saveToStorage();}
 
 // ─── STORAGE ──────────────────────────────────────────────────────
-function saveToStorage() { try { localStorage.setItem('ptb_tracks',JSON.stringify(tracks)); localStorage.setItem('ptb_queue',JSON.stringify(queue)); } catch(e){} }
-function loadFromStorage() { try { const t=localStorage.getItem('ptb_tracks'),q=localStorage.getItem('ptb_queue'); if(t) tracks=JSON.parse(t); if(q) queue=JSON.parse(q); } catch(e){} renderTrackList(); renderQueue(); }
-function clearAll() { if(!confirm('Clear everything?')) return; tracks=[]; queue=[]; currentTrackId=null; currentAltIndex=null; localStorage.removeItem('ptb_tracks'); localStorage.removeItem('ptb_queue'); renderTrackList(); renderQueue(); document.getElementById('emptyForm').style.display='flex'; document.getElementById('trackForm').style.display='none'; }
+function saveToStorage(){try{localStorage.setItem('ptb_tracks',JSON.stringify(tracks));localStorage.setItem('ptb_queue',JSON.stringify(queue));}catch(e){}}
+function loadFromStorage(){try{const t=localStorage.getItem('ptb_tracks'),q=localStorage.getItem('ptb_queue');if(t)tracks=JSON.parse(t);if(q)queue=JSON.parse(q);}catch(e){}renderTrackList();renderQueue();}
+function clearAll(){if(!confirm('Clear everything?'))return;tracks=[];queue=[];currentTrackId=null;currentAltIndex=null;localStorage.removeItem('ptb_tracks');localStorage.removeItem('ptb_queue');renderTrackList();renderQueue();document.getElementById('emptyForm').style.display='flex';document.getElementById('trackForm').style.display='none';}
 
 // ─── EXPORT ───────────────────────────────────────────────────────
-const PTB_HEADERS = ['Source Audio ID',' Title','Filename','Catalog','Label','Album','Album Code','Album Description','Album Release Date','Album Artist','Album Genre','Track Number','Artist','Artist Description','Tempo','BPM','Key','Genre','Cue Type','Release Date','Date Uploaded','Admin Only','Length','Description','Moods','Styles','Style Of','Lyrics','Has Vocals','Explicit','ISRC','ISWC','Master ID','Has MP3','Has AIFF','Has WAV','Publisher 1 Company','Publisher 1 Pro Affiliation','Publisher 1 CAE/IPI','Publisher 1 Ownership Share','Publisher 1 Role','Publisher 1 Collection Share Percentage 1','Publisher 1 Collection Share Territory 1','Publisher 2 Company','Publisher 2 Pro Affiliation','Publisher 2 CAE/IPI','Publisher 2 Ownership Share','Publisher 2 Role','Publisher 2 Collection Share Percentage 1','Publisher 2 Collection Share Territory 1','Publisher 3 Company','Publisher 3 Pro Affiliation','Publisher 3 CAE/IPI','Publisher 3 Ownership Share','Publisher 3 Role','Publisher 3 Collection Share Percentage 1','Publisher 3 Collection Share Territory 1','Writer 1 First Name','Writer 1 Last Name','Writer 1 Company','Writer 1 Pro Affiliation','Writer 1 CAE/IPI','Writer 1 Ownership Share','Writer 1 Publisher','Writer 1 Role','Writer 2 First Name','Writer 2 Last Name','Writer 2 Company','Writer 2 Pro Affiliation','Writer 2 CAE/IPI','Writer 2 Ownership Share','Writer 2 Publisher','Writer 2 Role','Writer 3 First Name','Writer 3 Last Name','Writer 3 Company','Writer 3 Pro Affiliation','Writer 3 CAE/IPI','Writer 3 Ownership Share','Writer 3 Publisher','Writer 3 Role','Writer 4 First Name','Writer 4 Last Name','Writer 4 Company','Writer 4 Pro Affiliation','Writer 4 CAE/IPI','Writer 4 Ownership Share','Writer 4 Publisher','Writer 4 Role','','Instruments','Sub Genre','Film/TV Genre','Weighting','PRO Work ID Number','BMG Date Added','Netmix Date Added','Protunes Date Added'];
+const SA_HEADERS = ['Source Audio ID',' Title','Filename','Catalog','Label','Album','Album Code','Album Description','Album Release Date','Album Artist','Album Genre','Track Number','Artist','Artist Description','Tempo','BPM','Key','Genre','Cue Type','Release Date','Date Uploaded','Admin Only','Length','Description','Moods','Styles','Style Of','Lyrics','Has Vocals','Explicit','ISRC','ISWC','Master ID','Has MP3','Has AIFF','Has WAV','Publisher 1 Company','Publisher 1 Pro Affiliation','Publisher 1 CAE/IPI','Publisher 1 Ownership Share','Publisher 1 Role','Publisher 1 Collection Share Percentage 1','Publisher 1 Collection Share Territory 1','Publisher 2 Company','Publisher 2 Pro Affiliation','Publisher 2 CAE/IPI','Publisher 2 Ownership Share','Publisher 2 Role','Publisher 2 Collection Share Percentage 1','Publisher 2 Collection Share Territory 1','Publisher 3 Company','Publisher 3 Pro Affiliation','Publisher 3 CAE/IPI','Publisher 3 Ownership Share','Publisher 3 Role','Publisher 3 Collection Share Percentage 1','Publisher 3 Collection Share Territory 1','Writer 1 First Name','Writer 1 Last Name','Writer 1 Company','Writer 1 Pro Affiliation','Writer 1 CAE/IPI','Writer 1 Ownership Share','Writer 1 Publisher','Writer 1 Role','Writer 2 First Name','Writer 2 Last Name','Writer 2 Company','Writer 2 Pro Affiliation','Writer 2 CAE/IPI','Writer 2 Ownership Share','Writer 2 Publisher','Writer 2 Role','Writer 3 First Name','Writer 3 Last Name','Writer 3 Company','Writer 3 Pro Affiliation','Writer 3 CAE/IPI','Writer 3 Ownership Share','Writer 3 Publisher','Writer 3 Role','Writer 4 First Name','Writer 4 Last Name','Writer 4 Company','Writer 4 Pro Affiliation','Writer 4 CAE/IPI','Writer 4 Ownership Share','Writer 4 Publisher','Writer 4 Role','','Instruments','Sub Genre','Film/TV Genre','Weighting','PRO Work ID Number','BMG Date Added','Netmix Date Added','Protunes Date Added'];
 
-function entryToRow(entry) {
-  const row = new Array(PTB_HEADERS.length).fill('');
-  const set = (h,v) => { const i=PTB_HEADERS.indexOf(h); if(i>=0) row[i]=v??''; };
-  set(' Title', entry.title);
-  set('Filename', (entry.title||'Untitled')+' FLAVORLAB PTB.wav');
-  set('Catalog', "Producer's Toolbox"); set('Label', "Producer's Toolbox");
-  set('Album', entry.album); set('Album Code', entry.albumCode);
-  set('Artist', entry.artist); set('Artist Description', entry.artistDesc);
-  set('Tempo', entry.tempo); set('BPM', entry.bpm); set('Key', entry.key); set('Genre', entry.genre);
-  set('Has Vocals', entry.hasVocals); set('Explicit', entry.explicit); set('ISRC', entry.isrc);
-  set('Description', (entry.description||[]).join(', '));
-  set('Moods', (entry.moods||[]).join(', '));
-  set('Styles', (entry.styles||[]).join(', '));
-  set('Style Of', entry.styleOf);
-  set('Instruments', (entry.instruments||[]).join(', '));
-  set('Sub Genre', (entry.subGenres||[]).join(', '));
-  set('Film/TV Genre', (entry.filmGenres||[]).join(', '));
-  set('Has MP3','Yes'); set('Has AIFF','Yes'); set('Has WAV','Yes');
-  const pubs = ['Publisher 1','Publisher 2','Publisher 3'];
-  (entry.publishers||[]).slice(0,3).forEach((pub,i) => {
-    const p=pubs[i];
-    set(`${p} Company`,pub.company); set(`${p} Pro Affiliation`,pub.pro); set(`${p} CAE/IPI`,pub.ipi); set(`${p} Ownership Share`,pub.share); set(`${p} Role`,pub.role||'OP');
-  });
-  const wrs = ['Writer 1','Writer 2','Writer 3','Writer 4'];
-  (entry.writers||[]).slice(0,4).forEach((w,i) => {
-    const wr=wrs[i];
-    set(`${wr} First Name`,w.firstName); set(`${wr} Last Name`,w.lastName); set(`${wr} Pro Affiliation`,w.pro); set(`${wr} CAE/IPI`,w.ipi); set(`${wr} Ownership Share`,w.share); set(`${wr} Publisher`,w.publisher); set(`${wr} Role`,w.role||'C');
-  });
+const TS_HEADERS = ['Work Title','Alternate Title 1','Alternate Title 2','Alternate Title 3','Alternate Title 4','ISRC','Duration','Library','Writer 1 First Name','Writer 1 Last Name','Writer 1 PRO','Writer 1 IPI','Writer 1 Share %','Writer 1 Publisher','Writer 2 First Name','Writer 2 Last Name','Writer 2 PRO','Writer 2 IPI','Writer 2 Share %','Writer 2 Publisher','Writer 3 First Name','Writer 3 Last Name','Writer 3 PRO','Writer 3 IPI','Writer 3 Share %','Writer 3 Publisher','Publisher 1 Name','Publisher 1 PRO','Publisher 1 IPI','Publisher 1 Share %','Publisher 2 Name','Publisher 2 PRO','Publisher 2 IPI','Publisher 2 Share %'];
+
+function saEntryToRow(entry){
+  const row=new Array(SA_HEADERS.length).fill('');
+  const set=(h,v)=>{const i=SA_HEADERS.indexOf(h);if(i>=0)row[i]=v??'';};
+  set(' Title',entry.title);set('Filename',(entry.title||'Untitled')+' FLAVORLAB PTB.wav');
+  set('Catalog',"Producer's Toolbox");set('Label',"Producer's Toolbox");
+  set('Album',entry.album);set('Album Code',entry.albumCode);
+  set('Artist',entry.artist);set('Artist Description',entry.artistDesc);
+  set('Tempo',entry.tempo);set('BPM',entry.bpm);set('Genre',entry.genre);
+  set('Has Vocals',entry.hasVocals);set('Explicit',entry.explicit);set('ISRC',entry.isrc);
+  set('Description',(entry.description||[]).join(', '));
+  set('Moods',(entry.moods||[]).join(', '));set('Styles',(entry.styles||[]).join(', '));
+  set('Style Of',entry.styleOf);set('Instruments',(entry.instruments||[]).join(', '));
+  set('Sub Genre',(entry.subGenres||[]).join(', '));set('Film/TV Genre',(entry.filmGenres||[]).join(', '));
+  set('Has MP3','Yes');set('Has AIFF','Yes');set('Has WAV','Yes');
+  const pubs=['Publisher 1','Publisher 2','Publisher 3'];
+  (entry.publishers||[]).slice(0,3).forEach((pub,i)=>{const p=pubs[i];set(`${p} Company`,pub.company);set(`${p} Pro Affiliation`,pub.pro);set(`${p} CAE/IPI`,pub.ipi);set(`${p} Ownership Share`,pub.share);set(`${p} Role`,pub.role||'OP');});
+  const wrs=['Writer 1','Writer 2','Writer 3','Writer 4'];
+  (entry.writers||[]).slice(0,4).forEach((w,i)=>{const wr=wrs[i];set(`${wr} First Name`,w.firstName);set(`${wr} Last Name`,w.lastName);set(`${wr} Pro Affiliation`,w.pro);set(`${wr} CAE/IPI`,w.ipi);set(`${wr} Ownership Share`,w.share);set(`${wr} Publisher`,w.publisher);set(`${wr} Role`,w.role||'C');});
   return row;
 }
 
-function exportXLSX() {
-  if (!queue.length) { showToast('Queue is empty — add tracks first'); return; }
-  const rows = [PTB_HEADERS];
-  queue.forEach(g => { rows.push(entryToRow(g.fullMix)); g.alternates.forEach(alt => rows.push(entryToRow(alt))); });
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = PTB_HEADERS.map((_,i) => i===1?{wch:35}:i===2?{wch:50}:i===23?{wch:60}:{wch:18});
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'CBS Sports March Madness');
-  XLSX.writeFile(wb, 'PTB_Metadata_Export.xlsx');
-  showToast('Exported successfully ✓', true);
+function tsEntryToRow(entry){
+  const row=new Array(TS_HEADERS.length).fill('');
+  const set=(h,v)=>{const i=TS_HEADERS.indexOf(h);if(i>=0)row[i]=v??'';};
+  set('Work Title',entry.workTitle||entry.title);
+  set('Alternate Title 1',entry.altTitle1);set('Alternate Title 2',entry.altTitle2);
+  set('Alternate Title 3',entry.altTitle3);set('Alternate Title 4',entry.altTitle4);
+  set('ISRC',entry.ts_isrc||entry.isrc);set('Duration',entry.duration);
+  set('Library',entry.library||"Producer's Toolbox");
+  const wrs=['Writer 1','Writer 2','Writer 3'];
+  (entry.ts_writers||[]).slice(0,3).forEach((w,i)=>{const wr=wrs[i];set(`${wr} First Name`,w.firstName);set(`${wr} Last Name`,w.lastName);set(`${wr} PRO`,w.pro);set(`${wr} IPI`,w.ipi);set(`${wr} Share %`,w.share);set(`${wr} Publisher`,w.publisher);});
+  const pubs=['Publisher 1','Publisher 2'];
+  (entry.ts_publishers||[]).slice(0,2).forEach((pub,i)=>{const p=pubs[i];set(`${p} Name`,pub.company);set(`${p} PRO`,pub.pro);set(`${p} IPI`,pub.ipi);set(`${p} Share %`,pub.share);});
+  return row;
 }
 
-function showToast(msg, success=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show'+(success?' success':'');
-  clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(()=>{ t.className='toast'; }, 2800);
+function exportCurrent(){
+  if(!queue.length){showToast('Queue is empty — add tracks first');return;}
+  if(currentPage==='sourceaudio'){
+    const rows=[SA_HEADERS];
+    queue.forEach(g=>{rows.push(saEntryToRow(g.fullMix));g.alternates.forEach(alt=>rows.push(saEntryToRow(alt)));});
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=SA_HEADERS.map((_,i)=>i===1?{wch:35}:i===2?{wch:50}:{wch:18});
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'SourceAudio Export');
+    XLSX.writeFile(wb,'PTB_SourceAudio_Export.xlsx');showToast('SourceAudio export ready ✓',true);
+  } else {
+    const rows=[TS_HEADERS];
+    queue.forEach(g=>{rows.push(tsEntryToRow(g.fullMix));});
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=TS_HEADERS.map(()=>({wch:22}));
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tunesat Registration');
+    XLSX.writeFile(wb,'PTB_Tunesat_Export.xlsx');showToast('Tunesat export ready ✓',true);
+  }
+}
+
+// ─── ADMIN ────────────────────────────────────────────────────────
+function openAdmin(){document.getElementById('adminModal').style.display='flex';renderAdminAlbums();renderAdminArtists();}
+function closeAdmin(){document.getElementById('adminModal').style.display='none';}
+function renderAdminAlbums(){
+  const custom=JSON.parse(localStorage.getItem('ptb_custom_albums')||'[]');
+  document.getElementById('adminAlbumList').innerHTML=custom.length?custom.map((a,i)=>`<div class="admin-row"><span>${a.name} · ${a.code}</span><button class="btn btn-danger btn-sm" onclick="removeCustomAlbum(${i})">×</button></div>`).join(''):'<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No custom albums</div>';
+}
+function addCustomAlbum(){
+  const name=document.getElementById('aa_name').value.trim();const code=document.getElementById('aa_code').value.trim();const catalog=document.getElementById('aa_catalog').value.trim()||"Producer's Toolbox";
+  if(!name||!code){showToast('Album name and code required');return;}
+  const existing=JSON.parse(localStorage.getItem('ptb_custom_albums')||'[]');existing.push({name,code,catalog});localStorage.setItem('ptb_custom_albums',JSON.stringify(existing));
+  ['aa_name','aa_code','aa_catalog'].forEach(id=>document.getElementById(id).value='');
+  renderAdminAlbums();populateAlbumDropdown();showToast('Album added ✓',true);
+}
+function removeCustomAlbum(idx){const existing=JSON.parse(localStorage.getItem('ptb_custom_albums')||'[]');existing.splice(idx,1);localStorage.setItem('ptb_custom_albums',JSON.stringify(existing));renderAdminAlbums();populateAlbumDropdown();}
+function renderAdminArtists(){
+  const artists=getArtists();
+  document.getElementById('adminArtistList').innerHTML=artists.length?artists.map((a,i)=>`<div class="admin-row"><span>${a}</span><button class="btn btn-danger btn-sm" onclick="removeCustomArtist(${i})">×</button></div>`).join(''):'<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No saved artists</div>';
+}
+function addCustomArtist(){const val=document.getElementById('aa_artist').value.trim();if(!val)return;const existing=getArtists();if(!existing.includes(val)){existing.push(val);localStorage.setItem('ptb_custom_artists',JSON.stringify(existing));}document.getElementById('aa_artist').value='';renderAdminArtists();showToast('Artist saved ✓',true);}
+function removeCustomArtist(idx){const existing=getArtists();existing.splice(idx,1);localStorage.setItem('ptb_custom_artists',JSON.stringify(existing));renderAdminArtists();}
+
+function showToast(msg,success=false){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(success?' success':'');
+  clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>{t.className='toast';},2800);
+}
+
+function init(){
+  buildCheckboxGroup('descGroup',DESCRIPTION_PHRASES,'description',true);
+  buildCheckboxGroup('moodsGroup',MOODS,'moods');
+  buildCheckboxGroup('stylesGroup',STYLES,'styles');
+  buildCheckboxGroup('instrumentsGroup',INSTRUMENTS,'instruments');
+  buildCheckboxGroup('filmGenreGroup',FILM_GENRES,'filmGenres');
+  buildCheckboxGroup('subGenreGroup',SUB_GENRES,'subGenres');
+  populateAlbumDropdown();loadFromStorage();
+  document.addEventListener('click',e=>{if(!e.target.closest('.writer-search-wrap')&&!e.target.closest('#artistSearchWrap'))document.querySelectorAll('.writer-dropdown').forEach(d=>d.remove());});
+}
+
+function buildCheckboxGroup(containerId,items,field,isDesc=false){
+  const el=document.getElementById(containerId);
+  el.innerHTML=items.map(item=>`<label class="cb-item"><input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="onCheckChange('${field}','${item.replace(/'/g,"\\'")}',this.checked,${isDesc})"><span>${item}</span></label>`).join('');
 }
 
 init();
 </script>
 
+<!-- Admin Modal -->
 <div class="modal-overlay" id="adminModal">
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">⚙ Admin Panel</span>
       <button class="btn btn-ghost btn-sm" onclick="closeAdmin()">Close</button>
     </div>
-
-    <div class="admin-section">
-      <div class="admin-section-title">Writers</div>
-      <div id="adminWriterList"></div>
-      <div class="admin-input-row">
-        <input type="text" id="aw_first" placeholder="First name">
-        <input type="text" id="aw_last" placeholder="Last name">
-        <select id="aw_pro"><option value="">PRO</option><option>ASCAP</option><option>BMI</option><option>SESAC</option><option>SOCAN</option><option>APRA</option><option>PRS</option><option>GEMA</option><option>Other</option></select>
-        <input type="text" id="aw_ipi" placeholder="IPI">
-        <select id="aw_pub"><option value="">Publisher</option><option>Gandepub</option><option>Gem Lab</option><option>Gelly Pub</option><option>G&E Music Group LLC</option></select>
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="addCustomWriter()" style="margin-top:8px">+ Add writer</button>
-    </div>
-
     <div class="admin-section">
       <div class="admin-section-title">Albums</div>
       <div id="adminAlbumList"></div>
@@ -1175,7 +1225,6 @@ init();
       </div>
       <button class="btn btn-ghost btn-sm" onclick="addCustomAlbum()" style="margin-top:8px">+ Add album</button>
     </div>
-
     <div class="admin-section">
       <div class="admin-section-title">Saved Artist Names</div>
       <div id="adminArtistList"></div>
