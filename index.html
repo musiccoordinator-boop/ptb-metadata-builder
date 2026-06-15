@@ -154,6 +154,15 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 .cb-item input[type="checkbox"] { width: 13px; height: 13px; accent-color: var(--ptb-teal-bright); cursor: pointer; flex-shrink: 0; }
 .cb-item span { font-size: 12px; color: var(--text-mid); cursor: pointer; }
 
+/* Search within checkbox groups */
+.group-search {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text); font-family: 'Barlow', sans-serif; font-size: 11px; padding: 3px 8px;
+  width: 140px; margin-left: 12px; outline: none; font-weight: normal; text-transform: none; letter-spacing: normal;
+}
+.group-search:focus { border-color: var(--ptb-teal); background: var(--surface2); }
+.field-label .group-search { width: auto; max-width: 90px; padding: 2px 4px; font-size: 10px; margin: 0 0 0 auto; }
+
 /* Desc tags */
 .desc-output { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); min-height: 40px; padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 .desc-tag { background: rgba(14,127,168,0.12); border: 1px solid rgba(14,127,168,0.3); border-radius: 20px; padding: 2px 10px; font-size: 11px; color: var(--text-mid); display: flex; align-items: center; gap: 5px; }
@@ -263,7 +272,6 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
   </div>
 </header>
 
-<!-- PAGE TABS -->
 <div class="page-tabs">
   <div class="page-tab active" id="tab-sourceaudio" onclick="switchPage('sourceaudio')">
     <span class="tab-icon">🎵</span> SourceAudio / ProTunes
@@ -306,7 +314,6 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         </div>
       </div>
 
-      <!-- SOURCEAUDIO PAGE -->
       <div id="page-sourceaudio" class="form-body">
         <div class="page-notice">
           <span class="page-notice-icon">🎵</span>
@@ -338,10 +345,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
               </select>
             </div>
             <div class="field"><label class="field-label">BPM</label><input type="number" id="f_bpm" placeholder="120" oninput="onBpmChange(this.value)"></div>
-            <div class="field"><label class="field-label">Genre</label>
-              <select id="f_genre" onchange="syncField('genre',this.value)">
-                <option value="">—</option><option>Rock</option><option>Pop</option><option>Hip Hop</option><option>Funk</option><option>R&B</option><option>Electronic</option><option>Electronic Dance</option><option>Classical</option><option>Jazz</option><option>Country</option><option>Latin</option><option>World</option><option>Orchestral</option><option>Ambient</option><option>Folk</option><option>Soul</option>
-              </select>
+            <div class="field">
+              <label class="field-label" style="display:flex;align-items:center;">Genre 
+                <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'genreGroup')">
+              </label>
+              <div class="checkbox-group" id="genreGroup" style="max-height: 80px;"></div>
             </div>
           </div>
           <div class="field-grid cols-3" style="margin-top:8px">
@@ -352,7 +360,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         </div>
 
         <div class="section">
-          <div class="section-label">Description</div>
+          <div class="section-label">Description <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'descGroup')"></div>
           <div class="desc-output" id="descOutput"><span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span></div>
           <div class="checkbox-group" id="descGroup"></div>
         </div>
@@ -363,17 +371,17 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         </div>
 
         <div class="section">
-          <div class="section-label">Moods</div>
+          <div class="section-label">Moods <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'moodsGroup')"></div>
           <div class="checkbox-group" id="moodsGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Styles</div>
+          <div class="section-label">Styles <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'stylesGroup')"></div>
           <div class="checkbox-group" id="stylesGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Instruments <span id="instrNote" style="font-size:10px;color:var(--text-muted);margin-left:6px;font-family:'DM Mono',monospace;font-weight:400;letter-spacing:0"></span></div>
+          <div class="section-label">Instruments <span id="instrNote" style="font-size:10px;color:var(--text-muted);margin-left:6px;font-family:'DM Mono',monospace;font-weight:400;letter-spacing:0"></span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'instrumentsGroup')"></div>
           <div class="checkbox-group" id="instrumentsGroup"></div>
         </div>
 
@@ -400,7 +408,6 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         </div>
       </div>
 
-      <!-- TUNESAT PAGE -->
       <div id="page-tunesat" class="form-body" style="display:none">
         <div class="page-notice">
           <span class="page-notice-icon">📡</span>
@@ -769,6 +776,7 @@ const PUBLISHERS = [
 
 const PROS = ["ASCAP","BMI","SESAC","SOCAN","APRA","PRS","GEMA","SACEM","SIAE","STIM","KODA","TONO","IMRO","SAMRO","SGAE","UBC","MSG","SUISA","Other"];
 
+const GENRES = ["Rock","Pop","Hip Hop","Funk","R&B","Electronic","Electronic Dance","Classical","Jazz","Country","Latin","World","Orchestral","Ambient","Folk","Soul"];
 const DESCRIPTION_PHRASES = ["Aggressive","Airy","Ambitious","Anticipation","Atmospheric","Austere","Bittersweet","Bold","Bouncy","Brash","Breezy","Bright","Brooding","Building","Calm","Campy","Carefree","Celebratory","Cerebral","Cheerful","Chill","Comforting","Confident","Confrontational","Contemplative","Content","Cool","Cozy","Cute","Dangerous","Dark","Delicate Calm","Determined","Dramatic","Dreamy","Driving","Dynamic","Earthy","Easy Going","Easy Listening","Eerie","Effervescent","Elegant","Energetic","Enigmatic","Ethereal","Exciting","Explosive","Feel Good","Festive","Fierce","Floating","Focused","Foreboding","Fulfilled","Fun","Funky","Gentle","Gentle Groove","Giddy","Gleeful","Gritty","Groovy","Gutsy","Happy","Hard-Hitting","Harsh","Haunting","Hazy","Heroic","Hopeful","Humorous","Intense","Introspective","Jazzy","Joyful","Laid Back","Light","Lively","Lo Fi","Majestic","Meditative","Melancholic","Mellow","Menacing","Minimal","Mysterious","Nostalgic","Ominous","Optimistic","Peaceful","Playful","Poignant","Positive","Pounding","Powerful","Purposeful","Quirky","Rambunctious","Reckless","Reflective","Refreshing","Regal","Relaxed","Relentless","Rollicking","Rootsy","Rousing","Rowdy","Scary","Searching","Sensitive","Sentimental","Serious","Sinister","Smooth","Soothing","Sophisticated","Soulful","Spacey","Sparkling","Spirited","Stirring","Strong","Stylish","Summery","Suspenseful","Sweet","Tender","Tense","Touching","Turbulent","Upbeat","Uplifting","Urgent","Volatile","Warm","Wholesome","Wistful"];
 const MOODS = ["Adventurous","Aggressive","Angry","Anxious","Athletic","Bouncy","Bright","Calm","Carefree","Celebratory","Cheerful","Cold","Confident","Contemplative","Cool","Courageous","Dark","Dramatic","Dreamy","Dynamic","Easygoing","Effervescent","Emotional","Empowering","Energetic","Epic","Euphoric","Exciting","Feel Good","Festive","Fierce","Flowing","Fun","Funky","Giddy","Gleeful","Gloomy","Groovy","Happy","Heavy","Hopeful","Humorous","Inspirational","Intense","Laid Back","Lively","Melancholic","Menacing","Moody","Motivational","Mysterious","Nostalgic","Optimistic","Peaceful","Playful","Powerful","Quirky","Rambunctious","Rollicking","Romantic","Rowdy","Sad","Sensual","Sentimental","Serene","Sinister","Smooth","Sophisticated","Spirited","Suspenseful","Tense","Triumphant","Upbeat","Uplifting","Urgent","Whimsical"];
 const STYLES = ["Acoustic","Aggressive","Ambient","Anthemic","Atmospheric","Bouncy","Cinematic","Dark","Delicate","Dirty","Driving","Dystopian","Eclectic","Electronic","Elegant","Epic","Ethereal","Experimental","Flowing","Funky","Futuristic","Gritty","Groovy","Heavy","Hypnotic","Industrial","Intense","Laid Back","Layered","Lush","Melodic","Minimalist","Modern","Moody","Orchestral","Organic","Pulsing","Raw","Rhythmic","Riff","Smooth","Soaring","Sparse","Syncopated","Upbeat"];
@@ -780,460 +788,4 @@ const DEFAULT_ALBUMS = [
   { name: "Electro Chill", code: "PTB035", catalog: "Producer's Toolbox" },
   { name: "Feel Good Indie", code: "PTB039", catalog: "Producer's Toolbox" },
   { name: "Hip Hop (Atlanta Trap)", code: "PTB048", catalog: "Producer's Toolbox" },
-  { name: "Soulful & Sexy", code: "PTB067", catalog: "Producer's Toolbox" },
-  { name: "Lo-Fi Dream Beats", code: "PTB071", catalog: "Producer's Toolbox" },
-  { name: "Pop Rockers", code: "PTB077", catalog: "Producer's Toolbox" },
-  { name: "Punk Rockers", code: "PTB079", catalog: "Producer's Toolbox" },
-  { name: "Sports Rock", code: "PTB088", catalog: "Producer's Toolbox" },
-  { name: "Epic Sports Trailers", code: "PTB117", catalog: "Producer's Toolbox" },
-  { name: "Sports Hip Hop", code: "PTB126", catalog: "Producer's Toolbox" },
-  { name: "Sports Hybrid", code: "PTB129", catalog: "Producer's Toolbox" },
-  { name: "Sports Hip Hop Volume 4", code: "PTB133", catalog: "Producer's Toolbox" },
-  { name: "Ambient Scoring Volume 20", code: "PTB134", catalog: "Ambient Scoring" },
-  { name: "Lo-Fi Chill Beats", code: "PTB149", catalog: "Producer's Toolbox" },
-  { name: "Chill Bedroom Pop", code: "PTB150", catalog: "Producer's Toolbox" },
-];
-
-// ─── STATE ────────────────────────────────────────────────────────
-let tracks = [], currentTrackId = null, currentAltIndex = null, queue = [];
-let currentPage = 'sourceaudio';
-
-function getAlbums() { try { const s=localStorage.getItem('ptb_custom_albums'); return s?[...DEFAULT_ALBUMS,...JSON.parse(s)]:DEFAULT_ALBUMS; } catch(e){return DEFAULT_ALBUMS;} }
-function getArtists() { try { const s=localStorage.getItem('ptb_custom_artists'); return s?JSON.parse(s):[]; } catch(e){return [];} }
-function getCurrentTrackGroup() { return tracks.find(t=>t.id===currentTrackId)||null; }
-function getCurrentEntry() { const g=getCurrentTrackGroup(); if(!g)return null; return currentAltIndex===null?g.fullMix:g.alternates[currentAltIndex]||null; }
-
-function freshEntry(title='',isAlt=false) {
-  return { title, isAlt, album:'', albumCode:'', artist:'', artistDesc:'', tempo:'', bpm:'', genre:'', hasVocals:'No', explicit:'No', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'1',role:'OP'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'1',publisher:'',role:'C',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
-}
-
-// ─── PAGE SWITCHING ────────────────────────────────────────────────
-function switchPage(page) {
-  currentPage = page;
-  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-'+page).classList.add('active');
-  document.getElementById('page-sourceaudio').style.display = page==='sourceaudio'?'block':'none';
-  document.getElementById('page-tunesat').style.display = page==='tunesat'?'block':'none';
-  document.getElementById('queuePageBadge').textContent = page==='sourceaudio'?'SA':'TS';
-  renderQueue();
-}
-
-// ─── ALBUMS ──────────────────────────────────────────────────────
-function populateAlbumDropdown() {
-  const sel=document.getElementById('f_album'); if(!sel)return;
-  const entry=getCurrentEntry(); const current=entry?entry.album:'';
-  sel.innerHTML='<option value="">— Select album —</option>'+getAlbums().map(a=>`<option value="${a.name}" ${current===a.name?'selected':''}>${a.name} (${a.code})</option>`).join('');
-}
-function onAlbumChange(val) {
-  const e=getCurrentEntry(); if(!e)return; e.album=val;
-  const album=getAlbums().find(a=>a.name===val);
-  if(album){e.albumCode=album.code;e.catalog=album.catalog;document.getElementById('f_albumCode').value=album.code;}
-  saveToStorage();
-}
-function onBpmChange(val) {
-  const e=getCurrentEntry(); if(!e)return; e.bpm=val;
-  const bpm=parseInt(val); if(!isNaN(bpm)){let t=''; if(bpm<=89)t='Slow';else if(bpm<=110)t='Medium';else if(bpm<=130)t='Fast';else t='Very Fast'; e.tempo=t; const sel=document.getElementById('f_tempo');if(sel)sel.value=t;}
-  saveToStorage();
-}
-function onArtistSearch(val) {
-  const e=getCurrentEntry();if(!e)return;e.artist=val;saveToStorage();
-  const wrap=document.getElementById('artistSearchWrap');let drop=document.getElementById('artistDrop');if(drop)drop.remove();if(!val.trim())return;
-  const customArtists=getArtists();
-  const writerSuggestions=WRITERS.filter(w=>(w.display+' - Flavorlab PTB').toLowerCase().includes(val.toLowerCase())).map(w=>w.display+' - Flavorlab PTB').slice(0,6);
-  const customMatches=customArtists.filter(a=>a.toLowerCase().includes(val.toLowerCase())).slice(0,4);
-  const suggestions=[...new Set([...customMatches,...writerSuggestions])].slice(0,10);
-  if(!suggestions.length)return;
-  drop=document.createElement('div');drop.className='writer-dropdown';drop.id='artistDrop';
-  drop.innerHTML=suggestions.map(s=>`<div class="writer-option" onclick="selectArtist('${s.replace(/'/g,"\\'")}')">${s}</div>`).join('');
-  wrap.appendChild(drop);
-}
-function selectArtist(val) {
-  const e=getCurrentEntry();if(!e)return;e.artist=val;document.getElementById('f_artist').value=val;const drop=document.getElementById('artistDrop');if(drop)drop.remove();saveToStorage();
-}
-
-// ─── TRACK MANAGEMENT ─────────────────────────────────────────────
-function newTrack() {
-  const id=Date.now().toString();
-  tracks.push({id,fullMix:freshEntry('Untitled track'),alternates:[]});
-  currentTrackId=id;currentAltIndex=null;
-  renderTrackList();loadEntryIntoForm();document.getElementById('titleInput').focus();saveToStorage();
-}
-function selectTrack(id,altIdx=null) { currentTrackId=id;currentAltIndex=altIdx;renderTrackList();loadEntryIntoForm(); }
-function addAlternate() {
-  const g=getCurrentTrackGroup();if(!g)return;
-  const alt=JSON.parse(JSON.stringify(g.fullMix));
-  alt.title=g.fullMix.title+' (Alt '+(g.alternates.length+1)+')';alt.isAlt=true;
-  g.alternates.push(alt);currentAltIndex=g.alternates.length-1;
-  renderTrackList();loadEntryIntoForm();saveToStorage();
-}
-function removeAlternate(idx) {
-  const g=getCurrentTrackGroup();if(!g)return;g.alternates.splice(idx,1);
-  if(currentAltIndex===idx){currentAltIndex=null;loadEntryIntoForm();}else if(currentAltIndex>idx)currentAltIndex--;
-  renderTrackList();renderAltChips();saveToStorage();
-}
-
-// ─── FORM ──────────────────────────────────────────────────────────
-function loadEntryIntoForm() {
-  const entry=getCurrentEntry();
-  if(!entry){document.getElementById('emptyForm').style.display='flex';document.getElementById('trackForm').style.display='none';return;}
-  document.getElementById('emptyForm').style.display='none';document.getElementById('trackForm').style.display='block';
-  document.getElementById('titleInput').value=entry.title||'';
-  document.getElementById('formTrackType').textContent=entry.isAlt?'ALTERNATE VERSION':'FULL MIX';
-  populateAlbumDropdown();
-  ['albumCode','artist','artistDesc','tempo','bpm','genre','hasVocals','explicit','isrc','styleOf'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=entry[f]||'';});
-  const fieldMap={description:'descGroup',moods:'moodsGroup',styles:'stylesGroup',instruments:'instrumentsGroup',filmGenres:'filmGenreGroup',subGenres:'subGenreGroup'};
-  Object.entries(fieldMap).forEach(([field,groupId])=>{const c=document.getElementById(groupId);if(!c)return;c.querySelectorAll('input[type=checkbox]').forEach(cb=>{cb.checked=(entry[field]||[]).includes(cb.value);});});
-  renderDescOutput();
-  document.getElementById('instrNote').textContent=entry.isAlt?'✦ edit for this version only':'';
-  renderPublisherBlocks();renderWriterBlocks();renderAltChips();
-  // Tunesat fields
-  ['workTitle','altTitle1','altTitle2','altTitle3','altTitle4','ts_isrc','duration','library'].forEach(f=>{const el=document.getElementById('t_'+f.replace('ts_',''));if(el)el.value=entry[f]||'';});
-  if(document.getElementById('t_isrc'))document.getElementById('t_isrc').value=entry.ts_isrc||'';
-  renderTunesatWriterBlocks();renderTunesatPublisherBlocks();
-}
-
-function onTitleChange(val){const e=getCurrentEntry();if(e){e.title=val;renderTrackList();renderAltChips();saveToStorage();}}
-function syncField(field,val){const e=getCurrentEntry();if(e){e[field]=val;saveToStorage();}}
-function syncTunesatField(field,val){const e=getCurrentEntry();if(e){e[field]=val;saveToStorage();}}
-
-function onCheckChange(field,val,checked,isDesc=false){
-  const e=getCurrentEntry();if(!e)return;
-  if(checked){if(!e[field].includes(val))e[field].push(val);}else{e[field]=e[field].filter(v=>v!==val);}
-  if(isDesc)renderDescOutput();saveToStorage();
-}
-
-function renderDescOutput(){
-  const e=getCurrentEntry();const container=document.getElementById('descOutput');
-  if(!e||!e.description||e.description.length===0){container.innerHTML='<span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span>';return;}
-  container.innerHTML=e.description.map(p=>`<div class="desc-tag">${p}<span class="desc-tag-x" onclick="removeDescPhrase('${p.replace(/'/g,"\\'")}')">×</span></div>`).join('');
-}
-function removeDescPhrase(phrase){
-  const e=getCurrentEntry();if(!e)return;e.description=e.description.filter(p=>p!==phrase);
-  const container=document.getElementById('descGroup');const cb=container.querySelector(`input[value="${phrase}"]`);if(cb)cb.checked=false;
-  renderDescOutput();saveToStorage();
-}
-
-// ─── WRITER SEARCH ─────────────────────────────────────────────────
-function writerSearch(idx,val){
-  const e=getCurrentEntry();if(!e)return;e.writers[idx].searchVal=val;
-  const wrap=document.getElementById(`writerSearchWrap_${idx}`);let drop=document.getElementById(`writerDrop_${idx}`);if(drop)drop.remove();
-  if(!val.trim())return;
-  const matches=WRITERS.filter(w=>w.display.toLowerCase().includes(val.toLowerCase())).slice(0,12);
-  if(!matches.length)return;
-  drop=document.createElement('div');drop.className='writer-dropdown';drop.id=`writerDrop_${idx}`;
-  drop.innerHTML=matches.map(w=>`<div class="writer-option" onclick="selectWriter(${idx},'${w.display.replace(/'/g,"\\'")}')"><span>${w.display}</span><span class="writer-option-meta">${w.pro} · ${w.ipi}</span></div>`).join('');
-  wrap.appendChild(drop);
-}
-function selectWriter(idx,displayName){
-  const e=getCurrentEntry();if(!e)return;const w=WRITERS.find(x=>x.display===displayName);if(!w)return;
-  e.writers[idx]={...e.writers[idx],searchVal:w.display,firstName:w.first,lastName:w.last,pro:w.pro,ipi:w.ipi,publisher:w.publisher,role:'C'};
-  renderWriterBlocks();saveToStorage();
-}
-
-// ─── TUNESAT WRITER SEARCH ────────────────────────────────────────
-function tsWriterSearch(idx,val){
-  const e=getCurrentEntry();if(!e)return;e.ts_writers[idx].searchVal=val;
-  const wrap=document.getElementById(`tsWriterWrap_${idx}`);let drop=document.getElementById(`tsWriterDrop_${idx}`);if(drop)drop.remove();
-  if(!val.trim())return;
-  const matches=WRITERS.filter(w=>w.display.toLowerCase().includes(val.toLowerCase())).slice(0,12);
-  if(!matches.length)return;
-  drop=document.createElement('div');drop.className='writer-dropdown';drop.id=`tsWriterDrop_${idx}`;
-  drop.innerHTML=matches.map(w=>`<div class="writer-option" onclick="selectTsWriter(${idx},'${w.display.replace(/'/g,"\\'")}')"><span>${w.display}</span><span class="writer-option-meta">${w.pro} · ${w.ipi}</span></div>`).join('');
-  wrap.appendChild(drop);
-}
-function selectTsWriter(idx,displayName){
-  const e=getCurrentEntry();if(!e)return;const w=WRITERS.find(x=>x.display===displayName);if(!w)return;
-  e.ts_writers[idx]={...e.ts_writers[idx],searchVal:w.display,firstName:w.first,lastName:w.last,pro:w.pro,ipi:w.ipi,publisher:w.publisher,role:'C'};
-  renderTunesatWriterBlocks();saveToStorage();
-}
-
-// ─── PUBLISHERS (SA) ──────────────────────────────────────────────
-function renderPublisherBlocks(){
-  const e=getCurrentEntry();if(!e)return;
-  document.getElementById('publisherBlocks').innerHTML=e.publishers.map((pub,i)=>`
-    <div class="party-block">
-      <div class="party-block-header"><span class="party-block-title">Publisher ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removePublisher(${i})">Remove</button>`:''}</div>
-      <div class="field-grid cols-2">
-        <div class="field"><label class="field-label">Company</label>
-          <select onchange="updatePublisher(${i},'company',this.value)">
-            <option value="">— Select —</option>
-            ${PUBLISHERS.map(p=>`<option value="${p.name}" ${pub.company===p.name?'selected':''}>${p.name}</option>`).join('')}
-            <option value="__other__">Other...</option>
-          </select></div>
-        <div class="field"><label class="field-label">PRO</label><select onchange="updatePublisher(${i},'pro',this.value)">${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${pub.ipi||''}" oninput="updatePublisher(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Ownership Share</label><input type="text" value="${pub.share||'1'}" oninput="updatePublisher(${i},'share',this.value)"></div>
-      </div></div>`).join('');
-}
-function updatePublisher(idx,field,val){
-  const e=getCurrentEntry();if(!e)return;
-  if(field==='company'){const known=PUBLISHERS.find(p=>p.name===val);if(known){e.publishers[idx].company=known.name;e.publishers[idx].pro=known.pro;e.publishers[idx].ipi=known.ipi;}else{e.publishers[idx].company=val==='__other__'?'':val;}renderPublisherBlocks();}
-  else{e.publishers[idx][field]=val;}saveToStorage();
-}
-function addPublisher(){const e=getCurrentEntry();if(!e)return;e.publishers.push({company:'',pro:'',ipi:'',share:'',role:'OP'});renderPublisherBlocks();saveToStorage();}
-function removePublisher(idx){const e=getCurrentEntry();if(!e)return;e.publishers.splice(idx,1);renderPublisherBlocks();saveToStorage();}
-
-// ─── WRITERS (SA) ──────────────────────────────────────────────────
-function renderWriterBlocks(){
-  const e=getCurrentEntry();if(!e)return;
-  document.getElementById('writerBlocks').innerHTML=e.writers.map((w,i)=>`
-    <div class="party-block">
-      <div class="party-block-header"><span class="party-block-title">Writer ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removeWriter(${i})">Remove</button>`:''}</div>
-      <div class="field-grid cols-2">
-        <div class="field" style="grid-column:span 2"><label class="field-label">Search writer</label>
-          <div class="writer-search-wrap" id="writerSearchWrap_${i}">
-            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="writerSearch(${i},this.value)" placeholder="Type name to search..." autocomplete="off">
-          </div></div>
-        <div class="field"><label class="field-label">First Name</label><input type="text" value="${w.firstName||''}" oninput="updateWriter(${i},'firstName',this.value)"></div>
-        <div class="field"><label class="field-label">Last Name</label><input type="text" value="${w.lastName||''}" oninput="updateWriter(${i},'lastName',this.value)"></div>
-        <div class="field"><label class="field-label">PRO</label><select onchange="updateWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${w.ipi||''}" oninput="updateWriter(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Ownership Share</label><input type="text" value="${w.share||''}" oninput="updateWriter(${i},'share',this.value)"></div>
-        <div class="field"><label class="field-label">Publisher</label><select onchange="updateWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
-      </div></div>`).join('');
-}
-function updateWriter(idx,field,val){const e=getCurrentEntry();if(!e)return;e.writers[idx][field]=val;saveToStorage();}
-function addWriter(){const e=getCurrentEntry();if(!e)return;e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C',searchVal:''});renderWriterBlocks();saveToStorage();}
-function removeWriter(idx){const e=getCurrentEntry();if(!e)return;e.writers.splice(idx,1);renderWriterBlocks();saveToStorage();}
-
-// ─── PUBLISHERS / WRITERS (TUNESAT) ───────────────────────────────
-function renderTunesatWriterBlocks(){
-  const e=getCurrentEntry();if(!e)return;
-  if(!e.ts_writers||!e.ts_writers.length)e.ts_writers=[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}];
-  document.getElementById('ts_writerBlocks').innerHTML=e.ts_writers.map((w,i)=>`
-    <div class="party-block">
-      <div class="party-block-header"><span class="party-block-title">Writer ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removeTsWriter(${i})">Remove</button>`:''}</div>
-      <div class="field-grid cols-2">
-        <div class="field" style="grid-column:span 2"><label class="field-label">Search writer</label>
-          <div class="writer-search-wrap" id="tsWriterWrap_${i}">
-            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="tsWriterSearch(${i},this.value)" placeholder="Type name..." autocomplete="off">
-          </div></div>
-        <div class="field"><label class="field-label">First Name</label><input type="text" value="${w.firstName||''}" oninput="updateTsWriter(${i},'firstName',this.value)"></div>
-        <div class="field"><label class="field-label">Last Name</label><input type="text" value="${w.lastName||''}" oninput="updateTsWriter(${i},'lastName',this.value)"></div>
-        <div class="field"><label class="field-label">PRO</label><select onchange="updateTsWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">IPI</label><input type="text" value="${w.ipi||''}" oninput="updateTsWriter(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Share %</label><input type="text" value="${w.share||''}" oninput="updateTsWriter(${i},'share',this.value)" placeholder="50"></div>
-        <div class="field"><label class="field-label">Publisher</label><select onchange="updateTsWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
-      </div></div>`).join('');
-}
-function updateTsWriter(idx,field,val){const e=getCurrentEntry();if(!e)return;e.ts_writers[idx][field]=val;saveToStorage();}
-function addTunesatWriter(){const e=getCurrentEntry();if(!e)return;if(!e.ts_writers)e.ts_writers=[];e.ts_writers.push({searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'});renderTunesatWriterBlocks();saveToStorage();}
-function removeTsWriter(idx){const e=getCurrentEntry();if(!e)return;e.ts_writers.splice(idx,1);renderTunesatWriterBlocks();saveToStorage();}
-
-function renderTunesatPublisherBlocks(){
-  const e=getCurrentEntry();if(!e)return;
-  if(!e.ts_publishers||!e.ts_publishers.length)e.ts_publishers=[{company:'',pro:'',ipi:'',share:''}];
-  document.getElementById('ts_publisherBlocks').innerHTML=e.ts_publishers.map((pub,i)=>`
-    <div class="party-block">
-      <div class="party-block-header"><span class="party-block-title">Publisher ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removeTsPublisher(${i})">Remove</button>`:''}</div>
-      <div class="field-grid cols-2">
-        <div class="field"><label class="field-label">Company</label>
-          <select onchange="updateTsPublisher(${i},'company',this.value)">
-            <option value="">— Select —</option>
-            ${PUBLISHERS.map(p=>`<option value="${p.name}" ${pub.company===p.name?'selected':''}>${p.name}</option>`).join('')}
-          </select></div>
-        <div class="field"><label class="field-label">PRO</label><select onchange="updateTsPublisher(${i},'pro',this.value)">${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">IPI</label><input type="text" value="${pub.ipi||''}" oninput="updateTsPublisher(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Share %</label><input type="text" value="${pub.share||''}" oninput="updateTsPublisher(${i},'share',this.value)" placeholder="100"></div>
-      </div></div>`).join('');
-}
-function updateTsPublisher(idx,field,val){
-  const e=getCurrentEntry();if(!e)return;
-  if(field==='company'){const known=PUBLISHERS.find(p=>p.name===val);if(known){e.ts_publishers[idx].company=known.name;e.ts_publishers[idx].pro=known.pro;e.ts_publishers[idx].ipi=known.ipi;}else{e.ts_publishers[idx].company=val;}renderTunesatPublisherBlocks();}
-  else{e.ts_publishers[idx][field]=val;}saveToStorage();
-}
-function addTunesatPublisher(){const e=getCurrentEntry();if(!e)return;if(!e.ts_publishers)e.ts_publishers=[];e.ts_publishers.push({company:'',pro:'',ipi:'',share:''});renderTunesatPublisherBlocks();saveToStorage();}
-function removeTsPublisher(idx){const e=getCurrentEntry();if(!e)return;e.ts_publishers.splice(idx,1);renderTunesatPublisherBlocks();saveToStorage();}
-
-// ─── ALT CHIPS ────────────────────────────────────────────────────
-function renderAltChips(){
-  const g=getCurrentTrackGroup();if(!g)return;
-  document.getElementById('altChips').innerHTML=g.alternates.map((alt,i)=>`
-    <div class="alt-chip ${currentAltIndex===i?'active-alt':''}" onclick="selectTrack('${g.id}',${i})">
-      ${alt.title||'Untitled alternate'}
-      <span class="alt-chip-x" onclick="event.stopPropagation();removeAlternate(${i})">×</span>
-    </div>`).join('');
-}
-
-// ─── TRACK LIST ───────────────────────────────────────────────────
-function renderTrackList(){
-  const container=document.getElementById('trackList');
-  if(!tracks.length){container.innerHTML=`<div class="empty-rail"><div style="font-size:22px;margin-bottom:4px">🎵</div><div>No tracks yet</div><div style="font-size:11px;margin-top:4px">Click "+ New" to start</div></div>`;return;}
-  container.innerHTML=tracks.map(g=>{
-    const isActive=g.id===currentTrackId;
-    return `<div>
-      <div class="track-item ${isActive&&currentAltIndex===null?'active':''}" onclick="selectTrack('${g.id}')">
-        <div class="track-item-name">${g.fullMix.title||'Untitled track'}</div>
-        <div class="track-item-meta">${g.fullMix.albumCode||'—'} · ${g.fullMix.genre||'no genre'}</div>
-        ${g.alternates.length?`<div class="alt-badge">${g.alternates.length} alt${g.alternates.length>1?'s':''}</div>`:''}
-      </div>
-      ${isActive?g.alternates.map((alt,i)=>`
-        <div class="alt-item ${currentAltIndex===i?'active':''}" onclick="selectTrack('${g.id}',${i})">
-          <div class="alt-item-dot"></div>
-          <div class="alt-item-name">${alt.title||'Untitled alternate'}</div>
-        </div>`).join(''):''}
-    </div>`;
-  }).join('');
-}
-
-// ─── QUEUE ────────────────────────────────────────────────────────
-function addToQueue(){
-  const g=getCurrentTrackGroup();if(!g)return;
-  if(queue.find(q=>q.id===g.id)){showToast('Already in queue');return;}
-  queue.push(JSON.parse(JSON.stringify(g)));
-  renderQueue();showToast('Added to export queue ✓',true);saveToStorage();
-}
-function renderQueue(){
-  const container=document.getElementById('queueItems'),countEl=document.getElementById('queueCount');
-  if(!queue.length){container.innerHTML=`<div class="empty-state" style="height:200px"><div style="font-size:20px">📤</div><p style="font-size:12px">Add tracks to queue then export</p></div>`;countEl.innerHTML='Queue is empty';return;}
-  container.innerHTML=queue.map((g,i)=>`
-    <div class="queue-item">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-        <div style="overflow:hidden"><div class="queue-item-name">${g.fullMix.title||'Untitled'}</div><div class="queue-item-meta">${1+g.alternates.length} version${g.alternates.length?'s':''} · ${g.fullMix.genre||'—'}</div></div>
-        <button class="btn btn-danger btn-sm" onclick="removeFromQueue(${i})" style="padding:2px 6px;flex-shrink:0">×</button>
-      </div></div>`).join('');
-  const total=queue.reduce((s,g)=>s+1+g.alternates.length,0);
-  countEl.innerHTML=`<span>${queue.length}</span> track${queue.length>1?'s':''} · <span>${total}</span> rows`;
-}
-function removeFromQueue(idx){queue.splice(idx,1);renderQueue();saveToStorage();}
-
-// ─── STORAGE ──────────────────────────────────────────────────────
-function saveToStorage(){try{localStorage.setItem('ptb_tracks',JSON.stringify(tracks));localStorage.setItem('ptb_queue',JSON.stringify(queue));}catch(e){}}
-function loadFromStorage(){try{const t=localStorage.getItem('ptb_tracks'),q=localStorage.getItem('ptb_queue');if(t)tracks=JSON.parse(t);if(q)queue=JSON.parse(q);}catch(e){}renderTrackList();renderQueue();}
-function clearAll(){if(!confirm('Clear everything?'))return;tracks=[];queue=[];currentTrackId=null;currentAltIndex=null;localStorage.removeItem('ptb_tracks');localStorage.removeItem('ptb_queue');renderTrackList();renderQueue();document.getElementById('emptyForm').style.display='flex';document.getElementById('trackForm').style.display='none';}
-
-// ─── EXPORT ───────────────────────────────────────────────────────
-const SA_HEADERS = ['Source Audio ID',' Title','Filename','Catalog','Label','Album','Album Code','Album Description','Album Release Date','Album Artist','Album Genre','Track Number','Artist','Artist Description','Tempo','BPM','Key','Genre','Cue Type','Release Date','Date Uploaded','Admin Only','Length','Description','Moods','Styles','Style Of','Lyrics','Has Vocals','Explicit','ISRC','ISWC','Master ID','Has MP3','Has AIFF','Has WAV','Publisher 1 Company','Publisher 1 Pro Affiliation','Publisher 1 CAE/IPI','Publisher 1 Ownership Share','Publisher 1 Role','Publisher 1 Collection Share Percentage 1','Publisher 1 Collection Share Territory 1','Publisher 2 Company','Publisher 2 Pro Affiliation','Publisher 2 CAE/IPI','Publisher 2 Ownership Share','Publisher 2 Role','Publisher 2 Collection Share Percentage 1','Publisher 2 Collection Share Territory 1','Publisher 3 Company','Publisher 3 Pro Affiliation','Publisher 3 CAE/IPI','Publisher 3 Ownership Share','Publisher 3 Role','Publisher 3 Collection Share Percentage 1','Publisher 3 Collection Share Territory 1','Writer 1 First Name','Writer 1 Last Name','Writer 1 Company','Writer 1 Pro Affiliation','Writer 1 CAE/IPI','Writer 1 Ownership Share','Writer 1 Publisher','Writer 1 Role','Writer 2 First Name','Writer 2 Last Name','Writer 2 Company','Writer 2 Pro Affiliation','Writer 2 CAE/IPI','Writer 2 Ownership Share','Writer 2 Publisher','Writer 2 Role','Writer 3 First Name','Writer 3 Last Name','Writer 3 Company','Writer 3 Pro Affiliation','Writer 3 CAE/IPI','Writer 3 Ownership Share','Writer 3 Publisher','Writer 3 Role','Writer 4 First Name','Writer 4 Last Name','Writer 4 Company','Writer 4 Pro Affiliation','Writer 4 CAE/IPI','Writer 4 Ownership Share','Writer 4 Publisher','Writer 4 Role','','Instruments','Sub Genre','Film/TV Genre','Weighting','PRO Work ID Number','BMG Date Added','Netmix Date Added','Protunes Date Added'];
-
-const TS_HEADERS = ['Work Title','Alternate Title 1','Alternate Title 2','Alternate Title 3','Alternate Title 4','ISRC','Duration','Library','Writer 1 First Name','Writer 1 Last Name','Writer 1 PRO','Writer 1 IPI','Writer 1 Share %','Writer 1 Publisher','Writer 2 First Name','Writer 2 Last Name','Writer 2 PRO','Writer 2 IPI','Writer 2 Share %','Writer 2 Publisher','Writer 3 First Name','Writer 3 Last Name','Writer 3 PRO','Writer 3 IPI','Writer 3 Share %','Writer 3 Publisher','Publisher 1 Name','Publisher 1 PRO','Publisher 1 IPI','Publisher 1 Share %','Publisher 2 Name','Publisher 2 PRO','Publisher 2 IPI','Publisher 2 Share %'];
-
-function saEntryToRow(entry){
-  const row=new Array(SA_HEADERS.length).fill('');
-  const set=(h,v)=>{const i=SA_HEADERS.indexOf(h);if(i>=0)row[i]=v??'';};
-  set(' Title',entry.title);set('Filename',(entry.title||'Untitled')+' FLAVORLAB PTB.wav');
-  set('Catalog',"Producer's Toolbox");set('Label',"Producer's Toolbox");
-  set('Album',entry.album);set('Album Code',entry.albumCode);
-  set('Artist',entry.artist);set('Artist Description',entry.artistDesc);
-  set('Tempo',entry.tempo);set('BPM',entry.bpm);set('Genre',entry.genre);
-  set('Has Vocals',entry.hasVocals);set('Explicit',entry.explicit);set('ISRC',entry.isrc);
-  set('Description',(entry.description||[]).join(', '));
-  set('Moods',(entry.moods||[]).join(', '));set('Styles',(entry.styles||[]).join(', '));
-  set('Style Of',entry.styleOf);set('Instruments',(entry.instruments||[]).join(', '));
-  set('Sub Genre',(entry.subGenres||[]).join(', '));set('Film/TV Genre',(entry.filmGenres||[]).join(', '));
-  set('Has MP3','Yes');set('Has AIFF','Yes');set('Has WAV','Yes');
-  const pubs=['Publisher 1','Publisher 2','Publisher 3'];
-  (entry.publishers||[]).slice(0,3).forEach((pub,i)=>{const p=pubs[i];set(`${p} Company`,pub.company);set(`${p} Pro Affiliation`,pub.pro);set(`${p} CAE/IPI`,pub.ipi);set(`${p} Ownership Share`,pub.share);set(`${p} Role`,pub.role||'OP');});
-  const wrs=['Writer 1','Writer 2','Writer 3','Writer 4'];
-  (entry.writers||[]).slice(0,4).forEach((w,i)=>{const wr=wrs[i];set(`${wr} First Name`,w.firstName);set(`${wr} Last Name`,w.lastName);set(`${wr} Pro Affiliation`,w.pro);set(`${wr} CAE/IPI`,w.ipi);set(`${wr} Ownership Share`,w.share);set(`${wr} Publisher`,w.publisher);set(`${wr} Role`,w.role||'C');});
-  return row;
-}
-
-function tsEntryToRow(entry){
-  const row=new Array(TS_HEADERS.length).fill('');
-  const set=(h,v)=>{const i=TS_HEADERS.indexOf(h);if(i>=0)row[i]=v??'';};
-  set('Work Title',entry.workTitle||entry.title);
-  set('Alternate Title 1',entry.altTitle1);set('Alternate Title 2',entry.altTitle2);
-  set('Alternate Title 3',entry.altTitle3);set('Alternate Title 4',entry.altTitle4);
-  set('ISRC',entry.ts_isrc||entry.isrc);set('Duration',entry.duration);
-  set('Library',entry.library||"Producer's Toolbox");
-  const wrs=['Writer 1','Writer 2','Writer 3'];
-  (entry.ts_writers||[]).slice(0,3).forEach((w,i)=>{const wr=wrs[i];set(`${wr} First Name`,w.firstName);set(`${wr} Last Name`,w.lastName);set(`${wr} PRO`,w.pro);set(`${wr} IPI`,w.ipi);set(`${wr} Share %`,w.share);set(`${wr} Publisher`,w.publisher);});
-  const pubs=['Publisher 1','Publisher 2'];
-  (entry.ts_publishers||[]).slice(0,2).forEach((pub,i)=>{const p=pubs[i];set(`${p} Name`,pub.company);set(`${p} PRO`,pub.pro);set(`${p} IPI`,pub.ipi);set(`${p} Share %`,pub.share);});
-  return row;
-}
-
-function exportCurrent(){
-  if(!queue.length){showToast('Queue is empty — add tracks first');return;}
-  if(currentPage==='sourceaudio'){
-    const rows=[SA_HEADERS];
-    queue.forEach(g=>{rows.push(saEntryToRow(g.fullMix));g.alternates.forEach(alt=>rows.push(saEntryToRow(alt)));});
-    const ws=XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols']=SA_HEADERS.map((_,i)=>i===1?{wch:35}:i===2?{wch:50}:{wch:18});
-    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'SourceAudio Export');
-    XLSX.writeFile(wb,'PTB_SourceAudio_Export.xlsx');showToast('SourceAudio export ready ✓',true);
-  } else {
-    const rows=[TS_HEADERS];
-    queue.forEach(g=>{rows.push(tsEntryToRow(g.fullMix));});
-    const ws=XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols']=TS_HEADERS.map(()=>({wch:22}));
-    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tunesat Registration');
-    XLSX.writeFile(wb,'PTB_Tunesat_Export.xlsx');showToast('Tunesat export ready ✓',true);
-  }
-}
-
-// ─── ADMIN ────────────────────────────────────────────────────────
-function openAdmin(){document.getElementById('adminModal').style.display='flex';renderAdminAlbums();renderAdminArtists();}
-function closeAdmin(){document.getElementById('adminModal').style.display='none';}
-function renderAdminAlbums(){
-  const custom=JSON.parse(localStorage.getItem('ptb_custom_albums')||'[]');
-  document.getElementById('adminAlbumList').innerHTML=custom.length?custom.map((a,i)=>`<div class="admin-row"><span>${a.name} · ${a.code}</span><button class="btn btn-danger btn-sm" onclick="removeCustomAlbum(${i})">×</button></div>`).join(''):'<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No custom albums</div>';
-}
-function addCustomAlbum(){
-  const name=document.getElementById('aa_name').value.trim();const code=document.getElementById('aa_code').value.trim();const catalog=document.getElementById('aa_catalog').value.trim()||"Producer's Toolbox";
-  if(!name||!code){showToast('Album name and code required');return;}
-  const existing=JSON.parse(localStorage.getItem('ptb_custom_albums')||'[]');existing.push({name,code,catalog});localStorage.setItem('ptb_custom_albums',JSON.stringify(existing));
-  ['aa_name','aa_code','aa_catalog'].forEach(id=>document.getElementById(id).value='');
-  renderAdminAlbums();populateAlbumDropdown();showToast('Album added ✓',true);
-}
-function removeCustomAlbum(idx){const existing=JSON.parse(localStorage.getItem('ptb_custom_albums')||'[]');existing.splice(idx,1);localStorage.setItem('ptb_custom_albums',JSON.stringify(existing));renderAdminAlbums();populateAlbumDropdown();}
-function renderAdminArtists(){
-  const artists=getArtists();
-  document.getElementById('adminArtistList').innerHTML=artists.length?artists.map((a,i)=>`<div class="admin-row"><span>${a}</span><button class="btn btn-danger btn-sm" onclick="removeCustomArtist(${i})">×</button></div>`).join(''):'<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No saved artists</div>';
-}
-function addCustomArtist(){const val=document.getElementById('aa_artist').value.trim();if(!val)return;const existing=getArtists();if(!existing.includes(val)){existing.push(val);localStorage.setItem('ptb_custom_artists',JSON.stringify(existing));}document.getElementById('aa_artist').value='';renderAdminArtists();showToast('Artist saved ✓',true);}
-function removeCustomArtist(idx){const existing=getArtists();existing.splice(idx,1);localStorage.setItem('ptb_custom_artists',JSON.stringify(existing));renderAdminArtists();}
-
-function showToast(msg,success=false){
-  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(success?' success':'');
-  clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>{t.className='toast';},2800);
-}
-
-function init(){
-  buildCheckboxGroup('descGroup',DESCRIPTION_PHRASES,'description',true);
-  buildCheckboxGroup('moodsGroup',MOODS,'moods');
-  buildCheckboxGroup('stylesGroup',STYLES,'styles');
-  buildCheckboxGroup('instrumentsGroup',INSTRUMENTS,'instruments');
-  buildCheckboxGroup('filmGenreGroup',FILM_GENRES,'filmGenres');
-  buildCheckboxGroup('subGenreGroup',SUB_GENRES,'subGenres');
-  populateAlbumDropdown();loadFromStorage();
-  document.addEventListener('click',e=>{if(!e.target.closest('.writer-search-wrap')&&!e.target.closest('#artistSearchWrap'))document.querySelectorAll('.writer-dropdown').forEach(d=>d.remove());});
-}
-
-function buildCheckboxGroup(containerId,items,field,isDesc=false){
-  const el=document.getElementById(containerId);
-  el.innerHTML=items.map(item=>`<label class="cb-item"><input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="onCheckChange('${field}','${item.replace(/'/g,"\\'")}',this.checked,${isDesc})"><span>${item}</span></label>`).join('');
-}
-
-init();
-</script>
-
-<!-- Admin Modal -->
-<div class="modal-overlay" id="adminModal">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">⚙ Admin Panel</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeAdmin()">Close</button>
-    </div>
-    <div class="admin-section">
-      <div class="admin-section-title">Albums</div>
-      <div id="adminAlbumList"></div>
-      <div class="admin-input-row">
-        <input type="text" id="aa_name" placeholder="Album name" style="flex:2">
-        <input type="text" id="aa_code" placeholder="PTB###">
-        <input type="text" id="aa_catalog" placeholder="Catalog (opt)">
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="addCustomAlbum()" style="margin-top:8px">+ Add album</button>
-    </div>
-    <div class="admin-section">
-      <div class="admin-section-title">Saved Artist Names</div>
-      <div id="adminArtistList"></div>
-      <div class="admin-input-row">
-        <input type="text" id="aa_artist" placeholder="e.g. Calvin Ross - Flavorlab PTB" style="flex:3">
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="addCustomArtist()" style="margin-top:8px">+ Save artist</button>
-    </div>
-  </div>
-</div>
-</body>
-</html>
+  { name: "Soulful &
