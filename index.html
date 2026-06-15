@@ -398,12 +398,12 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         </div>
 
         <div class="section">
-          <div class="section-label">Film / TV Genre</div>
+          <div class="section-label">Film / TV Genre <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'filmGenreGroup')"></div>
           <div class="checkbox-group" id="filmGenreGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Sub Genre</div>
+          <div class="section-label">Sub Genre <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'subGenreGroup')"></div>
           <div class="checkbox-group" id="subGenreGroup"></div>
         </div>
       </div>
