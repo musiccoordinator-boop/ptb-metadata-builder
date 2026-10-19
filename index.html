@@ -341,7 +341,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
           <div class="field-grid cols-3">
             <div class="field"><label class="field-label">Tempo</label>
               <select id="f_tempo" onchange="syncField('tempo',this.value)">
-                <option value="">—</option><option>Very Slow</option><option>Slow</option><option>Medium Slow</option><option>Medium</option><option>Fast</option><option>Very Fast</option>
+                <option value="">—</option>
+                <option value="Very Fast (131+ BPM)">Very Fast (131+ BPM)</option>
+                <option value="Fast (111-130 BPM)">Fast (111-130 BPM)</option>
+                <option value="Medium (90-110 BPM)">Medium (90-110 BPM)</option>
+                <option value="Slow (0-89 BPM)">Slow (0-89 BPM)</option>
               </select>
             </div>
             <div class="field"><label class="field-label">BPM</label><input type="number" id="f_bpm" placeholder="120" oninput="onBpmChange(this.value)"></div>
@@ -840,7 +844,7 @@ function onAlbumChange(val) {
 }
 function onBpmChange(val) {
   const e=getCurrentEntry(); if(!e)return; e.bpm=val;
-  const bpm=parseInt(val); if(!isNaN(bpm)){let t=''; if(bpm<=89)t='Slow';else if(bpm<=110)t='Medium';else if(bpm<=130)t='Fast';else t='Very Fast'; e.tempo=t; const sel=document.getElementById('f_tempo');if(sel)sel.value=t;}
+  const bpm=parseInt(val); if(!isNaN(bpm)){let t=''; if(bpm<=89)t='Slow (0-89 BPM)';else if(bpm<=110)t='Medium (90-110 BPM)';else if(bpm<=130)t='Fast (111-130 BPM)';else t='Very Fast (131+ BPM)'; e.tempo=t; const sel=document.getElementById('f_tempo');if(sel)sel.value=t;}
   saveToStorage();
 }
 function onArtistSearch(val) {
