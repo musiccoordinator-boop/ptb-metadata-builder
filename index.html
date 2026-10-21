@@ -118,6 +118,7 @@ body { font-family: 'Barlow', sans-serif; background: var(--ptb-navy); color: va
   margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
 }
 .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.section-label .req { color: var(--ptb-teal-bright); margin-left: 4px; }
 
 .field-grid { display: grid; gap: 8px; }
 .field-grid.cols-2 { grid-template-columns: 1fr 1fr; }
@@ -304,7 +305,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
       <div class="form-topbar">
         <div style="flex:1;min-width:0">
           <div class="name-input-wrap">
-            <input type="text" id="titleInput" placeholder="TRACK TITLE..." oninput="onTitleChange(this.value)">
+            <input type="text" id="titleInput" placeholder="TRACK TITLE *..." oninput="onTitleChange(this.value)">
           </div>
           <div class="form-track-type" id="formTrackType">FULL MIX</div>
         </div>
@@ -323,23 +324,35 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         <div class="section">
           <div class="section-label">Basic Info</div>
           <div class="field-grid cols-2">
-            <div class="field"><label class="field-label">Album <span class="req">*</span></label>
+            <div class="field"><label class="field-label">Catalog</label>
+              <select id="f_catalog" onchange="syncField('catalog',this.value)">
+                <option value="Ambient Scoring">Ambient Scoring</option>
+                <option value="Flavorlab Records">Flavorlab Records</option>
+                <option value="Flavorlab Score">Flavorlab Score</option>
+                <option value="Producer's Toolbox" selected>Producer's Toolbox</option>
+              </select>
+            </div>
+            <div class="field"><label class="field-label">Label</label>
+              <select id="f_label" onchange="syncField('label',this.value)">
+                <option value="Producer's Toolbox" selected>Producer's Toolbox</option>
+              </select>
+            </div>
+            <div class="field"><label class="field-label">Album</label>
               <select id="f_album" onchange="onAlbumChange(this.value)"><option value="">— Select album —</option></select>
             </div>
             <div class="field"><label class="field-label">Album Code</label><input type="text" id="f_albumCode" placeholder="auto-filled" readonly style="opacity:0.6;cursor:default"></div>
-            <div class="field"><label class="field-label">Artist</label>
+            <div class="field"><label class="field-label">Artist <span class="req">*</span></label>
               <div class="writer-search-wrap" id="artistSearchWrap">
                 <input type="text" id="f_artist" placeholder="Type to search..." oninput="onArtistSearch(this.value)" autocomplete="off">
               </div>
             </div>
-            <div class="field"><label class="field-label">Artist Description</label><input type="text" id="f_artistDesc" placeholder="Research Material" oninput="syncField('artistDesc',this.value)"></div>
           </div>
         </div>
 
         <div class="section">
           <div class="section-label">Musical</div>
           <div class="field-grid cols-3">
-            <div class="field"><label class="field-label">Tempo</label>
+            <div class="field"><label class="field-label">Tempo <span class="req">*</span></label>
               <select id="f_tempo" onchange="syncField('tempo',this.value)">
                 <option value="">—</option>
                 <option value="Very Fast (131+ BPM)">Very Fast (131+ BPM)</option>
@@ -348,9 +361,9 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
                 <option value="Slow (0-89 BPM)">Slow (0-89 BPM)</option>
               </select>
             </div>
-            <div class="field"><label class="field-label">BPM</label><input type="number" id="f_bpm" placeholder="120" oninput="onBpmChange(this.value)"></div>
+            <div class="field"><label class="field-label">BPM <span class="req">*</span></label><input type="number" id="f_bpm" placeholder="120" oninput="onBpmChange(this.value)"></div>
             <div class="field">
-              <label class="field-label" style="display:flex;align-items:center;">Genre 
+              <label class="field-label" style="display:flex;align-items:center;">Genre <span class="req">*</span>
                 <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'genreGroup')">
               </label>
               <div class="checkbox-group" id="genreGroup" style="max-height: 80px;"></div>
@@ -364,28 +377,28 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         </div>
 
         <div class="section">
-          <div class="section-label">Description <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'descGroup')"></div>
+          <div class="section-label">Description <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'descGroup')"></div>
           <div class="desc-output" id="descOutput"><span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span></div>
           <div class="checkbox-group" id="descGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Style Of (References)</div>
+          <div class="section-label">Style Of (References) <span class="req">*</span></div>
           <div class="field"><input type="text" id="f_styleOf" placeholder="e.g. Blink-182, Bowling For Soup" oninput="syncField('styleOf',this.value)"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Moods <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'moodsGroup')"></div>
+          <div class="section-label">Moods <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'moodsGroup')"></div>
           <div class="checkbox-group" id="moodsGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Styles <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'stylesGroup')"></div>
+          <div class="section-label">Styles <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'stylesGroup')"></div>
           <div class="checkbox-group" id="stylesGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Instruments <span id="instrNote" style="font-size:10px;color:var(--text-muted);margin-left:6px;font-family:'DM Mono',monospace;font-weight:400;letter-spacing:0"></span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'instrumentsGroup')"></div>
+          <div class="section-label">Instruments <span class="req">*</span> <span id="instrNote" style="font-size:10px;color:var(--text-muted);margin-left:6px;font-family:'DM Mono',monospace;font-weight:400;letter-spacing:0"></span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'instrumentsGroup')"></div>
           <div class="checkbox-group" id="instrumentsGroup"></div>
         </div>
 
@@ -402,12 +415,12 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         </div>
 
         <div class="section">
-          <div class="section-label">Film / TV Genre <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'filmGenreGroup')"></div>
+          <div class="section-label">Film / TV Genre <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'filmGenreGroup')"></div>
           <div class="checkbox-group" id="filmGenreGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Sub Genre <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'subGenreGroup')"></div>
+          <div class="section-label">Sub Genre <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'subGenreGroup')"></div>
           <div class="checkbox-group" id="subGenreGroup"></div>
         </div>
       </div>
@@ -816,7 +829,7 @@ function getCurrentTrackGroup() { return tracks.find(t=>t.id===currentTrackId)||
 function getCurrentEntry() { const g=getCurrentTrackGroup(); if(!g)return null; return currentAltIndex===null?g.fullMix:g.alternates[currentAltIndex]||null; }
 
 function freshEntry(title='',isAlt=false) {
-  return { title, isAlt, album:'', albumCode:'', artist:'', artistDesc:'', tempo:'', bpm:'', genre:[], hasVocals:'No', explicit:'No', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'1',role:'OP'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'1',publisher:'',role:'C',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
+  return { title, isAlt, catalog:"Producer's Toolbox", label:"Producer's Toolbox", album:'', albumCode:'', artist:'', tempo:'', bpm:'', genre:[], hasVocals:'No', explicit:'No', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'1',role:'OP'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'1',publisher:'',role:'C',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
 }
 
 // ─── PAGE SWITCHING ────────────────────────────────────────────────
@@ -839,7 +852,13 @@ function populateAlbumDropdown() {
 function onAlbumChange(val) {
   const e=getCurrentEntry(); if(!e)return; e.album=val;
   const album=getAlbums().find(a=>a.name===val);
-  if(album){e.albumCode=album.code;e.catalog=album.catalog;document.getElementById('f_albumCode').value=album.code;}
+  if(album){
+    e.albumCode=album.code;
+    e.catalog=album.catalog || "Producer's Toolbox";
+    document.getElementById('f_albumCode').value=album.code;
+    const catEl=document.getElementById('f_catalog');
+    if(catEl) catEl.value = e.catalog;
+  }
   saveToStorage();
 }
 function onBpmChange(val) {
@@ -893,7 +912,7 @@ function loadEntryIntoForm() {
   document.getElementById('formTrackType').textContent=entry.isAlt?'ALTERNATE VERSION':'FULL MIX';
   populateAlbumDropdown();
   
-  ['albumCode','artist','artistDesc','tempo','bpm','hasVocals','explicit','isrc','styleOf'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=entry[f]||'';});
+  ['catalog','label','albumCode','artist','tempo','bpm','hasVocals','explicit','isrc','styleOf'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=entry[f]||'';});
   
   const fieldMap={genre:'genreGroup',description:'descGroup',moods:'moodsGroup',styles:'stylesGroup',instruments:'instrumentsGroup',filmGenres:'filmGenreGroup',subGenres:'subGenreGroup'};
   Object.entries(fieldMap).forEach(([field,groupId])=>{
@@ -990,15 +1009,15 @@ function renderPublisherBlocks(){
     <div class="party-block">
       <div class="party-block-header"><span class="party-block-title">Publisher ${i+1}</span>${i>0?`<button class="btn btn-danger btn-sm" onclick="removePublisher(${i})">Remove</button>`:''}</div>
       <div class="field-grid cols-2">
-        <div class="field"><label class="field-label">Company</label>
+        <div class="field"><label class="field-label">Company <span class="req">*</span></label>
           <select onchange="updatePublisher(${i},'company',this.value)">
             <option value="">— Select —</option>
             ${PUBLISHERS.map(p=>`<option value="${p.name}" ${pub.company===p.name?'selected':''}>${p.name}</option>`).join('')}
             <option value="__other__">Other...</option>
           </select></div>
-        <div class="field"><label class="field-label">PRO</label><select onchange="updatePublisher(${i},'pro',this.value)">${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${pub.ipi||''}" oninput="updatePublisher(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Ownership Share</label><input type="text" value="${pub.share||'1'}" oninput="updatePublisher(${i},'share',this.value)"></div>
+        <div class="field"><label class="field-label">PRO <span class="req">*</span></label><select onchange="updatePublisher(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">CAE/IPI <span class="req">*</span></label><input type="text" value="${pub.ipi||''}" oninput="updatePublisher(${i},'ipi',this.value)"></div>
+        <div class="field"><label class="field-label">Ownership Share <span class="req">*</span></label><input type="text" value="${pub.share||'1'}" oninput="updatePublisher(${i},'share',this.value)"></div>
       </div></div>`).join('');
 }
 function updatePublisher(idx,field,val){
@@ -1006,7 +1025,7 @@ function updatePublisher(idx,field,val){
   if(field==='company'){const known=PUBLISHERS.find(p=>p.name===val);if(known){e.publishers[idx].company=known.name;e.publishers[idx].pro=known.pro;e.publishers[idx].ipi=known.ipi;}else{e.publishers[idx].company=val==='__other__'?'':val;}renderPublisherBlocks();}
   else{e.publishers[idx][field]=val;}saveToStorage();
 }
-function addPublisher(){const e=getCurrentEntry();if(!e)return;e.publishers.push({company:'',pro:'',ipi:'',share:'',role:'OP'});renderPublisherBlocks();saveToStorage();}
+function addPublisher(){const e=getCurrentEntry();if(!e)return;e.publishers.push({company:'',pro:'',ipi:'',share:'1',role:'OP'});renderPublisherBlocks();saveToStorage();}
 function removePublisher(idx){const e=getCurrentEntry();if(!e)return;e.publishers.splice(idx,1);renderPublisherBlocks();saveToStorage();}
 
 // ─── WRITERS (SA) ──────────────────────────────────────────────────
@@ -1020,16 +1039,16 @@ function renderWriterBlocks(){
           <div class="writer-search-wrap" id="writerSearchWrap_${i}">
             <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="writerSearch(${i},this.value)" placeholder="Type name to search..." autocomplete="off">
           </div></div>
-        <div class="field"><label class="field-label">First Name</label><input type="text" value="${w.firstName||''}" oninput="updateWriter(${i},'firstName',this.value)"></div>
-        <div class="field"><label class="field-label">Last Name</label><input type="text" value="${w.lastName||''}" oninput="updateWriter(${i},'lastName',this.value)"></div>
-        <div class="field"><label class="field-label">PRO</label><select onchange="updateWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">CAE/IPI</label><input type="text" value="${w.ipi||''}" oninput="updateWriter(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Ownership Share</label><input type="text" value="${w.share||''}" oninput="updateWriter(${i},'share',this.value)"></div>
-        <div class="field"><label class="field-label">Publisher</label><select onchange="updateWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">First Name <span class="req">*</span></label><input type="text" value="${w.firstName||''}" oninput="updateWriter(${i},'firstName',this.value)"></div>
+        <div class="field"><label class="field-label">Last Name <span class="req">*</span></label><input type="text" value="${w.lastName||''}" oninput="updateWriter(${i},'lastName',this.value)"></div>
+        <div class="field"><label class="field-label">PRO <span class="req">*</span></label><select onchange="updateWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">CAE/IPI <span class="req">*</span></label><input type="text" value="${w.ipi||''}" oninput="updateWriter(${i},'ipi',this.value)"></div>
+        <div class="field"><label class="field-label">Ownership Share <span class="req">*</span></label><input type="text" value="${w.share||''}" oninput="updateWriter(${i},'share',this.value)"></div>
+        <div class="field"><label class="field-label">Publisher <span class="req">*</span></label><select onchange="updateWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
       </div></div>`).join('');
 }
 function updateWriter(idx,field,val){const e=getCurrentEntry();if(!e)return;e.writers[idx][field]=val;saveToStorage();}
-function addWriter(){const e=getCurrentEntry();if(!e)return;e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C',searchVal:''});renderWriterBlocks();saveToStorage();}
+function addWriter(){const e=getCurrentEntry();if(!e)return;e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'1',publisher:'',role:'C',searchVal:''});renderWriterBlocks();saveToStorage();}
 function removeWriter(idx){const e=getCurrentEntry();if(!e)return;e.writers.splice(idx,1);renderWriterBlocks();saveToStorage();}
 
 // ─── PUBLISHERS / WRITERS (TUNESAT) ───────────────────────────────
@@ -1147,9 +1166,9 @@ function saEntryToRow(entry){
   const row=new Array(SA_HEADERS.length).fill('');
   const set=(h,v)=>{const i=SA_HEADERS.indexOf(h);if(i>=0)row[i]=v??'';};
   set(' Title',entry.title);set('Filename',(entry.title||'Untitled')+' FLAVORLAB PTB.wav');
-  set('Catalog',"Producer's Toolbox");set('Label',"Producer's Toolbox");
+  set('Catalog',entry.catalog||"Producer's Toolbox");set('Label',entry.label||"Producer's Toolbox");
   set('Album',entry.album);set('Album Code',entry.albumCode);
-  set('Artist',entry.artist);set('Artist Description',entry.artistDesc);
+  set('Artist',entry.artist);
   set('Tempo',entry.tempo);set('BPM',entry.bpm);
   set('Genre', Array.isArray(entry.genre) ? entry.genre.join(', ') : (entry.genre || ''));
   set('Has Vocals',entry.hasVocals);set('Explicit',entry.explicit);set('ISRC',entry.isrc);
