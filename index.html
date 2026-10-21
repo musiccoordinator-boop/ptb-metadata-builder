@@ -342,11 +342,12 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
             <div class="field"><label class="field-label">Album</label>
               <select id="f_album" onchange="onAlbumChange(this.value)"><option value="">–</option></select>
             </div>
-            <div class="field"><label class="field-label">Album Code</label><input type="text" id="f_albumCode" placeholder="auto-filled" readonly style="opacity:0.6;cursor:default"></div>
-            <div class="field"><label class="field-label">Artist <span class="req">*</span></label>
+            <div class="field"><label class="field-label">Album Code</label><input type="text" id="f_albumCode" placeholder="Auto-fills when ALBUM is selected" readonly style="opacity:0.6;cursor:default"></div>
+            <div class="field" style="grid-column:span 2"><label class="field-label">Artist <span class="req">*</span></label>
               <div class="writer-search-wrap" id="artistSearchWrap">
-                <input type="text" id="f_artist" placeholder="Search..." oninput="onArtistSearch(this.value)" autocomplete="off">
+                <input type="text" id="f_artist" placeholder="Search..." oninput="onArtistSearch(this.value)" onkeydown="onArtistKeyDown(event)" autocomplete="off">
               </div>
+              <div class="desc-output" id="artistOutput" style="margin-top:6px; min-height:36px;"></div>
             </div>
           </div>
         </div>
@@ -374,7 +375,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
           <div class="field-grid cols-3" style="margin-top:8px">
             <div class="field"><label class="field-label">Has Vocals</label><select id="f_hasVocals" onchange="syncField('hasVocals',this.value)"><option value="">–</option><option value="No">No</option><option value="Yes">Yes</option></select></div>
             <div class="field"><label class="field-label">Explicit</label><select id="f_explicit" onchange="syncField('explicit',this.value)"><option value="">–</option><option value="No">No</option><option value="Yes">Yes</option></select></div>
-            <div class="field"><label class="field-label">ISRC</label><input type="text" id="f_isrc" placeholder="e.g. USQY52100001" oninput="syncField('isrc',this.value)"></div>
+            <div class="field"><label class="field-label">ISRC</label><input type="text" id="f_isrc" placeholder="e.g., QMHQS000000" oninput="syncField('isrc',this.value)"></div>
           </div>
         </div>
 
@@ -448,7 +449,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
             </div>
             <div class="field">
               <label class="field-label">ISRC</label>
-              <input type="text" id="t_isrc" placeholder="e.g. USQY52100001" oninput="syncTunesatField('ts_isrc',this.value)">
+              <input type="text" id="t_isrc" placeholder="e.g., QMHQS000000" oninput="syncTunesatField('ts_isrc',this.value)">
             </div>
             <div class="field">
               <label class="field-label">Alternate Title 1</label>
@@ -526,8 +527,78 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 
 <div class="toast" id="toast"></div>
 
+<!-- Exit Intent Modal -->
+<div class="modal-overlay" id="exitIntentModal" style="z-index: 9999;">
+  <div class="modal" style="max-width: 400px; text-align: center;">
+    <div style="font-size:32px; margin-bottom: 12px;">⚠️</div>
+    <p style="font-size: 16px; margin-bottom: 24px; color: var(--text); line-height: 1.4;">
+      Be sure to export your progress before closing, as it will not be saved!
+    </p>
+    <button class="btn btn-teal btn-full" onclick="document.getElementById('exitIntentModal').style.display='none'">Okay</button>
+  </div>
+</div>
+
 <script>
 // ─── DATA ─────────────────────────────────────────────────────────
+const ARTISTS = [
+  "2 Cent Bridge", "Aaron Gittleman", "Aaron McMichael", "Aaron Steinberg", "Adam Little", "Adam Worthy",
+  "Adrian MacDonald", "Adrian Sood", "AJ Sealy", "Alan Ward", "Alessandro Altman", "Alex Canellas",
+  "Amar Lal", "Amusium", "Andre Atkins", "André Berry", "Andrew Lipow", "Andy Gabrys", "Andy Russell",
+  "Angelo DiLoreto", "Angelo Telan", "Anthony Clint Jr.", "Anthony Clint Jr. Bronx", "Aoede", "Arielle Alexander",
+  "Austin Filingo", "Aviv Teboul", "Bartosch McCarthy", "Ben Beal", "Ben Stivers", "Ben Zwerin",
+  "Benjamin Stivers", "Bhauraw Avhad", "Big A", "Bill Hankins", "Björn Palmqvist", "Bob Stander",
+  "Brandon Marchant", "Brandon Ross", "Brian Donohoe", "Brian Girley", "Brian Quill", "Brian Warren",
+  "Bumi Hidaka", "Byron Johnson", "Byron Sampson", "Can Ozbek", "Carey Clayton", "Carmen & Camille",
+  "Carrie Gentry", "Catherine Anderson", "Chalky Productions", "Changing of the Guard", "Chaotic Melody",
+  "Chase Nixon", "Chill Hours", "Chris Child", "Chris Chorney", "Chris Ficht", "Chris Hellstrom",
+  "Chris Justice", "Chris Mac", "Christine Cooney", "Christo Patricios", "Christopher Sanchez", "Climbing Trees",
+  "Clinton Devaughn Evans", "Cole Bauer", "Corei Taylor", "Cory \"C.O.\" Otis", "Cory Ross", "Craig Dodge",
+  "CXC", "Dad's Last Nerve", "Dani Paz", "Daniel Lima", "Daniel Villalobos", "Danny McLauchlan",
+  "Danny Ware", "Dashawn Johnson", "Dave Cavalier", "David Amber", "David D'Angelo", "David Davis",
+  "David Flint", "David Zipse", "Demolition Strings", "Denise Barbarita", "Dennis Dembeck", "Dennis Perkins",
+  "Dennis Perkins IV", "Derek Nievergelt", "Diane Frohman", "Diriki Mack", "DMC MUSIC", "DMCMUSIC",
+  "DnA", "DNA Music", "Dom Capuano", "Domenico Capuano", "Dot", "Drew Guido", "Drew Henmi", "Dubb Ujean",
+  "Dyami Wilson", "E6", "Eli Costello", "Elisha Erskine", "Ella Blicker", "Elliot Sneider", "Erik Blicker",
+  "Erik Jourgensen", "Evan Lombardi", "EZ Televi", "F'Lana", "Fabian Faupel", "Fabio Campedelli", "Feng Lee",
+  "Fima Ephron", "Fiona Lunney", "FlikTrax", "Francesco DiCosmo", "Francesco DiCosmo-Caccia", "Frederick Neve",
+  "G$ and the NYC All Stars", "Gabriel Pitaro", "Gabriel Smith", "Gareth Wong", "GE Music", "George Miata",
+  "Gio Benedetti", "Girish Varma", "Glenn Schloss", "Gordon Rothbard", "Greg Savage", "Greg Williams",
+  "Gregory Wieczorek", "Habib Defoundoux", "Hans Fahling", "Harry Nagle", "HeartCore Emcee", "Heather Elle",
+  "Hellbeast of the Night", "Hirobumi Hidaka", "Ian Bamberger", "Ian Stinson", "Ike Clateman", "Indigo",
+  "Isha Erskine", "Isha the Mad Scientist", "Isik Kural", "Iván Galván", "Jacob Colin Cohen", "James Slukhinsky",
+  "Jamey Brizard", "Jamil Houston", "Janelle Costa", "Jared Joseph", "Jared Newman", "Jarrod Pedone",
+  "Jason Shepherd", "JD Beatz", "Jean Sim", "Jeff Hanley", "Jeff Leauby", "Jeremy Lawrence", "Jeremy Levy",
+  "Jesse Solomon Clark", "Jimmy Quinn", "Joe Delia", "Joe Jakubicki", "Joe Miralles", "JoeCat",
+  "Johanna Stahley", "John \"Quixotic\" Gundersen", "John Cimino", "John Leitch III", "John Paterno",
+  "Johnny Leitch", "Jon Spurney", "Jonah Atkinson", "Jonathan Knight", "Jonathan Rosenfeld", "Joseph Tonnos",
+  "Josh Johnson", "Josh King", "Josh Lattanzi", "Juliet Lyons", "Justin Roper", "Jxmmi", "Katie Marie Richards",
+  "Keith Eaddy", "Keith Patchel", "Kendall Joshua", "Kevin Dubois", "Kevin Farrell", "Kevin Salchert",
+  "Kevin Wilson", "Keytarred & Feathered", "KiD MvGiC", "Kim Jakubicki", "Kim Yarson", "Kinderr", "Kirth Atkins",
+  "Kortni Sean", "Kris Campbell", "Kyle Guffey", "KYYN", "Lab Coat Collective", "Larry May", "Larry Ohh",
+  "Leo Capper", "Lexi Scherr", "Lipstick Frenzy", "Lisa Remar", "LoudWAVs", "Louise Chantal", "Luca Poloni",
+  "Maddison Wilson", "Madera", "Mardah Resonance", "Mark Chisulo", "Mark Unthank", "Martin Kirkhaug",
+  "Marvin Cruz", "Matt Bednarsky", "Matt Block", "Matt Brandau", "Matt Chertkoff", "Matt Volpe", "Matteo Fioriti",
+  "Matthew Corry", "Meeting Of Important People", "Megan Aho Heronemus", "Megan Carnes", "Micah Kovacs",
+  "Michael Anthony Cruz", "Michael Cruz", "Michael Engelhardt", "Michael Glaser", "Michael Nappi", "Mike Katz",
+  "Mirage Zamprioli", "Mirkat", "Mister Nathaniel", "Montes Rook", "Moses Patrou", "Mr. Phelps", "Muttering Oaks",
+  "Nadeem Majdalany", "Nate Smith", "Nathalie Claude", "Nathan Riebli", "Neysa Malone", "Nick Capuano",
+  "Nick Harris", "Nick Wagner", "Nicole Stipp", "Noah Meyer", "Nolan Thies", "Owen Danoff", "Owen O'Mahony",
+  "Pablo Garmon", "Pablo J Garmon", "Pablo Perez", "Panos Kolias", "Patrick Deeney", "Patrick Joseph", "Pattern",
+  "Paul Anstey", "Paul Croteau", "Paul Doust", "Paul Henry Croteau", "Paul Longland", "PD3", "PD3Music",
+  "Peter Maness", "Peter Palestina", "Pitch Control", "Rahul Popawala", "Rauri Finan", "Ray Boone",
+  "Research Material", "Rich Emery", "Richard Friedman", "Rob Flow", "Rob Greenfield", "Robbie Maxx",
+  "Robby Sinclair", "Rockwell", "Rogerio Maudonnet", "Roland Leonard", "Rolf Schnyder", "RYAL", "Ryan Dozer",
+  "Ryan Gonzales", "Ryan Hobler", "Ryan Majoris", "Saint Rock", "Salvador Fornieles", "Sam Bradley", "Sam Morrison",
+  "Sam Perry", "SammAyOnTheBeat", "Sampson Brand", "Samuel Lee", "Sand & Vine", "Sara Simms", "Sean Smith",
+  "She Will for Will", "Silas Hite", "Skip Brevis", "Spencer Stewart", "Static People", "Stefan Schnabel",
+  "Steve Booke", "Steve Collom", "Steve Mochel", "Streaming Prophet", "Street Beats", "Sync Booth", "T. Carter",
+  "Taco Manning", "Teddy Kumpel", "Tess", "The Groovees", "Thomas Crowell", "Thomas Greene", "Thorobred Bangerz",
+  "Tiger + Man", "Tiger Darrow", "Tim Cilento", "Tim Hare", "TKTTSM", "Toby Karlin", "Todd Herzog", "Tom Crowell",
+  "TracKings", "Trevis T", "Tropicali Crew", "Two Cheers", "Ty Frankel", "Velvette", "Veronika Jokel",
+  "Vince Villafan", "Vinyl Spectrum", "Vittorio Iué", "Von Xon", "Walter Bowie", "Waresdanny", "Warren McRae",
+  "Wiksell Mallory Productions", "Will Adler", "Xiao'an Li", "Yaman Palak", "Yarley Geffrard", "Zach Calluori"
+];
+
 const WRITERS = [
   { display: "Will Adler", first: "Will", last: "Adler", pro: "BMI", ipi: "00889390764", publisher: "Gandepub" },
   { display: "Richard Agren", first: "Richard", last: "Agren", pro: "ASCAP", ipi: "588523016", publisher: "Gem Lab" },
@@ -788,7 +859,7 @@ const WRITERS = [
   { display: "Gareth Wong", first: "Gareth", last: "Wong", pro: "ASCAP", ipi: "867009615", publisher: "Gem Lab" },
   { display: "Mirage Zamprioli", first: "Mirage", last: "Zamprioli", pro: "ASCAP", ipi: "733990320", publisher: "Gem Lab" },
   { display: "David Zipse", first: "David", last: "Zipse", pro: "ASCAP", ipi: "1058469137", publisher: "Gem Lab" },
-  { display: "Ben Zwerin", first: "Ben", last: "Zwerin", pro: "ASCAP", ipi: "451532478", publisher: "Gem Lab" },
+  { display: "Ben Zwerin", first: "Ben", last: "Zwerin", pro: "ASCAP", ipi: "451532478", publisher: "Gem Lab" }
 ];
 
 const PUBLISHERS = [
@@ -809,25 +880,232 @@ const FILM_GENRES = ["Action","Adventure","Advertising","AI","Aliens","Androids"
 const SUB_GENRES = ["Acid Jazz","Adult Contemporary","African","Afro Beat","Afro-Cuban","Alt Soul","Alt-Country","Alternative","Alternative Country","Alternative Hip Hop","Alternative R&B","Alternative Rock","Ambient","Ambient Avant-Garde","Ambient New Age","Baroque / Chamber Pop","Bedroom Pop","Big Beat","Bluegrass","Blues Rock","Bossa Nova","Celtic","Chill-Hop","Christmas","Classic Blues","Classic Folk","Classic Rock","Classical","Classical Avant-Garde","Contemporary Classical","Contemporary Country","Contemporary Hip Hop","Contemporary Hip Hop 2000s","Contemporary Hip Hop 2010s","Contemporary House","Contemporary House","Contemporary Jazz","Contemporary Pop","Contemporary R&B","Cool Jazz","Country Pop","Country Rock","Dance Pop","Dancehall","Dirty South / Southern Rap","Disco","Dixieland","Doo Wop","Downbeat","Downtempo","Drum and Bass","Dub","Dubstep","East Asian","East Coast Rap","Eastern European","Electronic Dance","Electropop","Emo Rap","Experimental / Alternative Hip Hop","Flamenco","Folk Rock","Freestyle","French House","French Touch","Funk","Future Bass","Gangsta / Hardcore","Garage Rock","Glam Rock","Grunge","Hard Rock","Hawaiian","Heartland Rock","Heavy Metal","Hip Hop","Holiday","House","Indian","Indie Folk","Indie Pop","Indie Rock","Indietronica","Industrial Rock","Jazz Fusion","Jazz Pop","Jersey Club","Latin","Lo-Fi","Mediterranean","Middle Eastern","Neo-Soul","Nu Jazz","Oceanic","Old School / Golden Age Hip Hop","Old School House","Orchestral","Pop","Pop Punk","Pop Rock","Post Rock","Progressive Rock","Psychedelic Rock","Punk Rock","R&B","Ragtime","Reggae","Reggaeton","Rock","Rockabilly","Romantic","Ska Punk","Smooth Jazz","Soft Rock","Soul","Southern Rap","Southern Rock","Surf Rock","Swing","Synthpop","Tango","Techno","Traditional Country","Trance","Trap","Trap Soul","Trip Hop","Tropical House","West Coast Rap / G-Funk","Western European","World Beat","Zydeco"];
 
 const DEFAULT_ALBUMS = [
-  { name: "Electro Chill", code: "PTB035", catalog: "Producer's Toolbox" },
-  { name: "Feel Good Indie", code: "PTB039", catalog: "Producer's Toolbox" },
-  { name: "Hip Hop (Atlanta Trap)", code: "PTB048", catalog: "Producer's Toolbox" },
-  { name: "Soulful & Sexy", code: "PTB067", catalog: "Producer's Toolbox" },
-  { name: "Lo-Fi Dream Beats", code: "PTB071", catalog: "Producer's Toolbox" },
-  { name: "Pop Rockers", code: "PTB077", catalog: "Producer's Toolbox" },
-  { name: "Punk Rockers", code: "PTB079", catalog: "Producer's Toolbox" },
-  { name: "Sports Rock", code: "PTB088", catalog: "Producer's Toolbox" },
-  { name: "Epic Sports Trailers", code: "PTB117", catalog: "Producer's Toolbox" },
-  { name: "Sports Hip Hop", code: "PTB126", catalog: "Producer's Toolbox" },
-  { name: "Sports Hybrid", code: "PTB129", catalog: "Producer's Toolbox" },
-  { name: "Sports Hip Hop Volume 4", code: "PTB133", catalog: "Producer's Toolbox" },
-  { name: "Ambient Scoring Volume 20", code: "PTB134", catalog: "Ambient Scoring" },
-  { name: "Lo-Fi Chill Beats", code: "PTB149", catalog: "Producer's Toolbox" },
-  { name: "Chill Bedroom Pop", code: "PTB150", catalog: "Producer's Toolbox" },
+  { name: "2083", code: "TLC013" },
+  { name: "60's Soul Christmas", code: "PTB114" },
+  { name: "80's Synthmania", code: "PTB104" },
+  { name: "A Jazzy Christmas", code: "PTB115" },
+  { name: "Acoustic Blend", code: "PTB001" },
+  { name: "Acoustic Delights", code: "TLC004" },
+  { name: "Acoustic Rock", code: "PTB142" },
+  { name: "Airy Beats", code: "PTB005" },
+  { name: "Alien Guitar Worlds", code: "TLC008" },
+  { name: "Alt-Rockers Volume 01", code: "PTB003" },
+  { name: "Alternative Electro", code: "PTB004" },
+  { name: "Ambience For Introspection", code: "PTB118" },
+  { name: "Ambient Gelly", code: "PTB005" },
+  { name: "Ambient Guitar Emotions Volume 01", code: "PTB105" },
+  { name: "Ambient Guitar Emotions Volume 02", code: "PTB106" },
+  { name: "Ambient Scoring Percussion", code: "PTB006" },
+  { name: "Ambient Scoring Volume 01", code: "PTB007" },
+  { name: "Ambient Scoring Volume 02", code: "PTB008" },
+  { name: "Ambient Scoring Volume 03", code: "PTB009" },
+  { name: "Ambient Scoring Volume 04", code: "PTB010" },
+  { name: "Ambient Scoring Volume 05", code: "PTB011" },
+  { name: "Ambient Scoring Volume 06", code: "PTB012" },
+  { name: "Ambient Scoring Volume 07", code: "PTB013" },
+  { name: "Ambient Scoring Volume 08", code: "PTB014" },
+  { name: "Ambient Scoring Volume 09", code: "PTB015" },
+  { name: "Ambient Scoring Volume 10", code: "PTB016" },
+  { name: "Ambient Scoring Volume 11", code: "PTB017" },
+  { name: "Ambient Scoring Volume 12", code: "PTB018" },
+  { name: "Ambient Scoring Volume 13", code: "PTB019" },
+  { name: "Ambient Scoring Volume 14", code: "PTB020" },
+  { name: "Ambient Scoring Volume 15", code: "PTB021" },
+  { name: "Ambient Scoring Volume 16", code: "PTB072" },
+  { name: "Ambient Scoring Volume 17", code: "PTB101" },
+  { name: "Ambient Scoring Volume 18", code: "PTB129" },
+  { name: "Ambient Scoring Volume 19", code: "PTB132" },
+  { name: "Ambient Scoring Volume 20", code: "PTB134" },
+  { name: "Ambient Scoring Volume 21", code: "PTB144" },
+  { name: "Ambient Soundscapes", code: "PTB022" },
+  { name: "Angelic Voices", code: "TLC005" },
+  { name: "Anthony Bourdain Parts Unknown", code: "PTB023" },
+  { name: "Apocalyptic Thriller", code: "PTB025" },
+  { name: "Blues Piano Volume 01", code: "PTB026" },
+  { name: "Bumpers and Stingers", code: "PTB027" },
+  { name: "Campfire Blues", code: "PTB141" },
+  { name: "Chicago Electric Blues", code: "PTB119" },
+  { name: "Chill Bedroom Pop", code: "PTB150" },
+  { name: "Country Road Volume 01", code: "PTB029" },
+  { name: "Dance", code: "PTB030" },
+  { name: "Dance Hip Hop", code: "PTB031" },
+  { name: "Dance Party", code: "PTB032" },
+  { name: "Dance Pop", code: "PTB033" },
+  { name: "Dedicated Flow", code: "PTB131" },
+  { name: "Divide & Conquer", code: "TLC012" },
+  { name: "Earthy & Indie", code: "PTB034" },
+  { name: "Electro Chill", code: "PTB035" },
+  { name: "Electro Junk", code: "PTB036" },
+  { name: "Electronic Dance", code: "PTB0237" },
+  { name: "Electronic Pulse", code: "PTB037" },
+  { name: "Electronica Volume 01", code: "PTB038" },
+  { name: "Epic Sports Trailers", code: "PTB117" },
+  { name: "Feel Good Indie", code: "PTB039" },
+  { name: "Film Center Volume 01", code: "PTB040" },
+  { name: "Film Center Volume 02", code: "PTB041" },
+  { name: "Film Center Volume 03", code: "PTB042" },
+  { name: "Flamenco Pop", code: "PTB116" },
+  { name: "Flavorlab Records - Amusium", code: "FLR007", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Another Day", code: "FLR001", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Aoede", code: "FLR008", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Black Magic", code: "FLR002", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Carey Clayton", code: "FLR009", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Chill Hours", code: "FLR003", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Christine Cooney", code: "FLR010", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Climbing Trees", code: "FLR004", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Come and Take a Walk with Me", code: "FLR005", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Cuz I", code: "FLR011", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Die By Your Side", code: "FLR006", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Dubb Ujean", code: "FLR012", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Eli Costello", code: "FLR013", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Ella Blicker", code: "FLR013", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - From The Streets", code: "FLR014", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - GE Music", code: "FLR015", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Gellypop", code: "FLR044", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Good Heavens", code: "FLR045", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Hellbeast of the Night", code: "FLR016", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - IBT", code: "FLR047", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Isha Erskine & Juliet Lyons", code: "FLR064", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Jacob Colin Cohen", code: "FLR017", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Joe Miralles", code: "FLR048", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Johanna Stahley", code: "FLR019", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Just Another Girl", code: "FLR049", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Larry May", code: "FLR020", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Lay Me Down", code: "FLR067", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Lexi Scherr", code: "FLR021", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Little Dreamer", code: "FLR050", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Louise Chantal", code: "FLR022", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Maddison Wilson", code: "FLR023", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Mama Si Ja", code: "FLR065", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Meeting Of Important People", code: "FLR024", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Mirkat", code: "FLR025", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Montes Rook", code: "FLR026", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Moses Patrou", code: "FLR027", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Muttering Oaks", code: "FLR028", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Neysa Malone", code: "FLR029", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Nicole Stipp", code: "FLR030", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Ourglass", code: "FLR051", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Peter Maness", code: "FLR031", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Plush Interior", code: "FLR052", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Robbie Maxx", code: "FLR032", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Rock And Roll Whiskey Soaked", code: "FLR033", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - RYAL EP", code: "FLR053", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - See It Through", code: "FLR055", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Silver and Gold", code: "FLR056", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Static People", code: "FLR034", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Taste of Rock", code: "FLR068", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Tess", code: "FLR035", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - The Elusive Yes", code: "FLR058", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - The EZ Way Out", code: "FLR036", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - The Uprising", code: "FLR037", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Tiger + Man", code: "FLR038", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Tiger Darrow", code: "FLR039", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - TKTTSM", code: "FLR040", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - True True True Love", code: "FLR060", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Two Cheers", code: "FLR041", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Unstoppable", code: "FLR061", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Vinyl Spectrum", code: "FLR042", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - Waresdanny", code: "FLR069", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - West", code: "FLR062", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records - When We Were Kids", code: "FLR063", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records – Velvette", code: "FLR069", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records T--N", code: "FLR057", catalog: "Flavorlab Records" },
+  { name: "Flavorlab Records Volume 01", code: "FLR043", catalog: "Flavorlab Records" },
+  { name: "Folk & Bluegrass Holidays", code: "TLC014" },
+  { name: "Folksy Anthems", code: "PTB043" },
+  { name: "Fresh Picks", code: "PTB027" },
+  { name: "Funky Grooves", code: "PTB123" },
+  { name: "Gelly Pop Instrumentals", code: "PTB045" },
+  { name: "Going Under", code: "PTB046" },
+  { name: "Groovee Holidays", code: "TLC011" },
+  { name: "Hi Flyers", code: "TLC009" },
+  { name: "Hip Hop (Alt Movement)", code: "PTB047" },
+  { name: "Hip Hop (Atlanta Trap)", code: "PTB048" },
+  { name: "Hip Hop (Dirty South)", code: "PTB049" },
+  { name: "Hip Hop (Tense)", code: "PTB050" },
+  { name: "Hip Hop (Urban Mixed Bag)", code: "PTB051" },
+  { name: "Hip Hop Volume 01", code: "PTB052" },
+  { name: "Hip Hop Volume 02", code: "PTB053" },
+  { name: "Hip Hop Volume 03", code: "PTB054" },
+  { name: "Hip Hop Volume 04", code: "PTB055" },
+  { name: "Hip Hop Volume 05", code: "PTB056" },
+  { name: "Hip Hop Volume 06", code: "PTB057" },
+  { name: "Hip Hop Volume 07", code: "PTB058" },
+  { name: "Hip Hop Volume 08", code: "PTB059" },
+  { name: "Hits & Drones", code: "PTB102" },
+  { name: "Hits & Drones Volume 02", code: "PTB122" },
+  { name: "Holiday Flavors Volume 01", code: "PTB107" },
+  { name: "Hollywood Scores Volume 01", code: "PTB060" },
+  { name: "Indie Classical Scores Volume 01", code: "PTB113" },
+  { name: "Indie Dance Volume 01", code: "PTB061" },
+  { name: "Indie Dance Volume 02", code: "PTB062" },
+  { name: "Indie Dance Volume 03", code: "PTB063" },
+  { name: "Indie Dreamwave", code: "PTB083" },
+  { name: "Indie Rockers Volume 01", code: "PTB065" },
+  { name: "Indie Rockers Volume 02", code: "PTB066" },
+  { name: "Indie Rockers Volume 03", code: "PTB067" },
+  { name: "Indie Rockers Volume 04", code: "PTB083" },
+  { name: "Industrial Rock Volume 01", code: "PTB097" },
+  { name: "Industrial Rock Volume 02", code: "PTB098" },
+  { name: "Jazz Lounge", code: "PTB068" },
+  { name: "Jazz Lounge Volume 02", code: "PTB108" },
+  { name: "Light and Playful, Comedy Volume 01", code: "PTB069" },
+  { name: "Light and Playful, Comedy Volume 02", code: "PTB070" },
+  { name: "Lo-Fi Chill Beats", code: "PTB149" },
+  { name: "Lo-Fi Dream Beats", code: "PTB071" },
+  { name: "Modern Grooves", code: "PTB143" },
+  { name: "Modern Scoring", code: "PTB100" },
+  { name: "Music Elements", code: "PTB073" },
+  { name: "News, Sports and Politics", code: "PTB074" },
+  { name: "Owe It All (single)", code: "" },
+  { name: "Piano Portraits", code: "PTB075" },
+  { name: "Pizzicato Bliss", code: "TLC006" },
+  { name: "Pop Heart", code: "PTB078" },
+  { name: "Pop Rockers", code: "PTB077" },
+  { name: "Pop Vibes", code: "PTB078" },
+  { name: "Positive Uplifting Acoustic Guitar", code: "PTB140" },
+  { name: "Post Rock Soundscapes Volume 01", code: "PTB112" },
+  { name: "Punk Rockers", code: "PTB079" },
+  { name: "Reflections", code: "TLC002" },
+  { name: "Retro Jams & Funky Fun", code: "PTB080" },
+  { name: "Rock 'n Rollers", code: "PTB081" },
+  { name: "Rock 'n Rollers Volume 02", code: "PTB096" },
+  { name: "Rock And Roll Whiskey Soaked", code: "PTB082" },
+  { name: "Rocktronica Volume 01", code: "PTB099" },
+  { name: "Rooftop Sessions", code: "TLC007" },
+  { name: "Rootsy Electronica", code: "PTB085" },
+  { name: "SAG Harbor", code: "FLR054", catalog: "Flavorlab Records" },
+  { name: "Songs", code: "PTB086" },
+  { name: "Soulful & Sexy", code: "PTB067" },
+  { name: "Sparkly Pop", code: "PTB145" },
+  { name: "Sports Hip Hop Volume 01", code: "PTB126" },
+  { name: "Sports Hip Hop Volume 02", code: "PTB127" },
+  { name: "Sports Hip Hop Volume 03", code: "PTB128" },
+  { name: "Sports Hip Hop Volume 04", code: "PTB133" },
+  { name: "Sports Hybrid", code: "PTB129" },
+  { name: "Sports Rock", code: "PTB088" },
+  { name: "Sports Rock Volume 02", code: "PTB124" },
+  { name: "Sports Rock Volume 03", code: "PTB130" },
+  { name: "Sports Stories & Rock Anthems", code: "PTB089" },
+  { name: "Sports Vocals", code: "PTB126" },
+  { name: "Street Beats Volume 01", code: "PTB110" },
+  { name: "Summer Pop", code: "PTB120" },
+  { name: "Swamp Rock", code: "PTB090" },
+  { name: "Synth Pop", code: "PTB146" },
+  { name: "SynthWaves", code: "PTB091" },
+  { name: "Tension Tales", code: "RWL001" },
+  { name: "Trip Hop", code: "PTB092" },
+  { name: "Tropical House", code: "PTB122" },
+  { name: "Undercurrents", code: "TLC010" },
+  { name: "Vanilla Pop Best Of The 50's 60's", code: "PTB093" },
+  { name: "Vintage Swing", code: "PTB109" },
+  { name: "Way Too Whimsical", code: "PTB094" },
+  { name: "World Groove", code: "PTB095" }
 ];
 
 // ─── STATE ────────────────────────────────────────────────────────
 let tracks = [], currentTrackId = null, currentAltIndex = null, queue = [];
+let sessionArtists = []; // New artists added during the session
 let currentPage = 'sourceaudio';
 
 function getAlbums() { try { const s=localStorage.getItem('ptb_custom_albums'); return s?[...DEFAULT_ALBUMS,...JSON.parse(s)]:DEFAULT_ALBUMS; } catch(e){return DEFAULT_ALBUMS;} }
@@ -836,7 +1114,7 @@ function getCurrentTrackGroup() { return tracks.find(t=>t.id===currentTrackId)||
 function getCurrentEntry() { const g=getCurrentTrackGroup(); if(!g)return null; return currentAltIndex===null?g.fullMix:g.alternates[currentAltIndex]||null; }
 
 function freshEntry(title='',isAlt=false) {
-  return { title, isAlt, catalog:'', label:'', album:'', albumCode:'', artist:'', tempo:'', bpm:'', genre:[], hasVocals:'', explicit:'', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'',role:'OP'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
+  return { title, isAlt, catalog:'', label:'', album:'', albumCode:'', artist:[], tempo:'', bpm:'', genre:[], hasVocals:'', explicit:'', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'',role:'Original Publisher'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'Composer/Writer',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
 }
 
 // ─── PAGE SWITCHING ────────────────────────────────────────────────
@@ -854,7 +1132,7 @@ function switchPage(page) {
 function populateAlbumDropdown() {
   const sel=document.getElementById('f_album'); if(!sel)return;
   const entry=getCurrentEntry(); const current=entry?entry.album:'';
-  sel.innerHTML='<option value="">–</option>'+getAlbums().map(a=>`<option value="${a.name}" ${current===a.name?'selected':''}>${a.name} (${a.code})</option>`).join('');
+  sel.innerHTML='<option value="">–</option>'+getAlbums().map(a=>`<option value="${a.name}" ${current===a.name?'selected':''}>${a.name}</option>`).join('');
 }
 function onAlbumChange(val) {
   const e=getCurrentEntry(); if(!e)return; e.album=val;
@@ -867,6 +1145,9 @@ function onAlbumChange(val) {
        if(catEl) catEl.value = e.catalog;
     }
     document.getElementById('f_albumCode').value=album.code;
+  } else {
+    e.albumCode='';
+    document.getElementById('f_albumCode').value='';
   }
   saveToStorage();
 }
@@ -876,19 +1157,54 @@ function onBpmChange(val) {
   saveToStorage();
 }
 function onArtistSearch(val) {
-  const e=getCurrentEntry();if(!e)return;e.artist=val;saveToStorage();
-  const wrap=document.getElementById('artistSearchWrap');let drop=document.getElementById('artistDrop');if(drop)drop.remove();if(!val.trim())return;
+  const e=getCurrentEntry();if(!e)return;
+  const wrap=document.getElementById('artistSearchWrap');
+  let drop=document.getElementById('artistDrop');if(drop)drop.remove();
+  if(!val.trim())return;
+  
   const customArtists=getArtists();
-  const writerSuggestions=WRITERS.filter(w=>(w.display+' - Flavorlab PTB').toLowerCase().includes(val.toLowerCase())).map(w=>w.display+' - Flavorlab PTB').slice(0,6);
+  const sessionMatches=sessionArtists.filter(a=>a.toLowerCase().includes(val.toLowerCase())).slice(0,4);
+  const mainMatches=ARTISTS.filter(a=>a.toLowerCase().includes(val.toLowerCase())).slice(0,6);
   const customMatches=customArtists.filter(a=>a.toLowerCase().includes(val.toLowerCase())).slice(0,4);
-  const suggestions=[...new Set([...customMatches,...writerSuggestions])].slice(0,10);
-  if(!suggestions.length)return;
+  const suggestions=[...new Set([...sessionMatches,...customMatches,...mainMatches])].slice(0,10);
+  
   drop=document.createElement('div');drop.className='writer-dropdown';drop.id='artistDrop';
-  drop.innerHTML=suggestions.map(s=>`<div class="writer-option" onclick="selectArtist('${s.replace(/'/g,"\\'")}')">${s}</div>`).join('');
-  wrap.appendChild(drop);
+  let html = '';
+  if(suggestions.length > 0) {
+    html += suggestions.map(s=>`<div class="writer-option" onclick="selectArtist('${s.replace(/'/g,"\\'")}')">${s}</div>`).join('');
+  }
+  
+  // If no exact match exists, provide an option to add it
+  if(!suggestions.some(s => s.toLowerCase() === val.trim().toLowerCase())) {
+     html += `<div class="writer-option" style="color:var(--ptb-teal-bright)" onclick="addNewArtist('${val.replace(/'/g,"\\'")}')">+ Add "${val.trim()}"</div>`;
+  }
+  
+  if(html) {
+     drop.innerHTML = html;
+     wrap.appendChild(drop);
+  }
+}
+function onArtistKeyDown(e) {
+  if(e.key === 'Enter') {
+     e.preventDefault();
+     const val = e.target.value.trim();
+     if(val) addNewArtist(val);
+  }
+}
+function addNewArtist(val) {
+  if (!sessionArtists.includes(val) && !ARTISTS.includes(val) && !getArtists().includes(val)) {
+     sessionArtists.push(val);
+  }
+  selectArtist(val);
 }
 function selectArtist(val) {
-  const e=getCurrentEntry();if(!e)return;e.artist=val;document.getElementById('f_artist').value=val;const drop=document.getElementById('artistDrop');if(drop)drop.remove();saveToStorage();
+  const e=getCurrentEntry();if(!e)return;
+  if (typeof e.artist === 'string') e.artist = e.artist ? [e.artist] : [];
+  if (!e.artist.includes(val)) e.artist.push(val);
+  document.getElementById('f_artist').value='';
+  const drop=document.getElementById('artistDrop');if(drop)drop.remove();
+  renderTags('artist');
+  saveToStorage();
 }
 
 // ─── TRACK MANAGEMENT ─────────────────────────────────────────────
@@ -921,8 +1237,14 @@ function loadEntryIntoForm() {
   document.getElementById('formTrackType').textContent=entry.isAlt?'ALTERNATE VERSION':'FULL MIX';
   populateAlbumDropdown();
   
-  ['catalog','label','albumCode','artist','tempo','bpm','hasVocals','explicit','isrc','styleOf'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=entry[f]||'';});
+  // Basic & musical string fields
+  ['catalog','label','albumCode','tempo','bpm','hasVocals','explicit','isrc','styleOf'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=entry[f]||'';});
   
+  // Migration for artist array if needed
+  if (typeof entry.artist === 'string') {
+     entry.artist = entry.artist ? [entry.artist] : [];
+  }
+
   const fieldMap={genre:'genreGroup',description:'descGroup',moods:'moodsGroup',styles:'stylesGroup',instruments:'instrumentsGroup',filmGenres:'filmGenreGroup',subGenres:'subGenreGroup'};
   Object.entries(fieldMap).forEach(([field,groupId])=>{
     const c=document.getElementById(groupId);if(!c)return;
@@ -933,7 +1255,7 @@ function loadEntryIntoForm() {
     });
   });
   
-  ['description', 'moods', 'styles', 'instruments', 'filmGenres', 'subGenres'].forEach(f => renderTags(f));
+  ['artist', 'description', 'moods', 'styles', 'instruments', 'filmGenres', 'subGenres'].forEach(f => renderTags(f));
   document.getElementById('instrNote').textContent=entry.isAlt?'✦ edit for this version only':'';
   renderPublisherBlocks();renderWriterBlocks();renderAltChips();
   
@@ -965,6 +1287,7 @@ function renderTags(field) {
   if (!e) return;
 
   const map = {
+    artist: { out: 'artistOutput' },
     description: { out: 'descOutput' },
     moods: { out: 'moodsOutput' },
     styles: { out: 'stylesOutput' },
@@ -990,13 +1313,13 @@ function removeTag(field, phrase) {
   const e = getCurrentEntry(); if (!e) return;
   e[field] = e[field].filter(p => p !== phrase);
   
-  const map = {
+  const cbMap = {
     description: 'descGroup', moods: 'moodsGroup', styles: 'stylesGroup',
     instruments: 'instrumentsGroup', filmGenres: 'filmGenreGroup', subGenres: 'subGenreGroup'
   };
   
-  if (map[field]) {
-    const container = document.getElementById(map[field]);
+  if (cbMap[field]) {
+    const container = document.getElementById(cbMap[field]);
     const cb = container.querySelector(`input[value="${phrase}"]`);
     if (cb) cb.checked = false;
   }
@@ -1028,7 +1351,7 @@ function writerSearch(idx,val){
 }
 function selectWriter(idx,displayName){
   const e=getCurrentEntry();if(!e)return;const w=WRITERS.find(x=>x.display===displayName);if(!w)return;
-  e.writers[idx]={...e.writers[idx],searchVal:w.display,firstName:w.first,lastName:w.last,pro:w.pro,ipi:w.ipi,publisher:w.publisher,role:'C'};
+  e.writers[idx]={...e.writers[idx],searchVal:w.display,firstName:w.first,lastName:w.last,pro:w.pro,ipi:w.ipi,publisher:w.publisher,role:'Composer/Writer'};
   renderWriterBlocks();saveToStorage();
 }
 
@@ -1062,9 +1385,14 @@ function renderPublisherBlocks(){
             ${PUBLISHERS.map(p=>`<option value="${p.name}" ${pub.company===p.name?'selected':''}>${p.name}</option>`).join('')}
             <option value="__other__">Other...</option>
           </select></div>
-        <div class="field"><label class="field-label">PRO <span class="req">*</span></label><select onchange="updatePublisher(${i},'pro',this.value)"><option value="">–</option>${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">PRO Affiliation <span class="req">*</span></label><select onchange="updatePublisher(${i},'pro',this.value)"><option value="">–</option>${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
         <div class="field"><label class="field-label">CAE/IPI <span class="req">*</span></label><input type="text" value="${pub.ipi||''}" placeholder="e.g., 123456789" oninput="updatePublisher(${i},'ipi',this.value)"></div>
         <div class="field"><label class="field-label">Ownership Share <span class="req">*</span></label><input type="text" value="${pub.share||''}" placeholder="e.g., 100" oninput="updatePublisher(${i},'share',this.value)"></div>
+        <div class="field"><label class="field-label">Role <span class="req">*</span></label>
+          <select onchange="updatePublisher(${i},'role',this.value)">
+            <option value="Original Publisher" ${pub.role==='Original Publisher'?'selected':''}>Original Publisher</option>
+          </select>
+        </div>
       </div></div>`).join('');
 }
 function updatePublisher(idx,field,val){
@@ -1072,7 +1400,7 @@ function updatePublisher(idx,field,val){
   if(field==='company'){const known=PUBLISHERS.find(p=>p.name===val);if(known){e.publishers[idx].company=known.name;e.publishers[idx].pro=known.pro;e.publishers[idx].ipi=known.ipi;}else{e.publishers[idx].company=val==='__other__'?'':val;}renderPublisherBlocks();}
   else{e.publishers[idx][field]=val;}saveToStorage();
 }
-function addPublisher(){const e=getCurrentEntry();if(!e)return;e.publishers.push({company:'',pro:'',ipi:'',share:'',role:'OP'});renderPublisherBlocks();saveToStorage();}
+function addPublisher(){const e=getCurrentEntry();if(!e)return;e.publishers.push({company:'',pro:'',ipi:'',share:'',role:'Original Publisher'});renderPublisherBlocks();saveToStorage();}
 function removePublisher(idx){const e=getCurrentEntry();if(!e)return;e.publishers.splice(idx,1);renderPublisherBlocks();saveToStorage();}
 
 // ─── WRITERS (SA) ──────────────────────────────────────────────────
@@ -1084,18 +1412,25 @@ function renderWriterBlocks(){
       <div class="field-grid cols-2">
         <div class="field" style="grid-column:span 2"><label class="field-label">Search writer</label>
           <div class="writer-search-wrap" id="writerSearchWrap_${i}">
-            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="writerSearch(${i},this.value)" placeholder="Search..." autocomplete="off">
+            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="writerSearch(${i},this.value)" placeholder="Search…" autocomplete="off">
           </div></div>
         <div class="field"><label class="field-label">First Name <span class="req">*</span></label><input type="text" value="${w.firstName||''}" oninput="updateWriter(${i},'firstName',this.value)"></div>
         <div class="field"><label class="field-label">Last Name <span class="req">*</span></label><input type="text" value="${w.lastName||''}" oninput="updateWriter(${i},'lastName',this.value)"></div>
-        <div class="field"><label class="field-label">PRO <span class="req">*</span></label><select onchange="updateWriter(${i},'pro',this.value)"><option value="">–</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">PRO Affiliation <span class="req">*</span></label><select onchange="updateWriter(${i},'pro',this.value)"><option value="">–</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
         <div class="field"><label class="field-label">CAE/IPI <span class="req">*</span></label><input type="text" value="${w.ipi||''}" placeholder="e.g., 123456789" oninput="updateWriter(${i},'ipi',this.value)"></div>
         <div class="field"><label class="field-label">Ownership Share <span class="req">*</span></label><input type="text" value="${w.share||''}" placeholder="e.g., 100" oninput="updateWriter(${i},'share',this.value)"></div>
-        <div class="field"><label class="field-label">Publisher <span class="req">*</span></label><select onchange="updateWriter(${i},'publisher',this.value)"><option value="">–</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">Publishing Interest <span class="req">*</span></label><select onchange="updateWriter(${i},'publisher',this.value)"><option value="">–</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">Role <span class="req">*</span></label>
+          <select onchange="updateWriter(${i},'role',this.value)">
+            <option value="Composer/Writer" ${w.role==='Composer/Writer'?'selected':''}>Composer/Writer</option>
+            <option value="Composer" ${w.role==='Composer'?'selected':''}>Composer</option>
+            <option value="Writer" ${w.role==='Writer'?'selected':''}>Writer</option>
+          </select>
+        </div>
       </div></div>`).join('');
 }
 function updateWriter(idx,field,val){const e=getCurrentEntry();if(!e)return;e.writers[idx][field]=val;saveToStorage();}
-function addWriter(){const e=getCurrentEntry();if(!e)return;e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C',searchVal:''});renderWriterBlocks();saveToStorage();}
+function addWriter(){const e=getCurrentEntry();if(!e)return;e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'Composer/Writer',searchVal:''});renderWriterBlocks();saveToStorage();}
 function removeWriter(idx){const e=getCurrentEntry();if(!e)return;e.writers.splice(idx,1);renderWriterBlocks();saveToStorage();}
 
 // ─── PUBLISHERS / WRITERS (TUNESAT) ───────────────────────────────
@@ -1108,7 +1443,7 @@ function renderTunesatWriterBlocks(){
       <div class="field-grid cols-2">
         <div class="field" style="grid-column:span 2"><label class="field-label">Search writer</label>
           <div class="writer-search-wrap" id="tsWriterWrap_${i}">
-            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="tsWriterSearch(${i},this.value)" placeholder="Search..." autocomplete="off">
+            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="tsWriterSearch(${i},this.value)" placeholder="Search…" autocomplete="off">
           </div></div>
         <div class="field"><label class="field-label">First Name</label><input type="text" value="${w.firstName||''}" oninput="updateTsWriter(${i},'firstName',this.value)"></div>
         <div class="field"><label class="field-label">Last Name</label><input type="text" value="${w.lastName||''}" oninput="updateTsWriter(${i},'lastName',this.value)"></div>
@@ -1199,6 +1534,17 @@ function renderQueue(){
 }
 function removeFromQueue(idx){queue.splice(idx,1);renderQueue();saveToStorage();}
 
+// ─── EXIT INTENT MODAL ────────────────────────────────────────────
+let exitPromptShown = sessionStorage.getItem('exitPromptShown');
+document.addEventListener('mouseleave', (e) => {
+  // Triggers if mouse moves out of the top of the window (attempting to close/change tab)
+  if (e.clientY <= 0 && !exitPromptShown) {
+    document.getElementById('exitIntentModal').style.display = 'flex';
+    exitPromptShown = true;
+    sessionStorage.setItem('exitPromptShown', 'true');
+  }
+});
+
 // ─── STORAGE ──────────────────────────────────────────────────────
 function saveToStorage(){try{localStorage.setItem('ptb_tracks',JSON.stringify(tracks));localStorage.setItem('ptb_queue',JSON.stringify(queue));}catch(e){}}
 function loadFromStorage(){try{const t=localStorage.getItem('ptb_tracks'),q=localStorage.getItem('ptb_queue');if(t)tracks=JSON.parse(t);if(q)queue=JSON.parse(q);}catch(e){}renderTrackList();renderQueue();}
@@ -1215,7 +1561,7 @@ function saEntryToRow(entry){
   set(' Title',entry.title);set('Filename',(entry.title||'Untitled')+' FLAVORLAB PTB.wav');
   set('Catalog',entry.catalog||"Producer's Toolbox");set('Label',entry.label||"Producer's Toolbox");
   set('Album',entry.album);set('Album Code',entry.albumCode);
-  set('Artist',entry.artist);
+  set('Artist', Array.isArray(entry.artist) ? entry.artist.join(', ') : (entry.artist || ''));
   set('Tempo',entry.tempo);set('BPM',entry.bpm);
   set('Genre', Array.isArray(entry.genre) ? entry.genre.join(', ') : (entry.genre || ''));
   set('Has Vocals',entry.hasVocals);set('Explicit',entry.explicit);set('ISRC',entry.isrc);
@@ -1225,9 +1571,9 @@ function saEntryToRow(entry){
   set('Sub Genre',(entry.subGenres||[]).join(', '));set('Film/TV Genre',(entry.filmGenres||[]).join(', '));
   set('Has MP3','Yes');set('Has AIFF','Yes');set('Has WAV','Yes');
   const pubs=['Publisher 1','Publisher 2','Publisher 3'];
-  (entry.publishers||[]).slice(0,3).forEach((pub,i)=>{const p=pubs[i];set(`${p} Company`,pub.company);set(`${p} Pro Affiliation`,pub.pro);set(`${p} CAE/IPI`,pub.ipi);set(`${p} Ownership Share`,pub.share);set(`${p} Role`,pub.role||'OP');});
+  (entry.publishers||[]).slice(0,3).forEach((pub,i)=>{const p=pubs[i];set(`${p} Company`,pub.company);set(`${p} Pro Affiliation`,pub.pro);set(`${p} CAE/IPI`,pub.ipi);set(`${p} Ownership Share`,pub.share);set(`${p} Role`,pub.role||'Original Publisher');});
   const wrs=['Writer 1','Writer 2','Writer 3','Writer 4'];
-  (entry.writers||[]).slice(0,4).forEach((w,i)=>{const wr=wrs[i];set(`${wr} First Name`,w.firstName);set(`${wr} Last Name`,w.lastName);set(`${wr} Pro Affiliation`,w.pro);set(`${wr} CAE/IPI`,w.ipi);set(`${wr} Ownership Share`,w.share);set(`${wr} Publisher`,w.publisher);set(`${wr} Role`,w.role||'C');});
+  (entry.writers||[]).slice(0,4).forEach((w,i)=>{const wr=wrs[i];set(`${wr} First Name`,w.firstName);set(`${wr} Last Name`,w.lastName);set(`${wr} Pro Affiliation`,w.pro);set(`${wr} CAE/IPI`,w.ipi);set(`${wr} Ownership Share`,w.share);set(`${wr} Publisher`,w.publisher);set(`${wr} Role`,w.role||'Composer/Writer');});
   return row;
 }
 
@@ -1312,7 +1658,7 @@ function buildCheckboxGroup(containerId,items,field){
 init();
 </script>
 
-<div class="modal-overlay" id="adminModal">
+<div class="modal-overlay" id="adminModal" style="z-index: 9999;">
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">⚙ Admin Panel</span>
