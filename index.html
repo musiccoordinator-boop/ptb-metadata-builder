@@ -159,12 +159,12 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 .group-search {
   background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
   color: var(--text); font-family: 'Barlow', sans-serif; font-size: 11px; padding: 3px 8px;
-  width: 140px; margin-left: 12px; outline: none; font-weight: normal; text-transform: none; letter-spacing: normal;
+  width: 200px; margin-left: 12px; outline: none; font-weight: normal; text-transform: none; letter-spacing: normal;
 }
 .group-search:focus { border-color: var(--ptb-teal); background: var(--surface2); }
-.field-label .group-search { width: auto; max-width: 90px; padding: 2px 4px; font-size: 10px; margin: 0 0 0 auto; }
+.field-label .group-search { width: 180px; max-width: 100%; padding: 2px 4px; font-size: 10px; margin: 0 0 0 auto; }
 
-/* Desc tags */
+/* Desc/Output tags */
 .desc-output { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); min-height: 40px; padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 .desc-tag { background: rgba(14,127,168,0.12); border: 1px solid rgba(14,127,168,0.3); border-radius: 20px; padding: 2px 10px; font-size: 11px; color: var(--text-mid); display: flex; align-items: center; gap: 5px; }
 .desc-tag-x { cursor: pointer; color: var(--text-muted); font-size: 12px; }
@@ -326,24 +326,26 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
           <div class="field-grid cols-2">
             <div class="field"><label class="field-label">Catalog</label>
               <select id="f_catalog" onchange="syncField('catalog',this.value)">
+                <option value="">–</option>
                 <option value="Ambient Scoring">Ambient Scoring</option>
                 <option value="Flavorlab Records">Flavorlab Records</option>
                 <option value="Flavorlab Score">Flavorlab Score</option>
-                <option value="Producer's Toolbox" selected>Producer's Toolbox</option>
+                <option value="Producer's Toolbox">Producer's Toolbox</option>
               </select>
             </div>
             <div class="field"><label class="field-label">Label</label>
               <select id="f_label" onchange="syncField('label',this.value)">
-                <option value="Producer's Toolbox" selected>Producer's Toolbox</option>
+                <option value="">–</option>
+                <option value="Producer's Toolbox">Producer's Toolbox</option>
               </select>
             </div>
             <div class="field"><label class="field-label">Album</label>
-              <select id="f_album" onchange="onAlbumChange(this.value)"><option value="">— Select album —</option></select>
+              <select id="f_album" onchange="onAlbumChange(this.value)"><option value="">–</option></select>
             </div>
             <div class="field"><label class="field-label">Album Code</label><input type="text" id="f_albumCode" placeholder="auto-filled" readonly style="opacity:0.6;cursor:default"></div>
             <div class="field"><label class="field-label">Artist <span class="req">*</span></label>
               <div class="writer-search-wrap" id="artistSearchWrap">
-                <input type="text" id="f_artist" placeholder="Type to search..." oninput="onArtistSearch(this.value)" autocomplete="off">
+                <input type="text" id="f_artist" placeholder="Search..." oninput="onArtistSearch(this.value)" autocomplete="off">
               </div>
             </div>
           </div>
@@ -354,51 +356,54 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
           <div class="field-grid cols-3">
             <div class="field"><label class="field-label">Tempo <span class="req">*</span></label>
               <select id="f_tempo" onchange="syncField('tempo',this.value)">
-                <option value="">—</option>
+                <option value="">–</option>
                 <option value="Very Fast (131+ BPM)">Very Fast (131+ BPM)</option>
                 <option value="Fast (111-130 BPM)">Fast (111-130 BPM)</option>
                 <option value="Medium (90-110 BPM)">Medium (90-110 BPM)</option>
                 <option value="Slow (0-89 BPM)">Slow (0-89 BPM)</option>
               </select>
             </div>
-            <div class="field"><label class="field-label">BPM <span class="req">*</span></label><input type="number" id="f_bpm" placeholder="120" oninput="onBpmChange(this.value)"></div>
+            <div class="field"><label class="field-label">BPM <span class="req">*</span></label><input type="number" id="f_bpm" placeholder="e.g., 120" oninput="onBpmChange(this.value)"></div>
             <div class="field">
               <label class="field-label" style="display:flex;align-items:center;">Genre <span class="req">*</span>
-                <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'genreGroup')">
+                <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'genreGroup')">
               </label>
               <div class="checkbox-group" id="genreGroup" style="max-height: 80px;"></div>
             </div>
           </div>
           <div class="field-grid cols-3" style="margin-top:8px">
-            <div class="field"><label class="field-label">Has Vocals</label><select id="f_hasVocals" onchange="syncField('hasVocals',this.value)"><option value="No">No</option><option value="Yes">Yes</option></select></div>
-            <div class="field"><label class="field-label">Explicit</label><select id="f_explicit" onchange="syncField('explicit',this.value)"><option value="No">No</option><option value="Yes">Yes</option></select></div>
+            <div class="field"><label class="field-label">Has Vocals</label><select id="f_hasVocals" onchange="syncField('hasVocals',this.value)"><option value="">–</option><option value="No">No</option><option value="Yes">Yes</option></select></div>
+            <div class="field"><label class="field-label">Explicit</label><select id="f_explicit" onchange="syncField('explicit',this.value)"><option value="">–</option><option value="No">No</option><option value="Yes">Yes</option></select></div>
             <div class="field"><label class="field-label">ISRC</label><input type="text" id="f_isrc" placeholder="e.g. USQY52100001" oninput="syncField('isrc',this.value)"></div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-label">Description <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'descGroup')"></div>
-          <div class="desc-output" id="descOutput"><span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span></div>
+          <div class="section-label">Description <span class="req">*</span> <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'descGroup')"></div>
+          <div class="desc-output" id="descOutput"></div>
           <div class="checkbox-group" id="descGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Style Of (References) <span class="req">*</span></div>
-          <div class="field"><input type="text" id="f_styleOf" placeholder="e.g. Blink-182, Bowling For Soup" oninput="syncField('styleOf',this.value)"></div>
+          <div class="section-label">Style Of <span class="req">*</span></div>
+          <div class="field"><input type="text" id="f_styleOf" placeholder="Search, or select from below..." oninput="syncField('styleOf',this.value)"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Moods <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'moodsGroup')"></div>
+          <div class="section-label">Moods <span class="req">*</span> <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'moodsGroup')"></div>
+          <div class="desc-output" id="moodsOutput"></div>
           <div class="checkbox-group" id="moodsGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Styles <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'stylesGroup')"></div>
+          <div class="section-label">Styles <span class="req">*</span> <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'stylesGroup')"></div>
+          <div class="desc-output" id="stylesOutput"></div>
           <div class="checkbox-group" id="stylesGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Instruments <span class="req">*</span> <span id="instrNote" style="font-size:10px;color:var(--text-muted);margin-left:6px;font-family:'DM Mono',monospace;font-weight:400;letter-spacing:0"></span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'instrumentsGroup')"></div>
+          <div class="section-label">Instruments <span class="req">*</span> <span id="instrNote" style="font-size:10px;color:var(--text-muted);margin-left:6px;font-family:'DM Mono',monospace;font-weight:400;letter-spacing:0"></span> <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'instrumentsGroup')"></div>
+          <div class="desc-output" id="instrumentsOutput"></div>
           <div class="checkbox-group" id="instrumentsGroup"></div>
         </div>
 
@@ -415,12 +420,14 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         </div>
 
         <div class="section">
-          <div class="section-label">Film / TV Genre <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'filmGenreGroup')"></div>
+          <div class="section-label">Film / TV Genre <span class="req">*</span> <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'filmGenreGroup')"></div>
+          <div class="desc-output" id="filmGenreOutput"></div>
           <div class="checkbox-group" id="filmGenreGroup"></div>
         </div>
 
         <div class="section">
-          <div class="section-label">Sub Genre <span class="req">*</span> <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'subGenreGroup')"></div>
+          <div class="section-label">Sub Genre <span class="req">*</span> <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'subGenreGroup')"></div>
+          <div class="desc-output" id="subGenreOutput"></div>
           <div class="checkbox-group" id="subGenreGroup"></div>
         </div>
       </div>
@@ -829,7 +836,7 @@ function getCurrentTrackGroup() { return tracks.find(t=>t.id===currentTrackId)||
 function getCurrentEntry() { const g=getCurrentTrackGroup(); if(!g)return null; return currentAltIndex===null?g.fullMix:g.alternates[currentAltIndex]||null; }
 
 function freshEntry(title='',isAlt=false) {
-  return { title, isAlt, catalog:"Producer's Toolbox", label:"Producer's Toolbox", album:'', albumCode:'', artist:'', tempo:'', bpm:'', genre:[], hasVocals:'No', explicit:'No', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'1',role:'OP'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'1',publisher:'',role:'C',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
+  return { title, isAlt, catalog:'', label:'', album:'', albumCode:'', artist:'', tempo:'', bpm:'', genre:[], hasVocals:'', explicit:'', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'',role:'OP'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
 }
 
 // ─── PAGE SWITCHING ────────────────────────────────────────────────
@@ -847,17 +854,19 @@ function switchPage(page) {
 function populateAlbumDropdown() {
   const sel=document.getElementById('f_album'); if(!sel)return;
   const entry=getCurrentEntry(); const current=entry?entry.album:'';
-  sel.innerHTML='<option value="">— Select album —</option>'+getAlbums().map(a=>`<option value="${a.name}" ${current===a.name?'selected':''}>${a.name} (${a.code})</option>`).join('');
+  sel.innerHTML='<option value="">–</option>'+getAlbums().map(a=>`<option value="${a.name}" ${current===a.name?'selected':''}>${a.name} (${a.code})</option>`).join('');
 }
 function onAlbumChange(val) {
   const e=getCurrentEntry(); if(!e)return; e.album=val;
   const album=getAlbums().find(a=>a.name===val);
   if(album){
     e.albumCode=album.code;
-    e.catalog=album.catalog || "Producer's Toolbox";
+    if(album.catalog) {
+       e.catalog=album.catalog;
+       const catEl=document.getElementById('f_catalog');
+       if(catEl) catEl.value = e.catalog;
+    }
     document.getElementById('f_albumCode').value=album.code;
-    const catEl=document.getElementById('f_catalog');
-    if(catEl) catEl.value = e.catalog;
   }
   saveToStorage();
 }
@@ -924,7 +933,7 @@ function loadEntryIntoForm() {
     });
   });
   
-  renderDescOutput();
+  ['description', 'moods', 'styles', 'instruments', 'filmGenres', 'subGenres'].forEach(f => renderTags(f));
   document.getElementById('instrNote').textContent=entry.isAlt?'✦ edit for this version only':'';
   renderPublisherBlocks();renderWriterBlocks();renderAltChips();
   
@@ -938,24 +947,62 @@ function onTitleChange(val){const e=getCurrentEntry();if(e){e.title=val;renderTr
 function syncField(field,val){const e=getCurrentEntry();if(e){e[field]=val;saveToStorage();}}
 function syncTunesatField(field,val){const e=getCurrentEntry();if(e){e[field]=val;saveToStorage();}}
 
-function onCheckChange(field,val,checked,isDesc=false){
-  const e=getCurrentEntry();if(!e)return;
-  // Migration fallback: if an older save has a string instead of an array, convert it
+function onCheckChange(field, val, checked) {
+  const e = getCurrentEntry(); if (!e) return;
   if (!Array.isArray(e[field])) e[field] = e[field] ? [e[field]] : [];
   
-  if(checked){if(!e[field].includes(val))e[field].push(val);}else{e[field]=e[field].filter(v=>v!==val);}
-  if(isDesc)renderDescOutput();saveToStorage();
+  if (checked) {
+    if (!e[field].includes(val)) e[field].push(val);
+  } else {
+    e[field] = e[field].filter(v => v !== val);
+  }
+  renderTags(field);
+  saveToStorage();
 }
 
-function renderDescOutput(){
-  const e=getCurrentEntry();const container=document.getElementById('descOutput');
-  if(!e||!e.description||e.description.length===0){container.innerHTML='<span style="font-size:12px;color:var(--text-muted);padding:2px 4px">Select phrases below...</span>';return;}
-  container.innerHTML=e.description.map(p=>`<div class="desc-tag">${p}<span class="desc-tag-x" onclick="removeDescPhrase('${p.replace(/'/g,"\\'")}')">×</span></div>`).join('');
+function renderTags(field) {
+  const e = getCurrentEntry();
+  if (!e) return;
+
+  const map = {
+    description: { out: 'descOutput' },
+    moods: { out: 'moodsOutput' },
+    styles: { out: 'stylesOutput' },
+    instruments: { out: 'instrumentsOutput' },
+    filmGenres: { out: 'filmGenreOutput' },
+    subGenres: { out: 'subGenreOutput' }
+  };
+
+  if (!map[field]) return;
+
+  const container = document.getElementById(map[field].out);
+  if (!container) return;
+
+  if (!e[field] || e[field].length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = e[field].map(p => `<div class="desc-tag">${p}<span class="desc-tag-x" onclick="removeTag('${field}','${p.replace(/'/g,"\\'")}')">×</span></div>`).join('');
 }
-function removeDescPhrase(phrase){
-  const e=getCurrentEntry();if(!e)return;e.description=e.description.filter(p=>p!==phrase);
-  const container=document.getElementById('descGroup');const cb=container.querySelector(`input[value="${phrase}"]`);if(cb)cb.checked=false;
-  renderDescOutput();saveToStorage();
+
+function removeTag(field, phrase) {
+  const e = getCurrentEntry(); if (!e) return;
+  e[field] = e[field].filter(p => p !== phrase);
+  
+  const map = {
+    description: 'descGroup', moods: 'moodsGroup', styles: 'stylesGroup',
+    instruments: 'instrumentsGroup', filmGenres: 'filmGenreGroup', subGenres: 'subGenreGroup'
+  };
+  
+  if (map[field]) {
+    const container = document.getElementById(map[field]);
+    const cb = container.querySelector(`input[value="${phrase}"]`);
+    if (cb) cb.checked = false;
+  }
+  
+  renderTags(field);
+  saveToStorage();
 }
 
 // ─── CHECKBOX FILTERING ───────────────────────────────────────────
@@ -1011,13 +1058,13 @@ function renderPublisherBlocks(){
       <div class="field-grid cols-2">
         <div class="field"><label class="field-label">Company <span class="req">*</span></label>
           <select onchange="updatePublisher(${i},'company',this.value)">
-            <option value="">— Select —</option>
+            <option value="">–</option>
             ${PUBLISHERS.map(p=>`<option value="${p.name}" ${pub.company===p.name?'selected':''}>${p.name}</option>`).join('')}
             <option value="__other__">Other...</option>
           </select></div>
-        <div class="field"><label class="field-label">PRO <span class="req">*</span></label><select onchange="updatePublisher(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">CAE/IPI <span class="req">*</span></label><input type="text" value="${pub.ipi||''}" oninput="updatePublisher(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Ownership Share <span class="req">*</span></label><input type="text" value="${pub.share||'1'}" oninput="updatePublisher(${i},'share',this.value)"></div>
+        <div class="field"><label class="field-label">PRO <span class="req">*</span></label><select onchange="updatePublisher(${i},'pro',this.value)"><option value="">–</option>${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">CAE/IPI <span class="req">*</span></label><input type="text" value="${pub.ipi||''}" placeholder="e.g., 123456789" oninput="updatePublisher(${i},'ipi',this.value)"></div>
+        <div class="field"><label class="field-label">Ownership Share <span class="req">*</span></label><input type="text" value="${pub.share||''}" placeholder="e.g., 100" oninput="updatePublisher(${i},'share',this.value)"></div>
       </div></div>`).join('');
 }
 function updatePublisher(idx,field,val){
@@ -1025,7 +1072,7 @@ function updatePublisher(idx,field,val){
   if(field==='company'){const known=PUBLISHERS.find(p=>p.name===val);if(known){e.publishers[idx].company=known.name;e.publishers[idx].pro=known.pro;e.publishers[idx].ipi=known.ipi;}else{e.publishers[idx].company=val==='__other__'?'':val;}renderPublisherBlocks();}
   else{e.publishers[idx][field]=val;}saveToStorage();
 }
-function addPublisher(){const e=getCurrentEntry();if(!e)return;e.publishers.push({company:'',pro:'',ipi:'',share:'1',role:'OP'});renderPublisherBlocks();saveToStorage();}
+function addPublisher(){const e=getCurrentEntry();if(!e)return;e.publishers.push({company:'',pro:'',ipi:'',share:'',role:'OP'});renderPublisherBlocks();saveToStorage();}
 function removePublisher(idx){const e=getCurrentEntry();if(!e)return;e.publishers.splice(idx,1);renderPublisherBlocks();saveToStorage();}
 
 // ─── WRITERS (SA) ──────────────────────────────────────────────────
@@ -1037,18 +1084,18 @@ function renderWriterBlocks(){
       <div class="field-grid cols-2">
         <div class="field" style="grid-column:span 2"><label class="field-label">Search writer</label>
           <div class="writer-search-wrap" id="writerSearchWrap_${i}">
-            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="writerSearch(${i},this.value)" placeholder="Type name to search..." autocomplete="off">
+            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="writerSearch(${i},this.value)" placeholder="Search..." autocomplete="off">
           </div></div>
         <div class="field"><label class="field-label">First Name <span class="req">*</span></label><input type="text" value="${w.firstName||''}" oninput="updateWriter(${i},'firstName',this.value)"></div>
         <div class="field"><label class="field-label">Last Name <span class="req">*</span></label><input type="text" value="${w.lastName||''}" oninput="updateWriter(${i},'lastName',this.value)"></div>
-        <div class="field"><label class="field-label">PRO <span class="req">*</span></label><select onchange="updateWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">CAE/IPI <span class="req">*</span></label><input type="text" value="${w.ipi||''}" oninput="updateWriter(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Ownership Share <span class="req">*</span></label><input type="text" value="${w.share||''}" oninput="updateWriter(${i},'share',this.value)"></div>
-        <div class="field"><label class="field-label">Publisher <span class="req">*</span></label><select onchange="updateWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">PRO <span class="req">*</span></label><select onchange="updateWriter(${i},'pro',this.value)"><option value="">–</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">CAE/IPI <span class="req">*</span></label><input type="text" value="${w.ipi||''}" placeholder="e.g., 123456789" oninput="updateWriter(${i},'ipi',this.value)"></div>
+        <div class="field"><label class="field-label">Ownership Share <span class="req">*</span></label><input type="text" value="${w.share||''}" placeholder="e.g., 100" oninput="updateWriter(${i},'share',this.value)"></div>
+        <div class="field"><label class="field-label">Publisher <span class="req">*</span></label><select onchange="updateWriter(${i},'publisher',this.value)"><option value="">–</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
       </div></div>`).join('');
 }
 function updateWriter(idx,field,val){const e=getCurrentEntry();if(!e)return;e.writers[idx][field]=val;saveToStorage();}
-function addWriter(){const e=getCurrentEntry();if(!e)return;e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'1',publisher:'',role:'C',searchVal:''});renderWriterBlocks();saveToStorage();}
+function addWriter(){const e=getCurrentEntry();if(!e)return;e.writers.push({firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C',searchVal:''});renderWriterBlocks();saveToStorage();}
 function removeWriter(idx){const e=getCurrentEntry();if(!e)return;e.writers.splice(idx,1);renderWriterBlocks();saveToStorage();}
 
 // ─── PUBLISHERS / WRITERS (TUNESAT) ───────────────────────────────
@@ -1061,14 +1108,14 @@ function renderTunesatWriterBlocks(){
       <div class="field-grid cols-2">
         <div class="field" style="grid-column:span 2"><label class="field-label">Search writer</label>
           <div class="writer-search-wrap" id="tsWriterWrap_${i}">
-            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="tsWriterSearch(${i},this.value)" placeholder="Type name..." autocomplete="off">
+            <input type="text" value="${w.searchVal||w.firstName+' '+w.lastName||''}" oninput="tsWriterSearch(${i},this.value)" placeholder="Search..." autocomplete="off">
           </div></div>
         <div class="field"><label class="field-label">First Name</label><input type="text" value="${w.firstName||''}" oninput="updateTsWriter(${i},'firstName',this.value)"></div>
         <div class="field"><label class="field-label">Last Name</label><input type="text" value="${w.lastName||''}" oninput="updateTsWriter(${i},'lastName',this.value)"></div>
-        <div class="field"><label class="field-label">PRO</label><select onchange="updateTsWriter(${i},'pro',this.value)"><option value="">—</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">IPI</label><input type="text" value="${w.ipi||''}" oninput="updateTsWriter(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Share %</label><input type="text" value="${w.share||''}" oninput="updateTsWriter(${i},'share',this.value)" placeholder="50"></div>
-        <div class="field"><label class="field-label">Publisher</label><select onchange="updateTsWriter(${i},'publisher',this.value)"><option value="">—</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">PRO</label><select onchange="updateTsWriter(${i},'pro',this.value)"><option value="">–</option>${PROS.map(p=>`<option ${w.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">IPI</label><input type="text" value="${w.ipi||''}" placeholder="e.g., 123456789" oninput="updateTsWriter(${i},'ipi',this.value)"></div>
+        <div class="field"><label class="field-label">Share %</label><input type="text" value="${w.share||''}" oninput="updateTsWriter(${i},'share',this.value)" placeholder="e.g., 100"></div>
+        <div class="field"><label class="field-label">Publisher</label><select onchange="updateTsWriter(${i},'publisher',this.value)"><option value="">–</option>${PUBLISHERS.map(p=>`<option ${w.publisher===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
       </div></div>`).join('');
 }
 function updateTsWriter(idx,field,val){const e=getCurrentEntry();if(!e)return;e.ts_writers[idx][field]=val;saveToStorage();}
@@ -1084,12 +1131,12 @@ function renderTunesatPublisherBlocks(){
       <div class="field-grid cols-2">
         <div class="field"><label class="field-label">Company</label>
           <select onchange="updateTsPublisher(${i},'company',this.value)">
-            <option value="">— Select —</option>
+            <option value="">–</option>
             ${PUBLISHERS.map(p=>`<option value="${p.name}" ${pub.company===p.name?'selected':''}>${p.name}</option>`).join('')}
           </select></div>
-        <div class="field"><label class="field-label">PRO</label><select onchange="updateTsPublisher(${i},'pro',this.value)">${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
-        <div class="field"><label class="field-label">IPI</label><input type="text" value="${pub.ipi||''}" oninput="updateTsPublisher(${i},'ipi',this.value)"></div>
-        <div class="field"><label class="field-label">Share %</label><input type="text" value="${pub.share||''}" oninput="updateTsPublisher(${i},'share',this.value)" placeholder="100"></div>
+        <div class="field"><label class="field-label">PRO</label><select onchange="updateTsPublisher(${i},'pro',this.value)"><option value="">–</option>${PROS.map(p=>`<option ${pub.pro===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label class="field-label">IPI</label><input type="text" value="${pub.ipi||''}" placeholder="e.g., 123456789" oninput="updateTsPublisher(${i},'ipi',this.value)"></div>
+        <div class="field"><label class="field-label">Share %</label><input type="text" value="${pub.share||''}" oninput="updateTsPublisher(${i},'share',this.value)" placeholder="e.g., 100"></div>
       </div></div>`).join('');
 }
 function updateTsPublisher(idx,field,val){
@@ -1247,7 +1294,7 @@ function showToast(msg,success=false){
 
 function init(){
   buildCheckboxGroup('genreGroup',GENRES,'genre');
-  buildCheckboxGroup('descGroup',DESCRIPTION_PHRASES,'description',true);
+  buildCheckboxGroup('descGroup',DESCRIPTION_PHRASES,'description');
   buildCheckboxGroup('moodsGroup',MOODS,'moods');
   buildCheckboxGroup('stylesGroup',STYLES,'styles');
   buildCheckboxGroup('instrumentsGroup',INSTRUMENTS,'instruments');
@@ -1257,9 +1304,9 @@ function init(){
   document.addEventListener('click',e=>{if(!e.target.closest('.writer-search-wrap')&&!e.target.closest('#artistSearchWrap'))document.querySelectorAll('.writer-dropdown').forEach(d=>d.remove());});
 }
 
-function buildCheckboxGroup(containerId,items,field,isDesc=false){
+function buildCheckboxGroup(containerId,items,field){
   const el=document.getElementById(containerId);
-  el.innerHTML=items.map(item=>`<label class="cb-item"><input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="onCheckChange('${field}','${item.replace(/'/g,"\\'")}',this.checked,${isDesc})"><span>${item}</span></label>`).join('');
+  el.innerHTML=items.map(item=>`<label class="cb-item"><input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="onCheckChange('${field}','${item.replace(/'/g,"\\'")}',this.checked)"><span>${item}</span></label>`).join('');
 }
 
 init();
