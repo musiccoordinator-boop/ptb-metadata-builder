@@ -325,7 +325,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
           <div class="section-label">Basic Info</div>
           <div class="field-grid cols-2">
             <div class="field"><label class="field-label">Catalog</label>
-              <select id="f_catalog" onchange="syncField('catalog',this.value)">
+              <select id="f_catalog" onchange="onCatalogChange(this.value)">
                 <option value="">–</option>
                 <option value="Ambient Scoring">Ambient Scoring</option>
                 <option value="Flavorlab Records">Flavorlab Records</option>
@@ -335,8 +335,8 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
             </div>
             <div class="field"><label class="field-label">Label</label>
               <select id="f_label" onchange="syncField('label',this.value)">
-                <option value="">–</option>
                 <option value="Producer's Toolbox">Producer's Toolbox</option>
+                <option value="">–</option>
               </select>
             </div>
             <div class="field"><label class="field-label">Album</label>
@@ -369,6 +369,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
               <label class="field-label" style="display:flex;align-items:center;">Genre <span class="req">*</span>
                 <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'genreGroup')">
               </label>
+              <div class="desc-output" id="genreOutput"></div>
               <div class="checkbox-group" id="genreGroup" style="max-height: 80px;"></div>
             </div>
           </div>
@@ -881,70 +882,70 @@ const SUB_GENRES = ["Acid Jazz","Adult Contemporary","African","Afro Beat","Afro
 
 const DEFAULT_ALBUMS = [
   { name: "2083", code: "TLC013" },
-  { name: "60's Soul Christmas", code: "PTB114" },
-  { name: "80's Synthmania", code: "PTB104" },
-  { name: "A Jazzy Christmas", code: "PTB115" },
-  { name: "Acoustic Blend", code: "PTB001" },
+  { name: "60's Soul Christmas", code: "PTB114", catalog: "Producer's Toolbox" },
+  { name: "80's Synthmania", code: "PTB104", catalog: "Producer's Toolbox" },
+  { name: "A Jazzy Christmas", code: "PTB115", catalog: "Producer's Toolbox" },
+  { name: "Acoustic Blend", code: "PTB001", catalog: "Producer's Toolbox" },
   { name: "Acoustic Delights", code: "TLC004" },
-  { name: "Acoustic Rock", code: "PTB142" },
-  { name: "Airy Beats", code: "PTB005" },
+  { name: "Acoustic Rock", code: "PTB142", catalog: "Producer's Toolbox" },
+  { name: "Airy Beats", code: "PTB005", catalog: "Producer's Toolbox" },
   { name: "Alien Guitar Worlds", code: "TLC008" },
-  { name: "Alt-Rockers Volume 01", code: "PTB003" },
-  { name: "Alternative Electro", code: "PTB004" },
-  { name: "Ambience For Introspection", code: "PTB118" },
-  { name: "Ambient Gelly", code: "PTB005" },
-  { name: "Ambient Guitar Emotions Volume 01", code: "PTB105" },
-  { name: "Ambient Guitar Emotions Volume 02", code: "PTB106" },
-  { name: "Ambient Scoring Percussion", code: "PTB006" },
-  { name: "Ambient Scoring Volume 01", code: "PTB007" },
-  { name: "Ambient Scoring Volume 02", code: "PTB008" },
-  { name: "Ambient Scoring Volume 03", code: "PTB009" },
-  { name: "Ambient Scoring Volume 04", code: "PTB010" },
-  { name: "Ambient Scoring Volume 05", code: "PTB011" },
-  { name: "Ambient Scoring Volume 06", code: "PTB012" },
-  { name: "Ambient Scoring Volume 07", code: "PTB013" },
-  { name: "Ambient Scoring Volume 08", code: "PTB014" },
-  { name: "Ambient Scoring Volume 09", code: "PTB015" },
-  { name: "Ambient Scoring Volume 10", code: "PTB016" },
-  { name: "Ambient Scoring Volume 11", code: "PTB017" },
-  { name: "Ambient Scoring Volume 12", code: "PTB018" },
-  { name: "Ambient Scoring Volume 13", code: "PTB019" },
-  { name: "Ambient Scoring Volume 14", code: "PTB020" },
-  { name: "Ambient Scoring Volume 15", code: "PTB021" },
-  { name: "Ambient Scoring Volume 16", code: "PTB072" },
-  { name: "Ambient Scoring Volume 17", code: "PTB101" },
-  { name: "Ambient Scoring Volume 18", code: "PTB129" },
-  { name: "Ambient Scoring Volume 19", code: "PTB132" },
-  { name: "Ambient Scoring Volume 20", code: "PTB134" },
-  { name: "Ambient Scoring Volume 21", code: "PTB144" },
-  { name: "Ambient Soundscapes", code: "PTB022" },
+  { name: "Alt-Rockers Volume 01", code: "PTB003", catalog: "Producer's Toolbox" },
+  { name: "Alternative Electro", code: "PTB004", catalog: "Producer's Toolbox" },
+  { name: "Ambience For Introspection", code: "PTB118", catalog: "Ambient Scoring" },
+  { name: "Ambient Gelly", code: "PTB005", catalog: "Ambient Scoring" },
+  { name: "Ambient Guitar Emotions Volume 01", code: "PTB105", catalog: "Ambient Scoring" },
+  { name: "Ambient Guitar Emotions Volume 02", code: "PTB106", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Percussion", code: "PTB006", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 01", code: "PTB007", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 02", code: "PTB008", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 03", code: "PTB009", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 04", code: "PTB010", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 05", code: "PTB011", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 06", code: "PTB012", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 07", code: "PTB013", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 08", code: "PTB014", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 09", code: "PTB015", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 10", code: "PTB016", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 11", code: "PTB017", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 12", code: "PTB018", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 13", code: "PTB019", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 14", code: "PTB020", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 15", code: "PTB021", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 16", code: "PTB072", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 17", code: "PTB101", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 18", code: "PTB129", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 19", code: "PTB132", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 20", code: "PTB134", catalog: "Ambient Scoring" },
+  { name: "Ambient Scoring Volume 21", code: "PTB144", catalog: "Ambient Scoring" },
+  { name: "Ambient Soundscapes", code: "PTB022", catalog: "Ambient Scoring" },
   { name: "Angelic Voices", code: "TLC005" },
-  { name: "Anthony Bourdain Parts Unknown", code: "PTB023" },
-  { name: "Apocalyptic Thriller", code: "PTB025" },
-  { name: "Blues Piano Volume 01", code: "PTB026" },
-  { name: "Bumpers and Stingers", code: "PTB027" },
-  { name: "Campfire Blues", code: "PTB141" },
-  { name: "Chicago Electric Blues", code: "PTB119" },
-  { name: "Chill Bedroom Pop", code: "PTB150" },
-  { name: "Country Road Volume 01", code: "PTB029" },
-  { name: "Dance", code: "PTB030" },
-  { name: "Dance Hip Hop", code: "PTB031" },
-  { name: "Dance Party", code: "PTB032" },
-  { name: "Dance Pop", code: "PTB033" },
-  { name: "Dedicated Flow", code: "PTB131" },
+  { name: "Anthony Bourdain Parts Unknown", code: "PTB023", catalog: "Producer's Toolbox" },
+  { name: "Apocalyptic Thriller", code: "PTB025", catalog: "Producer's Toolbox" },
+  { name: "Blues Piano Volume 01", code: "PTB026", catalog: "Producer's Toolbox" },
+  { name: "Bumpers and Stingers", code: "PTB027", catalog: "Producer's Toolbox" },
+  { name: "Campfire Blues", code: "PTB141", catalog: "Producer's Toolbox" },
+  { name: "Chicago Electric Blues", code: "PTB119", catalog: "Producer's Toolbox" },
+  { name: "Chill Bedroom Pop", code: "PTB150", catalog: "Producer's Toolbox" },
+  { name: "Country Road Volume 01", code: "PTB029", catalog: "Producer's Toolbox" },
+  { name: "Dance", code: "PTB030", catalog: "Producer's Toolbox" },
+  { name: "Dance Hip Hop", code: "PTB031", catalog: "Producer's Toolbox" },
+  { name: "Dance Party", code: "PTB032", catalog: "Producer's Toolbox" },
+  { name: "Dance Pop", code: "PTB033", catalog: "Producer's Toolbox" },
+  { name: "Dedicated Flow", code: "PTB131", catalog: "Producer's Toolbox" },
   { name: "Divide & Conquer", code: "TLC012" },
-  { name: "Earthy & Indie", code: "PTB034" },
-  { name: "Electro Chill", code: "PTB035" },
-  { name: "Electro Junk", code: "PTB036" },
-  { name: "Electronic Dance", code: "PTB0237" },
-  { name: "Electronic Pulse", code: "PTB037" },
-  { name: "Electronica Volume 01", code: "PTB038" },
-  { name: "Epic Sports Trailers", code: "PTB117" },
-  { name: "Feel Good Indie", code: "PTB039" },
-  { name: "Film Center Volume 01", code: "PTB040" },
-  { name: "Film Center Volume 02", code: "PTB041" },
-  { name: "Film Center Volume 03", code: "PTB042" },
-  { name: "Flamenco Pop", code: "PTB116" },
+  { name: "Earthy & Indie", code: "PTB034", catalog: "Producer's Toolbox" },
+  { name: "Electro Chill", code: "PTB035", catalog: "Producer's Toolbox" },
+  { name: "Electro Junk", code: "PTB036", catalog: "Producer's Toolbox" },
+  { name: "Electronic Dance", code: "PTB0237", catalog: "Producer's Toolbox" },
+  { name: "Electronic Pulse", code: "PTB037", catalog: "Producer's Toolbox" },
+  { name: "Electronica Volume 01", code: "PTB038", catalog: "Producer's Toolbox" },
+  { name: "Epic Sports Trailers", code: "PTB117", catalog: "Producer's Toolbox" },
+  { name: "Feel Good Indie", code: "PTB039", catalog: "Producer's Toolbox" },
+  { name: "Film Center Volume 01", code: "PTB040", catalog: "Producer's Toolbox" },
+  { name: "Film Center Volume 02", code: "PTB041", catalog: "Producer's Toolbox" },
+  { name: "Film Center Volume 03", code: "PTB042", catalog: "Producer's Toolbox" },
+  { name: "Flamenco Pop", code: "PTB116", catalog: "Producer's Toolbox" },
   { name: "Flavorlab Records - Amusium", code: "FLR007", catalog: "Flavorlab Records" },
   { name: "Flavorlab Records - Another Day", code: "FLR001", catalog: "Flavorlab Records" },
   { name: "Flavorlab Records - Aoede", code: "FLR008", catalog: "Flavorlab Records" },
@@ -1012,95 +1013,95 @@ const DEFAULT_ALBUMS = [
   { name: "Flavorlab Records T--N", code: "FLR057", catalog: "Flavorlab Records" },
   { name: "Flavorlab Records Volume 01", code: "FLR043", catalog: "Flavorlab Records" },
   { name: "Folk & Bluegrass Holidays", code: "TLC014" },
-  { name: "Folksy Anthems", code: "PTB043" },
-  { name: "Fresh Picks", code: "PTB027" },
-  { name: "Funky Grooves", code: "PTB123" },
-  { name: "Gelly Pop Instrumentals", code: "PTB045" },
-  { name: "Going Under", code: "PTB046" },
+  { name: "Folksy Anthems", code: "PTB043", catalog: "Producer's Toolbox" },
+  { name: "Fresh Picks", code: "PTB027", catalog: "Producer's Toolbox" },
+  { name: "Funky Grooves", code: "PTB123", catalog: "Producer's Toolbox" },
+  { name: "Gelly Pop Instrumentals", code: "PTB045", catalog: "Producer's Toolbox" },
+  { name: "Going Under", code: "PTB046", catalog: "Producer's Toolbox" },
   { name: "Groovee Holidays", code: "TLC011" },
   { name: "Hi Flyers", code: "TLC009" },
-  { name: "Hip Hop (Alt Movement)", code: "PTB047" },
-  { name: "Hip Hop (Atlanta Trap)", code: "PTB048" },
-  { name: "Hip Hop (Dirty South)", code: "PTB049" },
-  { name: "Hip Hop (Tense)", code: "PTB050" },
-  { name: "Hip Hop (Urban Mixed Bag)", code: "PTB051" },
-  { name: "Hip Hop Volume 01", code: "PTB052" },
-  { name: "Hip Hop Volume 02", code: "PTB053" },
-  { name: "Hip Hop Volume 03", code: "PTB054" },
-  { name: "Hip Hop Volume 04", code: "PTB055" },
-  { name: "Hip Hop Volume 05", code: "PTB056" },
-  { name: "Hip Hop Volume 06", code: "PTB057" },
-  { name: "Hip Hop Volume 07", code: "PTB058" },
-  { name: "Hip Hop Volume 08", code: "PTB059" },
-  { name: "Hits & Drones", code: "PTB102" },
-  { name: "Hits & Drones Volume 02", code: "PTB122" },
-  { name: "Holiday Flavors Volume 01", code: "PTB107" },
-  { name: "Hollywood Scores Volume 01", code: "PTB060" },
-  { name: "Indie Classical Scores Volume 01", code: "PTB113" },
-  { name: "Indie Dance Volume 01", code: "PTB061" },
-  { name: "Indie Dance Volume 02", code: "PTB062" },
-  { name: "Indie Dance Volume 03", code: "PTB063" },
-  { name: "Indie Dreamwave", code: "PTB083" },
-  { name: "Indie Rockers Volume 01", code: "PTB065" },
-  { name: "Indie Rockers Volume 02", code: "PTB066" },
-  { name: "Indie Rockers Volume 03", code: "PTB067" },
-  { name: "Indie Rockers Volume 04", code: "PTB083" },
-  { name: "Industrial Rock Volume 01", code: "PTB097" },
-  { name: "Industrial Rock Volume 02", code: "PTB098" },
-  { name: "Jazz Lounge", code: "PTB068" },
-  { name: "Jazz Lounge Volume 02", code: "PTB108" },
-  { name: "Light and Playful, Comedy Volume 01", code: "PTB069" },
-  { name: "Light and Playful, Comedy Volume 02", code: "PTB070" },
-  { name: "Lo-Fi Chill Beats", code: "PTB149" },
-  { name: "Lo-Fi Dream Beats", code: "PTB071" },
-  { name: "Modern Grooves", code: "PTB143" },
-  { name: "Modern Scoring", code: "PTB100" },
-  { name: "Music Elements", code: "PTB073" },
-  { name: "News, Sports and Politics", code: "PTB074" },
+  { name: "Hip Hop (Alt Movement)", code: "PTB047", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop (Atlanta Trap)", code: "PTB048", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop (Dirty South)", code: "PTB049", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop (Tense)", code: "PTB050", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop (Urban Mixed Bag)", code: "PTB051", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop Volume 01", code: "PTB052", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop Volume 02", code: "PTB053", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop Volume 03", code: "PTB054", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop Volume 04", code: "PTB055", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop Volume 05", code: "PTB056", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop Volume 06", code: "PTB057", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop Volume 07", code: "PTB058", catalog: "Producer's Toolbox" },
+  { name: "Hip Hop Volume 08", code: "PTB059", catalog: "Producer's Toolbox" },
+  { name: "Hits & Drones", code: "PTB102", catalog: "Producer's Toolbox" },
+  { name: "Hits & Drones Volume 02", code: "PTB122", catalog: "Producer's Toolbox" },
+  { name: "Holiday Flavors Volume 01", code: "PTB107", catalog: "Producer's Toolbox" },
+  { name: "Hollywood Scores Volume 01", code: "PTB060", catalog: "Producer's Toolbox" },
+  { name: "Indie Classical Scores Volume 01", code: "PTB113", catalog: "Producer's Toolbox" },
+  { name: "Indie Dance Volume 01", code: "PTB061", catalog: "Producer's Toolbox" },
+  { name: "Indie Dance Volume 02", code: "PTB062", catalog: "Producer's Toolbox" },
+  { name: "Indie Dance Volume 03", code: "PTB063", catalog: "Producer's Toolbox" },
+  { name: "Indie Dreamwave", code: "PTB083", catalog: "Producer's Toolbox" },
+  { name: "Indie Rockers Volume 01", code: "PTB065", catalog: "Producer's Toolbox" },
+  { name: "Indie Rockers Volume 02", code: "PTB066", catalog: "Producer's Toolbox" },
+  { name: "Indie Rockers Volume 03", code: "PTB067", catalog: "Producer's Toolbox" },
+  { name: "Indie Rockers Volume 04", code: "PTB083", catalog: "Producer's Toolbox" },
+  { name: "Industrial Rock Volume 01", code: "PTB097", catalog: "Producer's Toolbox" },
+  { name: "Industrial Rock Volume 02", code: "PTB098", catalog: "Producer's Toolbox" },
+  { name: "Jazz Lounge", code: "PTB068", catalog: "Producer's Toolbox" },
+  { name: "Jazz Lounge Volume 02", code: "PTB108", catalog: "Producer's Toolbox" },
+  { name: "Light and Playful, Comedy Volume 01", code: "PTB069", catalog: "Producer's Toolbox" },
+  { name: "Light and Playful, Comedy Volume 02", code: "PTB070", catalog: "Producer's Toolbox" },
+  { name: "Lo-Fi Chill Beats", code: "PTB149", catalog: "Producer's Toolbox" },
+  { name: "Lo-Fi Dream Beats", code: "PTB071", catalog: "Producer's Toolbox" },
+  { name: "Modern Grooves", code: "PTB143", catalog: "Producer's Toolbox" },
+  { name: "Modern Scoring", code: "PTB100", catalog: "Producer's Toolbox" },
+  { name: "Music Elements", code: "PTB073", catalog: "Producer's Toolbox" },
+  { name: "News, Sports and Politics", code: "PTB074", catalog: "Producer's Toolbox" },
   { name: "Owe It All (single)", code: "" },
-  { name: "Piano Portraits", code: "PTB075" },
+  { name: "Piano Portraits", code: "PTB075", catalog: "Producer's Toolbox" },
   { name: "Pizzicato Bliss", code: "TLC006" },
-  { name: "Pop Heart", code: "PTB078" },
-  { name: "Pop Rockers", code: "PTB077" },
-  { name: "Pop Vibes", code: "PTB078" },
-  { name: "Positive Uplifting Acoustic Guitar", code: "PTB140" },
-  { name: "Post Rock Soundscapes Volume 01", code: "PTB112" },
-  { name: "Punk Rockers", code: "PTB079" },
+  { name: "Pop Heart", code: "PTB078", catalog: "Producer's Toolbox" },
+  { name: "Pop Rockers", code: "PTB077", catalog: "Producer's Toolbox" },
+  { name: "Pop Vibes", code: "PTB078", catalog: "Producer's Toolbox" },
+  { name: "Positive Uplifting Acoustic Guitar", code: "PTB140", catalog: "Producer's Toolbox" },
+  { name: "Post Rock Soundscapes Volume 01", code: "PTB112", catalog: "Producer's Toolbox" },
+  { name: "Punk Rockers", code: "PTB079", catalog: "Producer's Toolbox" },
   { name: "Reflections", code: "TLC002" },
-  { name: "Retro Jams & Funky Fun", code: "PTB080" },
-  { name: "Rock 'n Rollers", code: "PTB081" },
-  { name: "Rock 'n Rollers Volume 02", code: "PTB096" },
-  { name: "Rock And Roll Whiskey Soaked", code: "PTB082" },
-  { name: "Rocktronica Volume 01", code: "PTB099" },
+  { name: "Retro Jams & Funky Fun", code: "PTB080", catalog: "Producer's Toolbox" },
+  { name: "Rock 'n Rollers", code: "PTB081", catalog: "Producer's Toolbox" },
+  { name: "Rock 'n Rollers Volume 02", code: "PTB096", catalog: "Producer's Toolbox" },
+  { name: "Rock And Roll Whiskey Soaked", code: "PTB082", catalog: "Producer's Toolbox" },
+  { name: "Rocktronica Volume 01", code: "PTB099", catalog: "Producer's Toolbox" },
   { name: "Rooftop Sessions", code: "TLC007" },
-  { name: "Rootsy Electronica", code: "PTB085" },
+  { name: "Rootsy Electronica", code: "PTB085", catalog: "Producer's Toolbox" },
   { name: "SAG Harbor", code: "FLR054", catalog: "Flavorlab Records" },
-  { name: "Songs", code: "PTB086" },
-  { name: "Soulful & Sexy", code: "PTB067" },
-  { name: "Sparkly Pop", code: "PTB145" },
-  { name: "Sports Hip Hop Volume 01", code: "PTB126" },
-  { name: "Sports Hip Hop Volume 02", code: "PTB127" },
-  { name: "Sports Hip Hop Volume 03", code: "PTB128" },
-  { name: "Sports Hip Hop Volume 04", code: "PTB133" },
-  { name: "Sports Hybrid", code: "PTB129" },
-  { name: "Sports Rock", code: "PTB088" },
-  { name: "Sports Rock Volume 02", code: "PTB124" },
-  { name: "Sports Rock Volume 03", code: "PTB130" },
-  { name: "Sports Stories & Rock Anthems", code: "PTB089" },
-  { name: "Sports Vocals", code: "PTB126" },
-  { name: "Street Beats Volume 01", code: "PTB110" },
-  { name: "Summer Pop", code: "PTB120" },
-  { name: "Swamp Rock", code: "PTB090" },
-  { name: "Synth Pop", code: "PTB146" },
-  { name: "SynthWaves", code: "PTB091" },
+  { name: "Songs", code: "PTB086", catalog: "Producer's Toolbox" },
+  { name: "Soulful & Sexy", code: "PTB067", catalog: "Producer's Toolbox" },
+  { name: "Sparkly Pop", code: "PTB145", catalog: "Producer's Toolbox" },
+  { name: "Sports Hip Hop Volume 01", code: "PTB126", catalog: "Producer's Toolbox" },
+  { name: "Sports Hip Hop Volume 02", code: "PTB127", catalog: "Producer's Toolbox" },
+  { name: "Sports Hip Hop Volume 03", code: "PTB128", catalog: "Producer's Toolbox" },
+  { name: "Sports Hip Hop Volume 04", code: "PTB133", catalog: "Producer's Toolbox" },
+  { name: "Sports Hybrid", code: "PTB129", catalog: "Producer's Toolbox" },
+  { name: "Sports Rock", code: "PTB088", catalog: "Producer's Toolbox" },
+  { name: "Sports Rock Volume 02", code: "PTB124", catalog: "Producer's Toolbox" },
+  { name: "Sports Rock Volume 03", code: "PTB130", catalog: "Producer's Toolbox" },
+  { name: "Sports Stories & Rock Anthems", code: "PTB089", catalog: "Producer's Toolbox" },
+  { name: "Sports Vocals", code: "PTB126", catalog: "Producer's Toolbox" },
+  { name: "Street Beats Volume 01", code: "PTB110", catalog: "Producer's Toolbox" },
+  { name: "Summer Pop", code: "PTB120", catalog: "Producer's Toolbox" },
+  { name: "Swamp Rock", code: "PTB090", catalog: "Producer's Toolbox" },
+  { name: "Synth Pop", code: "PTB146", catalog: "Producer's Toolbox" },
+  { name: "SynthWaves", code: "PTB091", catalog: "Producer's Toolbox" },
   { name: "Tension Tales", code: "RWL001" },
-  { name: "Trip Hop", code: "PTB092" },
-  { name: "Tropical House", code: "PTB122" },
+  { name: "Trip Hop", code: "PTB092", catalog: "Producer's Toolbox" },
+  { name: "Tropical House", code: "PTB122", catalog: "Producer's Toolbox" },
   { name: "Undercurrents", code: "TLC010" },
-  { name: "Vanilla Pop Best Of The 50's 60's", code: "PTB093" },
-  { name: "Vintage Swing", code: "PTB109" },
-  { name: "Way Too Whimsical", code: "PTB094" },
-  { name: "World Groove", code: "PTB095" }
+  { name: "Vanilla Pop Best Of The 50's 60's", code: "PTB093", catalog: "Producer's Toolbox" },
+  { name: "Vintage Swing", code: "PTB109", catalog: "Producer's Toolbox" },
+  { name: "Way Too Whimsical", code: "PTB094", catalog: "Producer's Toolbox" },
+  { name: "World Groove", code: "PTB095", catalog: "Producer's Toolbox" }
 ];
 
 // ─── STATE ────────────────────────────────────────────────────────
@@ -1114,7 +1115,7 @@ function getCurrentTrackGroup() { return tracks.find(t=>t.id===currentTrackId)||
 function getCurrentEntry() { const g=getCurrentTrackGroup(); if(!g)return null; return currentAltIndex===null?g.fullMix:g.alternates[currentAltIndex]||null; }
 
 function freshEntry(title='',isAlt=false) {
-  return { title, isAlt, catalog:'', label:'', album:'', albumCode:'', artist:[], tempo:'', bpm:'', genre:[], hasVocals:'', explicit:'', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'',role:'Original Publisher'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'Composer/Writer',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
+  return { title, isAlt, catalog:'', label:"Producer's Toolbox", album:'', albumCode:'', artist:[], tempo:'', bpm:'', genre:[], hasVocals:'', explicit:'', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'',role:'Original Publisher'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'Composer/Writer',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
 }
 
 // ─── PAGE SWITCHING ────────────────────────────────────────────────
@@ -1128,12 +1129,39 @@ function switchPage(page) {
   renderQueue();
 }
 
-// ─── ALBUMS ──────────────────────────────────────────────────────
+// ─── ALBUMS & CATALOGS ───────────────────────────────────────────
+function onCatalogChange(val) {
+  const e=getCurrentEntry(); if(!e)return; 
+  e.catalog=val;
+  
+  // Clear album if it doesn't belong to newly selected catalog
+  const albumObj = getAlbums().find(a=>a.name===e.album);
+  if(albumObj && albumObj.catalog && albumObj.catalog !== val) {
+     e.album = '';
+     e.albumCode = '';
+     const acEl = document.getElementById('f_albumCode');
+     if(acEl) acEl.value = '';
+  }
+  
+  populateAlbumDropdown();
+  saveToStorage();
+}
+
 function populateAlbumDropdown() {
   const sel=document.getElementById('f_album'); if(!sel)return;
-  const entry=getCurrentEntry(); const current=entry?entry.album:'';
-  sel.innerHTML='<option value="">–</option>'+getAlbums().map(a=>`<option value="${a.name}" ${current===a.name?'selected':''}>${a.name}</option>`).join('');
+  const entry=getCurrentEntry(); 
+  const currentAlb=entry?entry.album:'';
+  const currentCat=entry?entry.catalog:'';
+  
+  const availableAlbums = getAlbums().filter(a => {
+      if (!a.catalog) return true; // Show uncategorized albums for all catalogs
+      if (currentCat) return a.catalog === currentCat;
+      return true; // Show all if no catalog is selected yet
+  });
+
+  sel.innerHTML='<option value="">–</option>'+availableAlbums.map(a=>`<option value="${a.name}" ${currentAlb===a.name?'selected':''}>${a.name}</option>`).join('');
 }
+
 function onAlbumChange(val) {
   const e=getCurrentEntry(); if(!e)return; e.album=val;
   const album=getAlbums().find(a=>a.name===val);
@@ -1151,11 +1179,14 @@ function onAlbumChange(val) {
   }
   saveToStorage();
 }
+
 function onBpmChange(val) {
   const e=getCurrentEntry(); if(!e)return; e.bpm=val;
   const bpm=parseInt(val); if(!isNaN(bpm)){let t=''; if(bpm<=89)t='Slow (0-89 BPM)';else if(bpm<=110)t='Medium (90-110 BPM)';else if(bpm<=130)t='Fast (111-130 BPM)';else t='Very Fast (131+ BPM)'; e.tempo=t; const sel=document.getElementById('f_tempo');if(sel)sel.value=t;}
   saveToStorage();
 }
+
+// ─── ARTIST SEARCH ───────────────────────────────────────────────
 function onArtistSearch(val) {
   const e=getCurrentEntry();if(!e)return;
   const wrap=document.getElementById('artistSearchWrap');
@@ -1235,10 +1266,11 @@ function loadEntryIntoForm() {
   document.getElementById('emptyForm').style.display='none';document.getElementById('trackForm').style.display='block';
   document.getElementById('titleInput').value=entry.title||'';
   document.getElementById('formTrackType').textContent=entry.isAlt?'ALTERNATE VERSION':'FULL MIX';
-  populateAlbumDropdown();
   
   // Basic & musical string fields
   ['catalog','label','albumCode','tempo','bpm','hasVocals','explicit','isrc','styleOf'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=entry[f]||'';});
+  
+  populateAlbumDropdown();
   
   // Migration for artist array if needed
   if (typeof entry.artist === 'string') {
@@ -1255,7 +1287,7 @@ function loadEntryIntoForm() {
     });
   });
   
-  ['artist', 'description', 'moods', 'styles', 'instruments', 'filmGenres', 'subGenres'].forEach(f => renderTags(f));
+  ['genre', 'artist', 'description', 'moods', 'styles', 'instruments', 'filmGenres', 'subGenres'].forEach(f => renderTags(f));
   document.getElementById('instrNote').textContent=entry.isAlt?'✦ edit for this version only':'';
   renderPublisherBlocks();renderWriterBlocks();renderAltChips();
   
@@ -1287,6 +1319,7 @@ function renderTags(field) {
   if (!e) return;
 
   const map = {
+    genre: { out: 'genreOutput' },
     artist: { out: 'artistOutput' },
     description: { out: 'descOutput' },
     moods: { out: 'moodsOutput' },
@@ -1314,7 +1347,7 @@ function removeTag(field, phrase) {
   e[field] = e[field].filter(p => p !== phrase);
   
   const cbMap = {
-    description: 'descGroup', moods: 'moodsGroup', styles: 'stylesGroup',
+    genre: 'genreGroup', description: 'descGroup', moods: 'moodsGroup', styles: 'stylesGroup',
     instruments: 'instrumentsGroup', filmGenres: 'filmGenreGroup', subGenres: 'subGenreGroup'
   };
   
