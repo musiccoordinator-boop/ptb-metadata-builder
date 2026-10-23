@@ -80,11 +80,13 @@ body { font-family: 'Barlow', sans-serif; background: var(--ptb-navy); color: va
 .rail-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .rail-title { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
 .track-list { flex: 1; overflow-y: auto; padding: 6px; }
-.track-item { border-radius: var(--radius); padding: 9px 12px; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
+.track-item { border-radius: var(--radius); padding: 9px 12px; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; margin-bottom: 2px; position: relative; }
 .track-item:hover { background: var(--surface2); }
 .track-item.active { background: var(--surface2); border-color: var(--border-hover); box-shadow: inset 2px 0 0 var(--ptb-teal); }
-.track-item-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+.track-item-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; padding-right: 40px; }
 .track-item-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.track-item-actions { position: absolute; right: 8px; top: 8px; display: none; gap: 4px; }
+.track-item:hover .track-item-actions { display: flex; }
 .alt-badge { display: inline-block; background: rgba(14,127,168,0.15); color: var(--ptb-teal-bright); font-size: 10px; font-family: 'DM Mono', monospace; padding: 1px 6px; border-radius: 4px; margin-top: 3px; border: 1px solid rgba(14,127,168,0.3); }
 .alt-item { padding: 5px 12px 5px 24px; cursor: pointer; border-radius: var(--radius); margin-bottom: 1px; transition: background 0.15s; border: 1px solid transparent; display: flex; align-items: center; gap: 6px; }
 .alt-item:hover { background: var(--surface2); }
@@ -189,10 +191,12 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 /* Queue rail */
 .queue-rail { border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
 .queue-items { flex: 1; overflow-y: auto; padding: 6px; }
-.queue-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px; margin-bottom: 5px; cursor: pointer; transition: border-color 0.15s; }
+.queue-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px; margin-bottom: 5px; cursor: pointer; transition: border-color 0.15s; position: relative;}
 .queue-item:hover { border-color: var(--border-hover); }
-.queue-item-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-item-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 40px; }
 .queue-item-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.queue-item-actions { position: absolute; right: 8px; top: 8px; display: none; gap: 4px; }
+.queue-item:hover .queue-item-actions { display: flex; }
 .queue-footer { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 7px; }
 .queue-count { font-size: 12px; color: var(--text-muted); text-align: center; }
 .queue-count span { color: var(--ptb-teal-bright); font-weight: 600; font-family: 'DM Mono', monospace; }
@@ -207,6 +211,8 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 .btn-surface:hover { border-color: var(--border-hover); color: var(--text); }
 .btn-danger { background: transparent; border: 1px solid transparent; color: var(--danger); padding: 3px 7px; font-size: 12px; }
 .btn-danger:hover { background: rgba(255,68,68,0.08); }
+.btn-action { background: rgba(14,127,168,0.15); border: 1px solid var(--ptb-teal); color: var(--ptb-teal-bright); padding: 2px 6px; font-size: 12px; border-radius: 4px; }
+.btn-action:hover { background: var(--ptb-teal); color: #fff; }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 .btn-full { width: 100%; }
 .btn-export {
@@ -324,7 +330,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         <div class="section">
           <div class="section-label">Basic Info</div>
           <div class="field-grid cols-2">
-            <div class="field"><label class="field-label">Catalog</label>
+            <div class="field"><label class="field-label">Catalog <span class="req">*</span></label>
               <select id="f_catalog" onchange="onCatalogChange(this.value)">
                 <option value="">–</option>
                 <option value="Ambient Scoring">Ambient Scoring</option>
@@ -333,13 +339,13 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
                 <option value="Producer's Toolbox">Producer's Toolbox</option>
               </select>
             </div>
-            <div class="field"><label class="field-label">Label</label>
+            <div class="field"><label class="field-label">Label <span class="req">*</span></label>
               <select id="f_label" onchange="syncField('label',this.value)">
                 <option value="Producer's Toolbox">Producer's Toolbox</option>
                 <option value="">–</option>
               </select>
             </div>
-            <div class="field"><label class="field-label">Album</label>
+            <div class="field"><label class="field-label">Album <span class="req">*</span></label>
               <select id="f_album" onchange="onAlbumChange(this.value)"><option value="">–</option></select>
             </div>
             <div class="field"><label class="field-label">Album Code</label><input type="text" id="f_albumCode" placeholder="Auto-fills when ALBUM is selected" readonly style="opacity:0.6;cursor:default"></div>
@@ -374,8 +380,8 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
             </div>
           </div>
           <div class="field-grid cols-3" style="margin-top:8px">
-            <div class="field"><label class="field-label">Has Vocals</label><select id="f_hasVocals" onchange="syncField('hasVocals',this.value)"><option value="">–</option><option value="No">No</option><option value="Yes">Yes</option></select></div>
-            <div class="field"><label class="field-label">Explicit</label><select id="f_explicit" onchange="syncField('explicit',this.value)"><option value="">–</option><option value="No">No</option><option value="Yes">Yes</option></select></div>
+            <div class="field"><label class="field-label">Has Vocals <span class="req">*</span></label><select id="f_hasVocals" onchange="syncField('hasVocals',this.value)"><option value="">–</option><option value="No">No</option><option value="Yes">Yes</option></select></div>
+            <div class="field"><label class="field-label">Explicit <span class="req">*</span></label><select id="f_explicit" onchange="syncField('explicit',this.value)"><option value="">–</option><option value="No">No</option><option value="Yes">Yes</option></select></div>
             <div class="field"><label class="field-label">ISRC</label><input type="text" id="f_isrc" placeholder="e.g., QMHQS000000" oninput="syncField('isrc',this.value)"></div>
           </div>
         </div>
@@ -539,6 +545,37 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
   </div>
 </div>
 
+<!-- Copy Track Modal -->
+<div class="modal-overlay" id="copyTrackModal" style="z-index: 9998;">
+  <div class="modal" style="width: 400px;">
+    <div class="modal-header">
+      <span class="modal-title">Copy to New Track</span>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('copyTrackModal').style.display='none'">Close</button>
+    </div>
+    <div style="margin-bottom: 16px; font-size: 13px; color: var(--text-mid);">
+      Select the fields you want to copy from <strong id="copySourceName" style="color: var(--text);"></strong> to a new track:
+    </div>
+    <div class="checkbox-group" id="copyFieldsGroup" style="max-height: 300px; overflow-y: auto; padding: 10px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <label class="cb-item"><input type="checkbox" value="title" checked><span>Title</span></label>
+      <label class="cb-item"><input type="checkbox" value="catalog" checked><span>Catalog / Label</span></label>
+      <label class="cb-item"><input type="checkbox" value="album" checked><span>Album</span></label>
+      <label class="cb-item"><input type="checkbox" value="artist" checked><span>Artist</span></label>
+      <label class="cb-item"><input type="checkbox" value="tempo" checked><span>Tempo / BPM</span></label>
+      <label class="cb-item"><input type="checkbox" value="genre" checked><span>Genre</span></label>
+      <label class="cb-item"><input type="checkbox" value="description" checked><span>Description</span></label>
+      <label class="cb-item"><input type="checkbox" value="styleOf" checked><span>Style Of</span></label>
+      <label class="cb-item"><input type="checkbox" value="moods" checked><span>Moods</span></label>
+      <label class="cb-item"><input type="checkbox" value="styles" checked><span>Styles</span></label>
+      <label class="cb-item"><input type="checkbox" value="instruments" checked><span>Instruments</span></label>
+      <label class="cb-item"><input type="checkbox" value="filmGenres" checked><span>Film/TV Genre</span></label>
+      <label class="cb-item"><input type="checkbox" value="subGenres" checked><span>Sub Genre</span></label>
+      <label class="cb-item"><input type="checkbox" value="publishers" checked><span>Publishers (All)</span></label>
+      <label class="cb-item"><input type="checkbox" value="writers" checked><span>Writers (All)</span></label>
+    </div>
+    <button class="btn btn-teal btn-full" onclick="executeCopyTrack()">Copy to New Track</button>
+  </div>
+</div>
+
 <script>
 // ─── DATA ─────────────────────────────────────────────────────────
 const ARTISTS = [
@@ -601,3110 +638,394 @@ const ARTISTS = [
 ];
 
 const WRITERS = [
-  {
-    "display": "Aaron Gittleman",
-    "first": "Aaron",
-    "last": "Gittleman",
-    "pro": "ASCAP",
-    "ipi": "658922306",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Aaron McMichael",
-    "first": "Aaron",
-    "last": "McMichael",
-    "pro": "BMI",
-    "ipi": "674043840",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Aaron Nevezie",
-    "first": "Aaron",
-    "last": "Nevezie",
-    "pro": "ASCAP",
-    "ipi": "578425708",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Aaron Steinberg",
-    "first": "Aaron",
-    "last": "Steinberg",
-    "pro": "BMI",
-    "ipi": "186724439",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Aaron Thurston",
-    "first": "Aaron",
-    "last": "Thurston",
-    "pro": "ASCAP",
-    "ipi": "6682199",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Adam Langdon Ehrenpfort",
-    "first": "Adam Langdon",
-    "last": "Ehrenpfort",
-    "pro": "BMI",
-    "ipi": "789486851",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Adam Parker",
-    "first": "Adam",
-    "last": "Parker",
-    "pro": "PRS",
-    "ipi": "647472520",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Adam Scott Little",
-    "first": "Adam Scott",
-    "last": "Little",
-    "pro": "ASCAP",
-    "ipi": "808524927",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Adam Worthy",
-    "first": "Adam",
-    "last": "Worthy",
-    "pro": "ASCAP",
-    "ipi": "831917041",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Adrian Sealy",
-    "first": "Adrian",
-    "last": "Sealy",
-    "pro": "BMI",
-    "ipi": "604906067",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Adrian Sood",
-    "first": "Adrian",
-    "last": "Sood",
-    "pro": "ASCAP",
-    "ipi": "545394335",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Adrian St. John",
-    "first": "Adrian",
-    "last": "St. John",
-    "pro": "BMI",
-    "ipi": "618887202",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Ahmet Burak Kahraman",
-    "first": "Ahmet Burak",
-    "last": "Kahraman",
-    "pro": "PRS",
-    "ipi": "703479053",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Alan G Ward",
-    "first": "Alan G",
-    "last": "Ward",
-    "pro": "BMI",
-    "ipi": "891870100",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Aled Roberts",
-    "first": "Aled",
-    "last": "Roberts",
-    "pro": "ASCAP",
-    "ipi": "709772709",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Alejandro Canellas",
-    "first": "Alejandro",
-    "last": "Canellas",
-    "pro": "BMI",
-    "ipi": "376439524",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Alessandro Altman",
-    "first": "Alessandro",
-    "last": "Altman",
-    "pro": "ASCAP",
-    "ipi": "720745556",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Alexandra Scherr",
-    "first": "Alexandra",
-    "last": "Scherr",
-    "pro": "ASCAP",
-    "ipi": "762903234",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Alwin Reiners",
-    "first": "Alwin",
-    "last": "Reiners",
-    "pro": "BMI",
-    "ipi": "237301791",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Amar Lal",
-    "first": "Amar",
-    "last": "Lal",
-    "pro": "SESAC",
-    "ipi": "738826798",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Andre Atkins",
-    "first": "Andre",
-    "last": "Atkins",
-    "pro": "BMI",
-    "ipi": "433796924",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Andr\u00e9 Berry",
-    "first": "Andr\u00e9",
-    "last": "Berry",
-    "pro": "BMI",
-    "ipi": "231686373",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Andrew D. Russell",
-    "first": "Andrew D.",
-    "last": "Russell",
-    "pro": "ASCAP",
-    "ipi": "341438186",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Andrew Guido",
-    "first": "Andrew",
-    "last": "Guido",
-    "pro": "ASCAP",
-    "ipi": "740029671",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Andrew Lipow",
-    "first": "Andrew",
-    "last": "Lipow",
-    "pro": "ASCAP",
-    "ipi": "591171155",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Andrew Orkin",
-    "first": "Andrew",
-    "last": "Orkin",
-    "pro": "ASCAP",
-    "ipi": "693544020",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Andy Gabrys",
-    "first": "Andy",
-    "last": "Gabrys",
-    "pro": "BMI",
-    "ipi": "545709924",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Angel Mensah",
-    "first": "Angel",
-    "last": "Mensah",
-    "pro": "BMI",
-    "ipi": "772648505",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Angelo Domenic Di Loreto",
-    "first": "Angelo Domenic",
-    "last": "Di Loreto",
-    "pro": "ASCAP",
-    "ipi": "640776241",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Angelo Telan",
-    "first": "Angelo",
-    "last": "Telan",
-    "pro": "BMI",
-    "ipi": "766631023",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Anthony Clint Jr.",
-    "first": "Anthony",
-    "last": "Clint Jr.",
-    "pro": "SESAC",
-    "ipi": "564107462",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Antoine Manning",
-    "first": "Antoine",
-    "last": "Manning",
-    "pro": "BMI",
-    "ipi": "480818830",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Anwar Jaja Talbert",
-    "first": "Anwar Jaja",
-    "last": "Talbert",
-    "pro": "SESAC",
-    "ipi": "477173723",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Arielle Alexander",
-    "first": "Arielle",
-    "last": "Alexander",
-    "pro": "BMI",
-    "ipi": "552476441",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Arne J Wendy",
-    "first": "Arne J",
-    "last": "Wendy",
-    "pro": "ASCAP",
-    "ipi": "338831544",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Arthur H Munson",
-    "first": "Arthur H",
-    "last": "Munson",
-    "pro": "BMI",
-    "ipi": "53085690",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Austin Filingo",
-    "first": "Austin",
-    "last": "Filingo",
-    "pro": "BMI",
-    "ipi": "795271306",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Aviv Teboul",
-    "first": "Aviv",
-    "last": "Teboul",
-    "pro": "ASCAP",
-    "ipi": "797314500",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Bartosch McCarthy",
-    "first": "Bartosch",
-    "last": "McCarthy",
-    "pro": "BMI",
-    "ipi": "752617338",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Ben Antelis",
-    "first": "Ben",
-    "last": "Antelis",
-    "pro": "BMI",
-    "ipi": "529285919",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Benjamin Rice Stapleman",
-    "first": "Benjamin Rice",
-    "last": "Stapleman",
-    "pro": "ASCAP",
-    "ipi": "454301975",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Benjamin Stivers",
-    "first": "Benjamin",
-    "last": "Stivers",
-    "pro": "ASCAP",
-    "ipi": "594049228",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Benjamin Zwerin",
-    "first": "Benjamin",
-    "last": "Zwerin",
-    "pro": "ASCAP",
-    "ipi": "451532478",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Bhauraw Avhad",
-    "first": "Bhauraw",
-    "last": "Avhad",
-    "pro": "ASCAP",
-    "ipi": "632997411",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Bjorn Palmqvist",
-    "first": "Bjorn",
-    "last": "Palmqvist",
-    "pro": "KODA",
-    "ipi": "285725238",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Brandon Marchant",
-    "first": "Brandon",
-    "last": "Marchant",
-    "pro": "SOCAN",
-    "ipi": "538731141",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Brandon Ross",
-    "first": "Brandon L.",
-    "last": "Ross",
-    "pro": "BMI",
-    "ipi": "1336014292",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Brandy Lynn Cole",
-    "first": "Brandy Lynn",
-    "last": "Cole",
-    "pro": "BMI",
-    "ipi": "396973098",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Brian Donohoe",
-    "first": "Brian",
-    "last": "Donohoe",
-    "pro": "SESAC",
-    "ipi": "280722865",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Brian Quill",
-    "first": "Brian",
-    "last": "Quill",
-    "pro": "SESAC",
-    "ipi": "295466227",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Brian Warren",
-    "first": "Brian",
-    "last": "Warren",
-    "pro": "BMI",
-    "ipi": "1131749864",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Bryan Akcasu",
-    "first": "Bryan",
-    "last": "Akcasu",
-    "pro": "BMI",
-    "ipi": "749172123",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Byron Johnson",
-    "first": "Byron",
-    "last": "Johnson",
-    "pro": "ASCAP",
-    "ipi": "530381777",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Byron Sampson",
-    "first": "Byron",
-    "last": "Sampson",
-    "pro": "BMI",
-    "ipi": "577412041",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Calvin Ross Pfeffer",
-    "first": "Calvin Ross",
-    "last": "Pfeffer",
-    "pro": "BMI",
-    "ipi": "725611849",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Cameron Ferrer",
-    "first": "Cameron",
-    "last": "Ferrer",
-    "pro": "BMI",
-    "ipi": "1299510525",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Camille Jasmine Thomas",
-    "first": "Camille Jasmine",
-    "last": "Thomas",
-    "pro": "SOCAN",
-    "ipi": "503974255",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Carey Clayton",
-    "first": "Carey",
-    "last": "Clayton",
-    "pro": "ASCAP",
-    "ipi": "601713982",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Carmen Autumn Thomas",
-    "first": "Carmen Autumn",
-    "last": "Thomas",
-    "pro": "SOCAN",
-    "ipi": "503973160",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Caroline Gentry",
-    "first": "Caroline",
-    "last": "Gentry",
-    "pro": "BMI",
-    "ipi": "741949122",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Catherine Lee Anderson",
-    "first": "Catherine Lee",
-    "last": "Anderson",
-    "pro": "ASCAP",
-    "ipi": "754585701",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Chantal Louise Cassandra Greatorex",
-    "first": "Chantal Louise Cassandra",
-    "last": "Greatorex",
-    "pro": "BMI",
-    "ipi": "672598106",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Charles B. Mallory",
-    "first": "Charles B.",
-    "last": "Mallory",
-    "pro": "ASCAP",
-    "ipi": "456201184",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Charles Matthew Brandau",
-    "first": "Charles Matthew",
-    "last": "Brandau",
-    "pro": "BMI",
-    "ipi": "524814754",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Chase Alexander Nixon",
-    "first": "Chase Alexander",
-    "last": "Nixon",
-    "pro": "SESAC",
-    "ipi": "673633330",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Chris Villepigue",
-    "first": "Chris",
-    "last": "Villepigue",
-    "pro": "BMI",
-    "ipi": "453740458",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Christer David Hellstrom",
-    "first": "Christer David",
-    "last": "Hellstrom",
-    "pro": "SESAC",
-    "ipi": "662655525",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Christo Patricios",
-    "first": "Christo",
-    "last": "Patricios",
-    "pro": "SAMRO",
-    "ipi": "721287651",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Christopher Alan Justice",
-    "first": "Christopher Alan",
-    "last": "Justice",
-    "pro": "BMI",
-    "ipi": "358208747",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Christopher Child",
-    "first": "Christopher",
-    "last": "Child",
-    "pro": "ASCAP",
-    "ipi": "470617850",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Christopher Chorney",
-    "first": "Christopher",
-    "last": "Chorney",
-    "pro": "BMI",
-    "ipi": "628741528",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Christopher Kyle Ficht",
-    "first": "Christopher Kyle",
-    "last": "Ficht",
-    "pro": "BMI",
-    "ipi": "632023496",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Christopher McDonald",
-    "first": "Christopher",
-    "last": "McDonald",
-    "pro": "SESAC",
-    "ipi": "568083619",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Christopher Phelps",
-    "first": "Christopher",
-    "last": "Phelps",
-    "pro": "BMI",
-    "ipi": "1156044282",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Christopher Sanchez",
-    "first": "Christopher",
-    "last": "Sanchez",
-    "pro": "ASCAP",
-    "ipi": "1012012749",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Christopher Stoll",
-    "first": "Christopher",
-    "last": "Stoll",
-    "pro": "BMI",
-    "ipi": "465711644",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Clinton Devaughn Evans",
-    "first": "Clinton Devaughn",
-    "last": "Evans",
-    "pro": "BMI",
-    "ipi": "602373874",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Cole Bauer",
-    "first": "Cole",
-    "last": "Bauer",
-    "pro": "ASCAP",
-    "ipi": "581601361",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Corei Taylor",
-    "first": "Corei",
-    "last": "Taylor",
-    "pro": "SESAC",
-    "ipi": "547433433",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Cory Otis",
-    "first": "Cory",
-    "last": "Otis",
-    "pro": "BMI",
-    "ipi": "479516118",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Cory Ross",
-    "first": "Cory",
-    "last": "Ross",
-    "pro": "BMI",
-    "ipi": "734391537",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Craig Keith Dodge",
-    "first": "Craig Keith",
-    "last": "Dodge",
-    "pro": "SOCAN",
-    "ipi": "498686472",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Damian McNorton",
-    "first": "Damian",
-    "last": "McNorton",
-    "pro": "BMI",
-    "ipi": "709262542",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Daniel DeGeorges",
-    "first": "Daniel",
-    "last": "DeGeorges",
-    "pro": "BMI",
-    "ipi": "1188210165",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Daniel Fernando Paz Rekers",
-    "first": "Daniel Fernando",
-    "last": "Paz Rekers",
-    "pro": "SGAE",
-    "ipi": "579230723",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Daniel Lima",
-    "first": "Daniel",
-    "last": "Lima",
-    "pro": "UBC",
-    "ipi": "588350317",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Daniel Patrick McGowan",
-    "first": "Daniel Patrick",
-    "last": "McGowan",
-    "pro": "BMI",
-    "ipi": "613856051",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Daniel Villalobos",
-    "first": "Daniel",
-    "last": "Villalobos",
-    "pro": "APRA",
-    "ipi": "701032413",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Daniel Ware",
-    "first": "Daniel",
-    "last": "Ware",
-    "pro": "BMI",
-    "ipi": "730680553",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Danny George McLauchlan",
-    "first": "Danny George",
-    "last": "McLauchlan",
-    "pro": "PRS",
-    "ipi": "601587952",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Darcy Jeavons",
-    "first": "Darcy",
-    "last": "Jeavons",
-    "pro": "ASCAP",
-    "ipi": "692025154",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Dashawn Johnson",
-    "first": "Dashawn",
-    "last": "Johnson",
-    "pro": "BMI",
-    "ipi": "770603744",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Dave Cavalier",
-    "first": "Dave",
-    "last": "Cavalier",
-    "pro": "BMI",
-    "ipi": "713069364",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "David Eduardo D'Angelo",
-    "first": "David Eduardo",
-    "last": "D'Angelo",
-    "pro": "BMI",
-    "ipi": "724650940",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "David Flint",
-    "first": "David",
-    "last": "Flint",
-    "pro": "BMI",
-    "ipi": "143379176",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "David Hollandsworth",
-    "first": "David",
-    "last": "Hollandsworth",
-    "pro": "BMI",
-    "ipi": "673957592",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "David John Cerullo",
-    "first": "David John",
-    "last": "Cerullo",
-    "pro": "ASCAP",
-    "ipi": "530978142",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "David Nicholas Wagner",
-    "first": "David Nicholas",
-    "last": "Wagner",
-    "pro": "ASCAP",
-    "ipi": "746692304",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "David Roy Baron",
-    "first": "David Roy",
-    "last": "Baron",
-    "pro": "ASCAP",
-    "ipi": "781699974",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "David Wesley Burnett",
-    "first": "David Wesley",
-    "last": "Burnett",
-    "pro": "BMI",
-    "ipi": "566090342",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "David Zipse",
-    "first": "David",
-    "last": "Zipse",
-    "pro": "ASCAP",
-    "ipi": "1058469137",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Dean Shot",
-    "first": "Dean",
-    "last": "Shot",
-    "pro": "BMI",
-    "ipi": "1102126335",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Delwin Gutierrez",
-    "first": "Delwin",
-    "last": "Gutierrez",
-    "pro": "ASCAP",
-    "ipi": "508624064",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Denise Barbarita",
-    "first": "Denise",
-    "last": "Barbarita",
-    "pro": "BMI",
-    "ipi": "194279336",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Dennis Dembeck",
-    "first": "Dennis",
-    "last": "Dembeck",
-    "pro": "ASCAP",
-    "ipi": "722270180",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Dennis James Perkins IV",
-    "first": "Dennis James",
-    "last": "Perkins IV",
-    "pro": "ASCAP",
-    "ipi": "763973497",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Derek Nievergelt",
-    "first": "Derek",
-    "last": "Nievergelt",
-    "pro": "SESAC",
-    "ipi": "514607276",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Devan T. Reed",
-    "first": "Devan T.",
-    "last": "Reed",
-    "pro": "ASCAP",
-    "ipi": "611127300",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Devon Dixon",
-    "first": "Devon",
-    "last": "Dixon",
-    "pro": "BMI",
-    "ipi": "687676571",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Diane Frohman Magalong",
-    "first": "Diane Frohman",
-    "last": "Magalong",
-    "pro": "BMI",
-    "ipi": "621715766",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Diriki Mack",
-    "first": "Diriki A.",
-    "last": "Mack",
-    "pro": "ASCAP",
-    "ipi": "426449449",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "DMC Music",
-    "first": "DMC",
-    "last": "Music",
-    "pro": "ASCAP",
-    "ipi": "1030025636",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Dmitra Smith",
-    "first": "Dmitra",
-    "last": "Smith",
-    "pro": "ASCAP",
-    "ipi": "615985809",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Domenico Capuano",
-    "first": "Domenico",
-    "last": "Capuano",
-    "pro": "ASCAP",
-    "ipi": "184413963",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Drew Henmi",
-    "first": "Drew",
-    "last": "Henmi",
-    "pro": "BMI",
-    "ipi": "1075204974",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Dyami Wilson",
-    "first": "Dyami",
-    "last": "Wilson",
-    "pro": "BMI",
-    "ipi": "360517674",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Earnest David Davis",
-    "first": "Earnest David",
-    "last": "Davis",
-    "pro": "BMI",
-    "ipi": "587995069",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Ebenezer Marango",
-    "first": "Ebenezer",
-    "last": "Marango",
-    "pro": "PRS",
-    "ipi": "360944161",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Edward Kumpel",
-    "first": "Edward",
-    "last": "Kumpel",
-    "pro": "SESAC",
-    "ipi": "253826263",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Edward L. Riley",
-    "first": "Edward L.",
-    "last": "Riley",
-    "pro": "ASCAP",
-    "ipi": "",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Elena Dolsa Sciaky",
-    "first": "Elena",
-    "last": "Dolsa Sciaky",
-    "pro": "ASCAP",
-    "ipi": "128306785",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Elisha David Erskine",
-    "first": "Elisha David",
-    "last": "Erskine",
-    "pro": "BMI",
-    "ipi": "1006539975",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Ella Blicker",
-    "first": "Ella",
-    "last": "Blicker",
-    "pro": "BMI",
-    "ipi": "1087837904",
-    "publisher": "Gellypub"
-  },
-  {
-    "display": "Elliot Sneider",
-    "first": "Elliot",
-    "last": "Sneider",
-    "pro": "SESAC",
-    "ipi": "467696789",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Erik Blicker",
-    "first": "Erik",
-    "last": "Blicker",
-    "pro": "BMI",
-    "ipi": "598327301",
-    "publisher": "Gellypub"
-  },
-  {
-    "display": "Erik Jourgensen",
-    "first": "Erik",
-    "last": "Jourgensen",
-    "pro": "ASCAP",
-    "ipi": "731501483",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Fabian Faupel",
-    "first": "Fabian",
-    "last": "Faupel",
-    "pro": "PRS",
-    "ipi": "665964886",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Fabio Campedelli",
-    "first": "Fabio",
-    "last": "Campedelli",
-    "pro": "BMI",
-    "ipi": "492759898",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "FaLawna Barton",
-    "first": "FaLawna",
-    "last": "Barton",
-    "pro": "ASCAP",
-    "ipi": "441265479",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Fengheng Lee",
-    "first": "Fengheng",
-    "last": "Lee",
-    "pro": "ASCAP",
-    "ipi": "772024947",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Fernando Perez",
-    "first": "Fernando",
-    "last": "Perez",
-    "pro": "BMI",
-    "ipi": "726483721",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Fima Ephron",
-    "first": "Fima",
-    "last": "Ephron",
-    "pro": "BMI",
-    "ipi": "244357176",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Fiona Lunney",
-    "first": "Fiona",
-    "last": "Lunney",
-    "pro": "APRA",
-    "ipi": "608621751",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Francesco DiCosmo Caccia",
-    "first": "Francesco",
-    "last": "DiCosmo Caccia",
-    "pro": "ASCAP",
-    "ipi": "487751602",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Frank Fusco",
-    "first": "Frank",
-    "last": "Fusco",
-    "pro": "ASCAP",
-    "ipi": "607589028",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Frederick Neve",
-    "first": "Frederick",
-    "last": "Neve",
-    "pro": "PRS",
-    "ipi": "377564712",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Gabriel Jordan Smith",
-    "first": "Gabriel Jordan",
-    "last": "Smith",
-    "pro": "BMI",
-    "ipi": "889025890",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Gabriel Pitaro",
-    "first": "Gabriel",
-    "last": "Pitaro",
-    "pro": "BMI",
-    "ipi": "717553729",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Gareth Wong",
-    "first": "Gareth",
-    "last": "Wong",
-    "pro": "ASCAP",
-    "ipi": "867009615",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Geoffrey C. Deitch",
-    "first": "Geoffrey C.",
-    "last": "Deitch",
-    "pro": "BMI",
-    "ipi": "760680140",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Gerardo Camacho Jr",
-    "first": "Gerardo",
-    "last": "Camacho Jr",
-    "pro": "ASCAP",
-    "ipi": "1016896742",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Giovanni Peter Benedetti",
-    "first": "Giovanni Peter",
-    "last": "Benedetti",
-    "pro": "SESAC",
-    "ipi": "722671745",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Girish Chandra Varma",
-    "first": "Girish Chandra",
-    "last": "Varma",
-    "pro": "BMI",
-    "ipi": "378429810",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Glenn Schloss",
-    "first": "Glenn",
-    "last": "Schloss",
-    "pro": "BMI",
-    "ipi": "338867612",
-    "publisher": "Gellypub"
-  },
-  {
-    "display": "Gordon Rothbard",
-    "first": "Gordon",
-    "last": "Rothbard",
-    "pro": "BMI",
-    "ipi": "743189134",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Gregg Allen",
-    "first": "Gregg",
-    "last": "Allen",
-    "pro": "BMI",
-    "ipi": "186477523",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Gregory Joseph Wieczorek",
-    "first": "Gregory Joseph",
-    "last": "Wieczorek",
-    "pro": "BMI",
-    "ipi": "350787545",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Gregory Mathews",
-    "first": "Gregory",
-    "last": "Mathews",
-    "pro": "BMI",
-    "ipi": "719827800",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Gregory Vance Savage Jr",
-    "first": "Gregory Vance",
-    "last": "Savage Jr",
-    "pro": "BMI",
-    "ipi": "722571456",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Gregory Williams",
-    "first": "Gregory",
-    "last": "Williams",
-    "pro": "ASCAP",
-    "ipi": "611743081",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Habib Defoundoux",
-    "first": "Habib",
-    "last": "Defoundoux",
-    "pro": "SUISA",
-    "ipi": "769643586",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Hans Fahling",
-    "first": "Hans",
-    "last": "Fahling",
-    "pro": "BMI",
-    "ipi": "193311679",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Harini Srinivasa Raghavan",
-    "first": "Harini Srinivasa",
-    "last": "Raghavan",
-    "pro": "ASCAP",
-    "ipi": "748047915",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Harry Nagle",
-    "first": "Harry",
-    "last": "Nagle",
-    "pro": "ASCAP",
-    "ipi": "339497614",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Hasan Mehmet Can Ozbek",
-    "first": "Hasan Mehmet Can",
-    "last": "Ozbek",
-    "pro": "MSG",
-    "ipi": "741077749",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Heather Elle",
-    "first": "Heather",
-    "last": "Elle",
-    "pro": "BMI",
-    "ipi": "642838724",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Henning Riez",
-    "first": "Henning",
-    "last": "Riez",
-    "pro": "PRS",
-    "ipi": "750940834",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Henry Isaac Clateman",
-    "first": "Henry Isaac",
-    "last": "Clateman",
-    "pro": "BMI",
-    "ipi": "",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Hirobumi Hidaka",
-    "first": "Hirobumi",
-    "last": "Hidaka",
-    "pro": "BMI",
-    "ipi": "711963839",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Hugo Newington Smith",
-    "first": "Hugo Newington",
-    "last": "Smith",
-    "pro": "PRS",
-    "ipi": "789219390",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Ian Brenden Stinson",
-    "first": "Ian Brenden",
-    "last": "Stinson",
-    "pro": "ASCAP",
-    "ipi": "768828085",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Isha The Mad Scientist",
-    "first": "Isha The",
-    "last": "Mad Scientist",
-    "pro": "BMI",
-    "ipi": "751815144",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Isik Kural",
-    "first": "Isik",
-    "last": "Kural",
-    "pro": "BMI",
-    "ipi": "811241292",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Ivan Galvan",
-    "first": "Ivan",
-    "last": "Galvan",
-    "pro": "ASCAP",
-    "ipi": "349650438",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Ivan Offei-Danquah",
-    "first": "Ivan",
-    "last": "Offei-Danquah",
-    "pro": "BMI",
-    "ipi": "1002226828",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jackson Smith",
-    "first": "Jackson",
-    "last": "Smith",
-    "pro": "BMI",
-    "ipi": "1111950104",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jacob Colin Cohen",
-    "first": "Jacob Colin",
-    "last": "Cohen",
-    "pro": "ASCAP",
-    "ipi": "703648842",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jacqueline Willa Darrow",
-    "first": "Jacqueline Willa",
-    "last": "Darrow",
-    "pro": "BMI",
-    "ipi": "607654148",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jacquelyn C. Ryal-Laufer",
-    "first": "Jacquelyn C.",
-    "last": "Ryal-Laufer",
-    "pro": "BMI",
-    "ipi": "440992153",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jake Clayton",
-    "first": "Jake",
-    "last": "Clayton",
-    "pro": "BMI",
-    "ipi": "641565840",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "James Allen Street",
-    "first": "James Allen",
-    "last": "Street",
-    "pro": "BMI",
-    "ipi": "1130737",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "James Quinn",
-    "first": "James",
-    "last": "Quinn",
-    "pro": "ASCAP",
-    "ipi": "870700544",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "James Slukhinsky",
-    "first": "James",
-    "last": "Slukhinsky",
-    "pro": "ASCAP",
-    "ipi": "730778038",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jameson Jackson Hodder",
-    "first": "Jameson Jackson",
-    "last": "Hodder",
-    "pro": "ASCAP",
-    "ipi": "705288050",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jamey Brizard",
-    "first": "Jamey",
-    "last": "Brizard",
-    "pro": "BMI",
-    "ipi": "1155970145",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jamie Seigel",
-    "first": "Jamie",
-    "last": "Seigel",
-    "pro": "SESAC",
-    "ipi": "",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Jamil Houston",
-    "first": "Jamil",
-    "last": "Houston",
-    "pro": "BMI",
-    "ipi": "803985420",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Janelle Costa",
-    "first": "Janelle",
-    "last": "Costa",
-    "pro": "BMI",
-    "ipi": "374287434",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jared Joseph",
-    "first": "Jared",
-    "last": "Joseph",
-    "pro": "ASCAP",
-    "ipi": "572306558",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jared Newman",
-    "first": "Jared",
-    "last": "Newman",
-    "pro": "ASCAP",
-    "ipi": "787484085",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jarrod Pedone",
-    "first": "Jarrod",
-    "last": "Pedone",
-    "pro": "ASCAP",
-    "ipi": "512812485",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jason Shepherd",
-    "first": "Jason",
-    "last": "Shepherd",
-    "pro": "BMI",
-    "ipi": "454394832",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jean Sim",
-    "first": "Jean",
-    "last": "Sim",
-    "pro": "ASCAP",
-    "ipi": "773218335",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jeff A. Leauby",
-    "first": "Jeff A.",
-    "last": "Leauby",
-    "pro": "ASCAP",
-    "ipi": "460525178",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jeff Michael Hanley",
-    "first": "Jeff Michael",
-    "last": "Hanley",
-    "pro": "ASCAP",
-    "ipi": "372513863",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jeffrey Bellamy",
-    "first": "Jeffrey",
-    "last": "Bellamy",
-    "pro": "ASCAP",
-    "ipi": "490157649",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jeffrey K Martin",
-    "first": "Jeffrey K",
-    "last": "Martin",
-    "pro": "BMI",
-    "ipi": "732998893",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jeremy Lawrence",
-    "first": "Jeremy",
-    "last": "Lawrence",
-    "pro": "BMI",
-    "ipi": "726208258",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jeremy Levy",
-    "first": "Jeremy",
-    "last": "Levy",
-    "pro": "PRS",
-    "ipi": "552403674",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jerry Brian Girley",
-    "first": "Jerry Brian",
-    "last": "Girley",
-    "pro": "BMI",
-    "ipi": "602564473",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jesse Billson",
-    "first": "Jesse",
-    "last": "Billson",
-    "pro": "ASCAP",
-    "ipi": "665271433",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jesse Solomon Clark",
-    "first": "Jesse Solomon",
-    "last": "Clark",
-    "pro": "BMI",
-    "ipi": "731540176",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Joanna Isabela Atherton",
-    "first": "Joanna Isabela",
-    "last": "Atherton",
-    "pro": "PRS",
-    "ipi": "814322176",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Joel Campbell",
-    "first": "Joel",
-    "last": "Campbell",
-    "pro": "ASCAP",
-    "ipi": "581172453",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Johanna Stahley",
-    "first": "Johanna",
-    "last": "Stahley",
-    "pro": "ASCAP",
-    "ipi": "342669841",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "John \\\"Quixotic\\\" Gundersen",
-    "first": "John \\\"Quixotic\\\"",
-    "last": "Gundersen",
-    "pro": "BMI",
-    "ipi": "354875526",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "John Leitch",
-    "first": "John J.",
-    "last": "Leitch",
-    "pro": "BMI",
-    "ipi": "229908539",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "John Owen Danoff",
-    "first": "John Owen",
-    "last": "Danoff",
-    "pro": "ASCAP",
-    "ipi": "633702760",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "John Robert Cimino",
-    "first": "John Robert",
-    "last": "Cimino",
-    "pro": "ASCAP",
-    "ipi": "465954903",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "John Roggie",
-    "first": "John",
-    "last": "Roggie",
-    "pro": "ASCAP",
-    "ipi": "",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "John Salvatore Paterno",
-    "first": "John Salvatore",
-    "last": "Paterno",
-    "pro": "ASCAP",
-    "ipi": "571348738",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jonah Atkinson",
-    "first": "Jonah",
-    "last": "Atkinson",
-    "pro": "BMI",
-    "ipi": "433797039",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jonathan Knight",
-    "first": "Jonathan",
-    "last": "Knight",
-    "pro": "ASCAP",
-    "ipi": "735276039",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Jonathan Pierre DuBose III",
-    "first": "Jonathan Pierre",
-    "last": "DuBose III",
-    "pro": "BMI",
-    "ipi": "623765440",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jonathan Rosenfeld",
-    "first": "Jonathan",
-    "last": "Rosenfeld",
-    "pro": "BMI",
-    "ipi": "490475338",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Jonathan Spurney",
-    "first": "Jonathan",
-    "last": "Spurney",
-    "pro": "ASCAP",
-    "ipi": "337056469",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Joseph Delia",
-    "first": "Joseph",
-    "last": "Delia",
-    "pro": "BMI",
-    "ipi": "39621674",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Joseph Howard Miralles",
-    "first": "Joseph Howard",
-    "last": "Miralles",
-    "pro": "BMI",
-    "ipi": "195060763",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Joseph Jakubicki",
-    "first": "Joseph",
-    "last": "Jakubicki",
-    "pro": "BMI",
-    "ipi": "550940093",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Joseph Reyna",
-    "first": "Joseph",
-    "last": "Reyna",
-    "pro": "ASCAP",
-    "ipi": "700042807",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Joseph Tonnos",
-    "first": "Joseph",
-    "last": "Tonnos",
-    "pro": "BMI",
-    "ipi": "1221342117",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Josh Johnson",
-    "first": "Josh",
-    "last": "Johnson",
-    "pro": "ASCAP",
-    "ipi": "607186253",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Josh Verbanets",
-    "first": "Josh",
-    "last": "Verbanets",
-    "pro": "ASCAP",
-    "ipi": "467663513",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Joshua David Raggatt",
-    "first": "Joshua David",
-    "last": "Raggatt",
-    "pro": "PRS",
-    "ipi": "621400503",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Joshua King",
-    "first": "Joshua",
-    "last": "King",
-    "pro": "APRA",
-    "ipi": "781042258",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Joshua Lattanzi",
-    "first": "Joshua",
-    "last": "Lattanzi",
-    "pro": "ASCAP",
-    "ipi": "729015941",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Juliet Lyons",
-    "first": "Juliet",
-    "last": "Lyons",
-    "pro": "ASCAP",
-    "ipi": "501986355",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Justin Roper",
-    "first": "Justin",
-    "last": "Roper",
-    "pro": "BMI",
-    "ipi": "631250685",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Kate Mack",
-    "first": "Kate",
-    "last": "Mack",
-    "pro": "ASCAP",
-    "ipi": "",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Katie Marie Richards",
-    "first": "Katie Marie",
-    "last": "Richards",
-    "pro": "ASCAP",
-    "ipi": "592801044",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Keith Duplessis",
-    "first": "Keith",
-    "last": "Duplessis",
-    "pro": "ASCAP",
-    "ipi": "526893321",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Keith Eaddy",
-    "first": "Keith",
-    "last": "Eaddy",
-    "pro": "BMI",
-    "ipi": "140225914",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Keith Glover",
-    "first": "Keith",
-    "last": "Glover",
-    "pro": "BMI",
-    "ipi": "653339243",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Keith Patchel",
-    "first": "Keith",
-    "last": "Patchel",
-    "pro": "BMI",
-    "ipi": "469060344",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Keith Reynolds",
-    "first": "Keith",
-    "last": "Reynolds",
-    "pro": "BMI",
-    "ipi": "484689690",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Ken Hankins",
-    "first": "Ken",
-    "last": "Hankins",
-    "pro": "ASCAP",
-    "ipi": "342862754",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Kendall Joshua",
-    "first": "Kendall",
-    "last": "Joshua",
-    "pro": "BMI",
-    "ipi": "880272332",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Kevin Farrell",
-    "first": "Kevin",
-    "last": "Farrell",
-    "pro": "ASCAP",
-    "ipi": "510471200",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Kevin James Dubois",
-    "first": "Kevin James",
-    "last": "Dubois",
-    "pro": "BMI",
-    "ipi": "845534521",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Kevin Salchert",
-    "first": "Kevin",
-    "last": "Salchert",
-    "pro": "BMI",
-    "ipi": "650472849",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Kevin Wilson",
-    "first": "Kevin",
-    "last": "Wilson",
-    "pro": "BMI",
-    "ipi": "799319182",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Kimberly Jakubicki",
-    "first": "Kimberly",
-    "last": "Jakubicki",
-    "pro": "ASCAP",
-    "ipi": "347852042",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Kimberly Kate Ellwanger",
-    "first": "Kimberly Kate",
-    "last": "Ellwanger",
-    "pro": "BMI",
-    "ipi": "674713425",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Kirth Anthony Atkins",
-    "first": "Kirth Anthony",
-    "last": "Atkins",
-    "pro": "BMI",
-    "ipi": "214686075",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Kortni Brannon",
-    "first": "Kortni",
-    "last": "Brannon",
-    "pro": "BMI",
-    "ipi": "580871231",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Kris Campbell",
-    "first": "Kris",
-    "last": "Campbell",
-    "pro": "ASCAP",
-    "ipi": "508590935",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Kyle Anne Guffey",
-    "first": "Kyle Anne",
-    "last": "Guffey",
-    "pro": "BMI",
-    "ipi": "747788184",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Kyndyl Miller",
-    "first": "Kyndyl",
-    "last": "Miller",
-    "pro": "ASCAP",
-    "ipi": "766775679",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Lawrence May",
-    "first": "Lawrence",
-    "last": "May",
-    "pro": "BMI",
-    "ipi": "337967123",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Lawrence Orsini",
-    "first": "Lawrence",
-    "last": "Orsini",
-    "pro": "BMI",
-    "ipi": "718725033",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Lee Barbour",
-    "first": "Lee",
-    "last": "Barbour",
-    "pro": "BMI",
-    "ipi": "450844067",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Lee Mingh Topping",
-    "first": "Lee Mingh",
-    "last": "Topping",
-    "pro": "BMI",
-    "ipi": "1100099119",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Lemarquis Bobo",
-    "first": "Lemarquis",
-    "last": "Bobo",
-    "pro": "BMI",
-    "ipi": "583093533",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Leo Capper",
-    "first": "Leo",
-    "last": "Capper",
-    "pro": "IMRO",
-    "ipi": "746391714",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Lisa Monica McIntyre Hite",
-    "first": "Lisa Monica",
-    "last": "McIntyre Hite",
-    "pro": "BMI",
-    "ipi": "659770789",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Lisa Remar",
-    "first": "Lisa",
-    "last": "Remar",
-    "pro": "ASCAP",
-    "ipi": "771686994",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Lisa Sniderman",
-    "first": "Lisa",
-    "last": "Sniderman",
-    "pro": "ASCAP",
-    "ipi": "506054094",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Louis Evan Lombardi",
-    "first": "Louis Evan",
-    "last": "Lombardi",
-    "pro": "BMI",
-    "ipi": "847681200",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Luca Poloni",
-    "first": "Luca",
-    "last": "Poloni",
-    "pro": "PRS",
-    "ipi": "886354394",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Maddison Wilson",
-    "first": "Maddison",
-    "last": "Wilson",
-    "pro": "APRA",
-    "ipi": "638272825",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Malcolm Shabazz Flythe",
-    "first": "Malcolm Shabazz",
-    "last": "Flythe",
-    "pro": "BMI",
-    "ipi": "448382629",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Mardochee Sanon",
-    "first": "Mardochee",
-    "last": "Sanon",
-    "pro": "ASCAP",
-    "ipi": "529184339",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Mark Chisulo",
-    "first": "Mark",
-    "last": "Chisulo",
-    "pro": "BMI",
-    "ipi": "1159465037",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Mark Unthank",
-    "first": "Mark",
-    "last": "Unthank",
-    "pro": "BMI",
-    "ipi": "236418571",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Marshawn Kerner",
-    "first": "Marshawn",
-    "last": "Kerner",
-    "pro": "BMI",
-    "ipi": "1140090608",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Martin Kirkhaug",
-    "first": "Martin",
-    "last": "Kirkhaug",
-    "pro": "TONO",
-    "ipi": "247061775",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Marvin Cruz",
-    "first": "Marvin",
-    "last": "Cruz",
-    "pro": "BMI",
-    "ipi": "808454920",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Matt Chertkoff",
-    "first": "Matt",
-    "last": "Chertkoff",
-    "pro": "SESAC",
-    "ipi": "609895698",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Matteo Fioriti",
-    "first": "Matteo",
-    "last": "Fioriti",
-    "pro": "SIAE",
-    "ipi": "803678234",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Matthew Bednarsky",
-    "first": "Matthew",
-    "last": "Bednarsky",
-    "pro": "BMI",
-    "ipi": "678435797",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Matthew Block",
-    "first": "Matthew",
-    "last": "Block",
-    "pro": "BMI",
-    "ipi": "739448994",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Matthew Corry",
-    "first": "Matthew",
-    "last": "Corry",
-    "pro": "PRS",
-    "ipi": "676882288",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Matthew Volpe",
-    "first": "Matthew",
-    "last": "Volpe",
-    "pro": "ASCAP",
-    "ipi": "349390241",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Max Robert Padula",
-    "first": "Max Robert",
-    "last": "Padula",
-    "pro": "ASCAP",
-    "ipi": "601872270",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Megan Aho Heronemus",
-    "first": "Megan Aho",
-    "last": "Heronemus",
-    "pro": "BMI",
-    "ipi": "550658030",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Megan Carnes",
-    "first": "Megan",
-    "last": "Carnes",
-    "pro": "ASCAP",
-    "ipi": "648470814",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Micah Kovacs",
-    "first": "Micah",
-    "last": "Kovacs",
-    "pro": "ASCAP",
-    "ipi": "700860278",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Michael Anthony Cruz",
-    "first": "Michael Anthony",
-    "last": "Cruz",
-    "pro": "ASCAP",
-    "ipi": "419193059",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Michael Engelhardt",
-    "first": "Michael",
-    "last": "Engelhardt",
-    "pro": "BMI",
-    "ipi": "511599649",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Michael Glaser",
-    "first": "Michael",
-    "last": "Glaser",
-    "pro": "ASCAP",
-    "ipi": "526383252",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Michael James Getches",
-    "first": "Michael James",
-    "last": "Getches",
-    "pro": "BMI",
-    "ipi": "515259754",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Michael Katz",
-    "first": "Michael",
-    "last": "Katz",
-    "pro": "BMI",
-    "ipi": "566519714",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Michael Nappi",
-    "first": "Michael",
-    "last": "Nappi",
-    "pro": "ASCAP",
-    "ipi": "433561569",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Mirage Zamprioli",
-    "first": "Mirage Andante",
-    "last": "Zamprioli",
-    "pro": "ASCAP",
-    "ipi": "733990320",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Montana Tucker",
-    "first": "Montana",
-    "last": "Tucker",
-    "pro": "ASCAP",
-    "ipi": "686593485",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Moses J. Patrou",
-    "first": "Moses J.",
-    "last": "Patrou",
-    "pro": "ASCAP",
-    "ipi": "347522069",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Nadeem Majdalany",
-    "first": "Nadeem",
-    "last": "Majdalany",
-    "pro": "ASCAP",
-    "ipi": "507181472",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Natalynn Nu\u00f1ez",
-    "first": "Natalynn",
-    "last": "Nu\u00f1ez",
-    "pro": "BMI",
-    "ipi": "829624510",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Nate Smith",
-    "first": "Nate",
-    "last": "Smith",
-    "pro": "ASCAP",
-    "ipi": "341715580",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Nathalie Claude Daxelhofer",
-    "first": "Nathalie Claude",
-    "last": "Daxelhofer",
-    "pro": "GEMA",
-    "ipi": "536563537",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Nathan Nasby",
-    "first": "Nathan",
-    "last": "Nasby",
-    "pro": "SOCAN",
-    "ipi": "605590161",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Nathan Riebli",
-    "first": "Nathan",
-    "last": "Riebli",
-    "pro": "ASCAP",
-    "ipi": "544537346",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Nathaniel Nolan Clint",
-    "first": "Nathaniel Nolan",
-    "last": "Clint",
-    "pro": "BMI",
-    "ipi": "1179203455",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Nathaniel Smith",
-    "first": "Nathaniel",
-    "last": "Smith",
-    "pro": "BMI",
-    "ipi": "701050117",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Neysa Malone",
-    "first": "Neysa",
-    "last": "Malone",
-    "pro": "SESAC",
-    "ipi": "430163010",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Ngqabutho Mbongeni Mpofu",
-    "first": "Ngqabutho Mbongeni",
-    "last": "Mpofu",
-    "pro": "PRS",
-    "ipi": "622568251",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Nicholas Capuano",
-    "first": "Nicholas",
-    "last": "Capuano",
-    "pro": "BMI",
-    "ipi": "763865400",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Nicholas Harris",
-    "first": "Nicholas Alan",
-    "last": "Harris",
-    "pro": "BMI",
-    "ipi": "864766978",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Nicholas Phelps",
-    "first": "Nicholas",
-    "last": "Phelps",
-    "pro": "BMI",
-    "ipi": "844108939",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Nicole Stipp",
-    "first": "Nicole",
-    "last": "Stipp",
-    "pro": "BMI",
-    "ipi": "744906815",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Nigel Boyd Robinson",
-    "first": "Nigel Boyd",
-    "last": "Robinson",
-    "pro": "PRS",
-    "ipi": "799097073",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Noah Gale",
-    "first": "Noah",
-    "last": "Gale",
-    "pro": "SESAC",
-    "ipi": "57694729",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Noah Meyer",
-    "first": "Noah",
-    "last": "Meyer",
-    "pro": "BMI",
-    "ipi": "733489616",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Nolan Thies",
-    "first": "Nolan",
-    "last": "Thies",
-    "pro": "ASCAP",
-    "ipi": "521883943",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Owen Elijah Brown",
-    "first": "Owen Elijah",
-    "last": "Brown",
-    "pro": "ASCAP",
-    "ipi": "495178216",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Owen O'Mahony",
-    "first": "Owen",
-    "last": "O'Mahony",
-    "pro": "ASCAP",
-    "ipi": "529104567",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Pablo J. Garmon",
-    "first": "Pablo J.",
-    "last": "Garmon",
-    "pro": "SGAE",
-    "ipi": "805744633",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Pablo Perez",
-    "first": "Pablo",
-    "last": "Perez",
-    "pro": "ASCAP",
-    "ipi": "1189032547",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Panos Kolias",
-    "first": "Panos",
-    "last": "Kolias",
-    "pro": "GEMA",
-    "ipi": "258990610",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Parker Christian Wiksell",
-    "first": "Parker Christian",
-    "last": "Wiksell",
-    "pro": "ASCAP",
-    "ipi": "730947631",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Patrick Deeney",
-    "first": "Patrick",
-    "last": "Deeney",
-    "pro": "ASCAP",
-    "ipi": "559562116",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Patrick Joseph",
-    "first": "Patrick",
-    "last": "Joseph",
-    "pro": "BMI",
-    "ipi": "657632715",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Patrick Ryan Finnegan",
-    "first": "Patrick Ryan",
-    "last": "Finnegan",
-    "pro": "ASCAP",
-    "ipi": "588528788",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Paul Anstey",
-    "first": "Paul",
-    "last": "Anstey",
-    "pro": "APRA",
-    "ipi": "736511547",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Paul Anthony Longland",
-    "first": "Paul Anthony",
-    "last": "Longland",
-    "pro": "PRS",
-    "ipi": "161782661",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Paul Doust",
-    "first": "Paul",
-    "last": "Doust",
-    "pro": "APRA",
-    "ipi": "588695568",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Paul Henry Croteau",
-    "first": "Paul Henry",
-    "last": "Croteau",
-    "pro": "BMI",
-    "ipi": "776265995",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Paul Philip Harris",
-    "first": "Paul Philip",
-    "last": "Harris",
-    "pro": "APRA",
-    "ipi": "867766666",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Peter Maness",
-    "first": "Peter",
-    "last": "Maness",
-    "pro": "SESAC",
-    "ipi": "",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Peter Palestina",
-    "first": "Peter",
-    "last": "Palestina",
-    "pro": "BMI",
-    "ipi": "535605752",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Rahul Hiren Popawala",
-    "first": "Rahul Hiren",
-    "last": "Popawala",
-    "pro": "ASCAP",
-    "ipi": "792905207",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Rauri Finan",
-    "first": "Rauri",
-    "last": "Finan",
-    "pro": "BMI",
-    "ipi": "439938112",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Raymond Boone",
-    "first": "Raymond",
-    "last": "Boone",
-    "pro": "BMI",
-    "ipi": "600548677",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Raymond Suh",
-    "first": "Raymond",
-    "last": "Suh",
-    "pro": "ASCAP",
-    "ipi": "842376527",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Rekha Flow",
-    "first": "Stephanie",
-    "last": "Sahi",
-    "pro": "SOCAN",
-    "ipi": "738435912",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Richard Agren",
-    "first": "Richard",
-    "last": "Agren",
-    "pro": "ASCAP",
-    "ipi": "588523016",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Richard Austin Tozzoli",
-    "first": "Richard Austin",
-    "last": "Tozzoli",
-    "pro": "ASCAP",
-    "ipi": "183476152",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Richard Emery",
-    "first": "Richard",
-    "last": "Emery",
-    "pro": "BMI",
-    "ipi": "898901668",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Richard Friedman",
-    "first": "Richard",
-    "last": "Friedman",
-    "pro": "ASCAP",
-    "ipi": "128741568",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Rob Greenfield",
-    "first": "Rob",
-    "last": "Greenfield",
-    "pro": "ASCAP",
-    "ipi": "660165852",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Robert Lualhati",
-    "first": "Robert",
-    "last": "Lualhati",
-    "pro": "ASCAP",
-    "ipi": "482431263",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Robert Sinclair",
-    "first": "Robert William",
-    "last": "Sinclair",
-    "pro": "ASCAP",
-    "ipi": "428535448",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Robert Stander",
-    "first": "Robert",
-    "last": "Stander",
-    "pro": "ASCAP",
-    "ipi": "126363292",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Robin Brourman Munson",
-    "first": "Robin Brourman",
-    "last": "Munson",
-    "pro": "BMI",
-    "ipi": "230088302",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Rogerio Lotufo Maudonnet",
-    "first": "Rogerio Lotufo",
-    "last": "Maudonnet",
-    "pro": "ASCAP",
-    "ipi": "505943552",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Roland Leonard",
-    "first": "Roland",
-    "last": "Leonard",
-    "pro": "ASCAP",
-    "ipi": "1206045698",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Rolf Schnyder",
-    "first": "Rolf",
-    "last": "Schnyder",
-    "pro": "BMI",
-    "ipi": "496085514",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Ronald Martin Gamache",
-    "first": "Ronald Martin",
-    "last": "Gamache",
-    "pro": "BMI",
-    "ipi": "62126408",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Rudolph Albin Petschauer",
-    "first": "Rudolph Albin",
-    "last": "Petschauer",
-    "pro": "BMI",
-    "ipi": "1043016220",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Russell Huiskamp",
-    "first": "Russell",
-    "last": "Huiskamp",
-    "pro": "ASCAP",
-    "ipi": "627596803",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Ryan Christopher Dozer",
-    "first": "Ryan Christopher",
-    "last": "Dozer",
-    "pro": "BMI",
-    "ipi": "1103437405",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Ryan Hobler",
-    "first": "Ryan",
-    "last": "Hobler",
-    "pro": "SESAC",
-    "ipi": "560491453",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Ryan M Gonzales",
-    "first": "Ryan M",
-    "last": "Gonzales",
-    "pro": "BMI",
-    "ipi": "750375837",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Ryan Nach",
-    "first": "Ryan",
-    "last": "Nach",
-    "pro": "ASCAP",
-    "ipi": "621624770",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Ryan Thomas Majoris",
-    "first": "Ryan Thomas",
-    "last": "Majoris",
-    "pro": "ASCAP",
-    "ipi": "626908035",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Salvador Fornieles",
-    "first": "Salvador",
-    "last": "Fornieles",
-    "pro": "SGAE",
-    "ipi": "435552558",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Samuel Alexander Morrison",
-    "first": "Samuel Alexander",
-    "last": "Morrison",
-    "pro": "APRA",
-    "ipi": "280379942",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Samuel Bradley",
-    "first": "Samuel",
-    "last": "Bradley",
-    "pro": "APRA",
-    "ipi": "801407679",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Samuel Lee",
-    "first": "Samuel",
-    "last": "Lee",
-    "pro": "BMI",
-    "ipi": "553592336",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Samuel Perry",
-    "first": "Samuel",
-    "last": "Perry",
-    "pro": "APRA",
-    "ipi": "655226935",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Sanjay Taverna",
-    "first": "Sanjay",
-    "last": "Taverna",
-    "pro": "APRA",
-    "ipi": "736511351",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Sarah Lynn Onyschuk",
-    "first": "Sarah Lynn",
-    "last": "Onyschuk",
-    "pro": "SOCAN",
-    "ipi": "672454923",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Sean Smith",
-    "first": "Sean",
-    "last": "Smith",
-    "pro": "BMI",
-    "ipi": "849318898",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Sebastian H\u00fcmmer",
-    "first": "Sebastian",
-    "last": "H\u00fcmmer",
-    "pro": "GEMA",
-    "ipi": "1118673455",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Shane Schlick",
-    "first": "Shane",
-    "last": "Schlick",
-    "pro": "BMI",
-    "ipi": "1099901714",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Shaun Brown",
-    "first": "Shaun",
-    "last": "Brown",
-    "pro": "BMI",
-    "ipi": "1055826846",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Shaun Hettinger",
-    "first": "Shaun",
-    "last": "Hettinger",
-    "pro": "BMI",
-    "ipi": "529938405",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Shedrick Kennedy",
-    "first": "Shedrick",
-    "last": "Kennedy",
-    "pro": "ASCAP",
-    "ipi": "1091153776",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Silas Hite",
-    "first": "Silas Lee",
-    "last": "Hite",
-    "pro": "BMI",
-    "ipi": "443670948",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Sjors Joris Koen Verpalen",
-    "first": "Sjors Joris Koen",
-    "last": "Verpalen",
-    "pro": "BMI",
-    "ipi": "738203450",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Skip Brevis",
-    "first": "Skip",
-    "last": "Brevis",
-    "pro": "SESAC",
-    "ipi": "292563641",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Spencer Stewart",
-    "first": "Spencer",
-    "last": "Stewart",
-    "pro": "BMI",
-    "ipi": "817685404",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Stefan Schnabel",
-    "first": "Stefan",
-    "last": "Schnabel",
-    "pro": "BMI",
-    "ipi": "676660701",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Steve Booke",
-    "first": "Steve",
-    "last": "Booke",
-    "pro": "SESAC",
-    "ipi": "197793107",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Steve Eugene",
-    "first": "Steve",
-    "last": "Eugene",
-    "pro": "BMI",
-    "ipi": "638548510",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Steve Mark Collom",
-    "first": "Steve Mark",
-    "last": "Collom",
-    "pro": "APRA",
-    "ipi": "451198946",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Steven Calderon",
-    "first": "Steven",
-    "last": "Calderon",
-    "pro": "BMI",
-    "ipi": "555477224",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Steven Joseph Mochel",
-    "first": "Steven Joseph",
-    "last": "Mochel",
-    "pro": "ASCAP",
-    "ipi": "126312900",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Tess M. Santos",
-    "first": "Tess M.",
-    "last": "Santos",
-    "pro": "ASCAP",
-    "ipi": "484632826",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Thomas A. Crowell",
-    "first": "Thomas A.",
-    "last": "Crowell",
-    "pro": "ASCAP",
-    "ipi": "465986986",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Thomas Greene",
-    "first": "Thomas",
-    "last": "Greene",
-    "pro": "ASCAP",
-    "ipi": "474522450",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Thug Spasam",
-    "first": "Thug",
-    "last": "Spasam",
-    "pro": "ASCAP",
-    "ipi": "",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Tiffany M. Carter",
-    "first": "Tiffany M.",
-    "last": "Carter",
-    "pro": "ASCAP",
-    "ipi": "555104178",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Tim Cilento",
-    "first": "Timothy",
-    "last": "Cilento",
-    "pro": "BMI",
-    "ipi": "550406182",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Timothy Hare",
-    "first": "Timothy",
-    "last": "Hare",
-    "pro": "BMI",
-    "ipi": "769088487",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Toby Karlin",
-    "first": "Toby",
-    "last": "Karlin",
-    "pro": "ASCAP",
-    "ipi": "738750708",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Todd Guarineri",
-    "first": "Todd",
-    "last": "Guarineri",
-    "pro": "SESAC",
-    "ipi": "681757999",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Todd Herzog",
-    "first": "Todd",
-    "last": "Herzog",
-    "pro": "ASCAP",
-    "ipi": "342883547",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Travis Samuel",
-    "first": "Travis",
-    "last": "Samuel",
-    "pro": "BMI",
-    "ipi": "1314567264",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Trevis Montrell Thomas",
-    "first": "Trevis Montrell",
-    "last": "Thomas",
-    "pro": "BMI",
-    "ipi": "433040602",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Trevor Gale",
-    "first": "Trevor",
-    "last": "Gale",
-    "pro": "SESAC",
-    "ipi": "122632509",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Ty Frankel",
-    "first": "Ty",
-    "last": "Frankel",
-    "pro": "BMI",
-    "ipi": "707404464",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Veronika Jokel",
-    "first": "Veronika",
-    "last": "Jokel",
-    "pro": "ASCAP",
-    "ipi": "665274032",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Vince Michael Villafan",
-    "first": "Vince Michael",
-    "last": "Villafan",
-    "pro": "ASCAP",
-    "ipi": "768817974",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Vincent Tancredi",
-    "first": "Vincent",
-    "last": "Tancredi",
-    "pro": "BMI",
-    "ipi": "730649248",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Vittorio Iu\u00e9",
-    "first": "Vittorio",
-    "last": "Iu\u00e9",
-    "pro": "ASCAP",
-    "ipi": "158609348",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Walter Bowie",
-    "first": "Walter",
-    "last": "Bowie",
-    "pro": "BMI",
-    "ipi": "862995971",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "Warren John McRae",
-    "first": "Warren John",
-    "last": "McRae",
-    "pro": "SESAC",
-    "ipi": "477173625",
-    "publisher": "G&E Music Group LLC"
-  },
-  {
-    "display": "Will Adler",
-    "first": "Will",
-    "last": "Adler",
-    "pro": "BMI",
-    "ipi": "550633659",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "William Latimer",
-    "first": "William",
-    "last": "Latimer",
-    "pro": "BMI",
-    "ipi": "395406831",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "William Longyear Mayo",
-    "first": "William Longyear",
-    "last": "Mayo",
-    "pro": "BMI",
-    "ipi": "625526248",
-    "publisher": "Gandepub"
-  },
-  {
-    "display": "William Morrison Hankins",
-    "first": "William Morrison",
-    "last": "Hankins",
-    "pro": "ASCAP",
-    "ipi": "847324915",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Wood Rowe Farguheson",
-    "first": "Wood Rowe",
-    "last": "Farguheson",
-    "pro": "ASCAP",
-    "ipi": "560093565",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Xiao'an Li",
-    "first": "Xiao'an",
-    "last": "Li",
-    "pro": "ASCAP",
-    "ipi": "713719447",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Yaman Palak",
-    "first": "Yaman",
-    "last": "Palak",
-    "pro": "ASCAP",
-    "ipi": "796392973",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Yarley Geffrard",
-    "first": "Yarley",
-    "last": "Geffrard",
-    "pro": "ASCAP",
-    "ipi": "615785819",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Zach Reynolds",
-    "first": "Zach",
-    "last": "Reynolds",
-    "pro": "ASCAP",
-    "ipi": "659055520",
-    "publisher": "Gem Lab"
-  },
-  {
-    "display": "Zachariah Calluori",
-    "first": "Zachariah",
-    "last": "Calluori",
-    "pro": "BMI",
-    "ipi": "829628697",
-    "publisher": "Gandepub"
-  }
+  { "display": "Aaron Gittleman", "first": "Aaron", "last": "Gittleman", "pro": "ASCAP", "ipi": "658922306", "publisher": "Gem Lab" },
+  { "display": "Aaron McMichael", "first": "Aaron", "last": "McMichael", "pro": "BMI", "ipi": "674043840", "publisher": "Gandepub" },
+  { "display": "Aaron Nevezie", "first": "Aaron", "last": "Nevezie", "pro": "ASCAP", "ipi": "578425708", "publisher": "Gem Lab" },
+  { "display": "Aaron Steinberg", "first": "Aaron", "last": "Steinberg", "pro": "BMI", "ipi": "186724439", "publisher": "Gandepub" },
+  { "display": "Aaron Thurston", "first": "Aaron", "last": "Thurston", "pro": "ASCAP", "ipi": "6682199", "publisher": "Gem Lab" },
+  { "display": "Adam Langdon Ehrenpfort", "first": "Adam Langdon", "last": "Ehrenpfort", "pro": "BMI", "ipi": "789486851", "publisher": "Gandepub" },
+  { "display": "Adam Parker", "first": "Adam", "last": "Parker", "pro": "PRS", "ipi": "647472520", "publisher": "Gem Lab" },
+  { "display": "Adam Scott Little", "first": "Adam Scott", "last": "Little", "pro": "ASCAP", "ipi": "808524927", "publisher": "Gem Lab" },
+  { "display": "Adam Worthy", "first": "Adam", "last": "Worthy", "pro": "ASCAP", "ipi": "831917041", "publisher": "Gem Lab" },
+  { "display": "Adrian Sealy", "first": "Adrian", "last": "Sealy", "pro": "BMI", "ipi": "604906067", "publisher": "Gandepub" },
+  { "display": "Adrian Sood", "first": "Adrian", "last": "Sood", "pro": "ASCAP", "ipi": "545394335", "publisher": "Gem Lab" },
+  { "display": "Adrian St. John", "first": "Adrian", "last": "St. John", "pro": "BMI", "ipi": "618887202", "publisher": "Gandepub" },
+  { "display": "Ahmet Burak Kahraman", "first": "Ahmet Burak", "last": "Kahraman", "pro": "PRS", "ipi": "703479053", "publisher": "Gem Lab" },
+  { "display": "Alan G Ward", "first": "Alan G", "last": "Ward", "pro": "BMI", "ipi": "891870100", "publisher": "Gandepub" },
+  { "display": "Aled Roberts", "first": "Aled", "last": "Roberts", "pro": "ASCAP", "ipi": "709772709", "publisher": "Gem Lab" },
+  { "display": "Alejandro Canellas", "first": "Alejandro", "last": "Canellas", "pro": "BMI", "ipi": "376439524", "publisher": "Gandepub" },
+  { "display": "Alessandro Altman", "first": "Alessandro", "last": "Altman", "pro": "ASCAP", "ipi": "720745556", "publisher": "Gem Lab" },
+  { "display": "Alexandra Scherr", "first": "Alexandra", "last": "Scherr", "pro": "ASCAP", "ipi": "762903234", "publisher": "Gem Lab" },
+  { "display": "Alwin Reiners", "first": "Alwin", "last": "Reiners", "pro": "BMI", "ipi": "237301791", "publisher": "Gandepub" },
+  { "display": "Amar Lal", "first": "Amar", "last": "Lal", "pro": "SESAC", "ipi": "738826798", "publisher": "G&E Music Group LLC" },
+  { "display": "Andre Atkins", "first": "Andre", "last": "Atkins", "pro": "BMI", "ipi": "433796924", "publisher": "Gandepub" },
+  { "display": "Andr\u00e9 Berry", "first": "Andr\u00e9", "last": "Berry", "pro": "BMI", "ipi": "231686373", "publisher": "Gandepub" },
+  { "display": "Andrew D. Russell", "first": "Andrew D.", "last": "Russell", "pro": "ASCAP", "ipi": "341438186", "publisher": "Gem Lab" },
+  { "display": "Andrew Guido", "first": "Andrew", "last": "Guido", "pro": "ASCAP", "ipi": "740029671", "publisher": "Gem Lab" },
+  { "display": "Andrew Lipow", "first": "Andrew", "last": "Lipow", "pro": "ASCAP", "ipi": "591171155", "publisher": "Gem Lab" },
+  { "display": "Andrew Orkin", "first": "Andrew", "last": "Orkin", "pro": "ASCAP", "ipi": "693544020", "publisher": "Gem Lab" },
+  { "display": "Andy Gabrys", "first": "Andy", "last": "Gabrys", "pro": "BMI", "ipi": "545709924", "publisher": "Gandepub" },
+  { "display": "Angel Mensah", "first": "Angel", "last": "Mensah", "pro": "BMI", "ipi": "772648505", "publisher": "Gandepub" },
+  { "display": "Angelo Domenic Di Loreto", "first": "Angelo Domenic", "last": "Di Loreto", "pro": "ASCAP", "ipi": "640776241", "publisher": "Gem Lab" },
+  { "display": "Angelo Telan", "first": "Angelo", "last": "Telan", "pro": "BMI", "ipi": "766631023", "publisher": "Gandepub" },
+  { "display": "Anthony Clint Jr.", "first": "Anthony", "last": "Clint Jr.", "pro": "SESAC", "ipi": "564107462", "publisher": "G&E Music Group LLC" },
+  { "display": "Antoine Manning", "first": "Antoine", "last": "Manning", "pro": "BMI", "ipi": "480818830", "publisher": "Gandepub" },
+  { "display": "Anwar Jaja Talbert", "first": "Anwar Jaja", "last": "Talbert", "pro": "SESAC", "ipi": "477173723", "publisher": "G&E Music Group LLC" },
+  { "display": "Arielle Alexander", "first": "Arielle", "last": "Alexander", "pro": "BMI", "ipi": "552476441", "publisher": "Gandepub" },
+  { "display": "Arne J Wendy", "first": "Arne J", "last": "Wendy", "pro": "ASCAP", "ipi": "338831544", "publisher": "Gem Lab" },
+  { "display": "Arthur H Munson", "first": "Arthur H", "last": "Munson", "pro": "BMI", "ipi": "53085690", "publisher": "Gandepub" },
+  { "display": "Austin Filingo", "first": "Austin", "last": "Filingo", "pro": "BMI", "ipi": "795271306", "publisher": "Gandepub" },
+  { "display": "Aviv Teboul", "first": "Aviv", "last": "Teboul", "pro": "ASCAP", "ipi": "797314500", "publisher": "Gem Lab" },
+  { "display": "Bartosch McCarthy", "first": "Bartosch", "last": "McCarthy", "pro": "BMI", "ipi": "752617338", "publisher": "Gandepub" },
+  { "display": "Ben Antelis", "first": "Ben", "last": "Antelis", "pro": "BMI", "ipi": "529285919", "publisher": "Gandepub" },
+  { "display": "Benjamin Rice Stapleman", "first": "Benjamin Rice", "last": "Stapleman", "pro": "ASCAP", "ipi": "454301975", "publisher": "Gem Lab" },
+  { "display": "Benjamin Stivers", "first": "Benjamin", "last": "Stivers", "pro": "ASCAP", "ipi": "594049228", "publisher": "Gem Lab" },
+  { "display": "Benjamin Zwerin", "first": "Benjamin", "last": "Zwerin", "pro": "ASCAP", "ipi": "451532478", "publisher": "Gem Lab" },
+  { "display": "Bhauraw Avhad", "first": "Bhauraw", "last": "Avhad", "pro": "ASCAP", "ipi": "632997411", "publisher": "Gem Lab" },
+  { "display": "Bjorn Palmqvist", "first": "Bjorn", "last": "Palmqvist", "pro": "KODA", "ipi": "285725238", "publisher": "Gem Lab" },
+  { "display": "Brandon Marchant", "first": "Brandon", "last": "Marchant", "pro": "SOCAN", "ipi": "538731141", "publisher": "Gem Lab" },
+  { "display": "Brandon Ross", "first": "Brandon L.", "last": "Ross", "pro": "BMI", "ipi": "1336014292", "publisher": "Gandepub" },
+  { "display": "Brandy Lynn Cole", "first": "Brandy Lynn", "last": "Cole", "pro": "BMI", "ipi": "396973098", "publisher": "Gandepub" },
+  { "display": "Brian Donohoe", "first": "Brian", "last": "Donohoe", "pro": "SESAC", "ipi": "280722865", "publisher": "G&E Music Group LLC" },
+  { "display": "Brian Quill", "first": "Brian", "last": "Quill", "pro": "SESAC", "ipi": "295466227", "publisher": "G&E Music Group LLC" },
+  { "display": "Brian Warren", "first": "Brian", "last": "Warren", "pro": "BMI", "ipi": "1131749864", "publisher": "Gandepub" },
+  { "display": "Bryan Akcasu", "first": "Bryan", "last": "Akcasu", "pro": "BMI", "ipi": "749172123", "publisher": "Gandepub" },
+  { "display": "Byron Johnson", "first": "Byron", "last": "Johnson", "pro": "ASCAP", "ipi": "530381777", "publisher": "Gem Lab" },
+  { "display": "Byron Sampson", "first": "Byron", "last": "Sampson", "pro": "BMI", "ipi": "577412041", "publisher": "Gandepub" },
+  { "display": "Calvin Ross Pfeffer", "first": "Calvin Ross", "last": "Pfeffer", "pro": "BMI", "ipi": "725611849", "publisher": "Gandepub" },
+  { "display": "Cameron Ferrer", "first": "Cameron", "last": "Ferrer", "pro": "BMI", "ipi": "1299510525", "publisher": "Gandepub" },
+  { "display": "Camille Jasmine Thomas", "first": "Camille Jasmine", "last": "Thomas", "pro": "SOCAN", "ipi": "503974255", "publisher": "Gem Lab" },
+  { "display": "Carey Clayton", "first": "Carey", "last": "Clayton", "pro": "ASCAP", "ipi": "601713982", "publisher": "Gem Lab" },
+  { "display": "Carmen Autumn Thomas", "first": "Carmen Autumn", "last": "Thomas", "pro": "SOCAN", "ipi": "503973160", "publisher": "Gem Lab" },
+  { "display": "Caroline Gentry", "first": "Caroline", "last": "Gentry", "pro": "BMI", "ipi": "741949122", "publisher": "Gandepub" },
+  { "display": "Catherine Lee Anderson", "first": "Catherine Lee", "last": "Anderson", "pro": "ASCAP", "ipi": "754585701", "publisher": "Gem Lab" },
+  { "display": "Chantal Louise Cassandra Greatorex", "first": "Chantal Louise Cassandra", "last": "Greatorex", "pro": "BMI", "ipi": "672598106", "publisher": "Gandepub" },
+  { "display": "Charles B. Mallory", "first": "Charles B.", "last": "Mallory", "pro": "ASCAP", "ipi": "456201184", "publisher": "Gem Lab" },
+  { "display": "Charles Matthew Brandau", "first": "Charles Matthew", "last": "Brandau", "pro": "BMI", "ipi": "524814754", "publisher": "Gandepub" },
+  { "display": "Chase Alexander Nixon", "first": "Chase Alexander", "last": "Nixon", "pro": "SESAC", "ipi": "673633330", "publisher": "G&E Music Group LLC" },
+  { "display": "Chris Villepigue", "first": "Chris", "last": "Villepigue", "pro": "BMI", "ipi": "453740458", "publisher": "Gandepub" },
+  { "display": "Christer David Hellstrom", "first": "Christer David", "last": "Hellstrom", "pro": "SESAC", "ipi": "662655525", "publisher": "G&E Music Group LLC" },
+  { "display": "Christo Patricios", "first": "Christo", "last": "Patricios", "pro": "SAMRO", "ipi": "721287651", "publisher": "Gem Lab" },
+  { "display": "Christopher Alan Justice", "first": "Christopher Alan", "last": "Justice", "pro": "BMI", "ipi": "358208747", "publisher": "Gandepub" },
+  { "display": "Christopher Child", "first": "Christopher", "last": "Child", "pro": "ASCAP", "ipi": "470617850", "publisher": "Gem Lab" },
+  { "display": "Christopher Chorney", "first": "Christopher", "last": "Chorney", "pro": "BMI", "ipi": "628741528", "publisher": "Gandepub" },
+  { "display": "Christopher Kyle Ficht", "first": "Christopher Kyle", "last": "Ficht", "pro": "BMI", "ipi": "632023496", "publisher": "Gandepub" },
+  { "display": "Christopher McDonald", "first": "Christopher", "last": "McDonald", "pro": "SESAC", "ipi": "568083619", "publisher": "G&E Music Group LLC" },
+  { "display": "Christopher Phelps", "first": "Christopher", "last": "Phelps", "pro": "BMI", "ipi": "1156044282", "publisher": "Gandepub" },
+  { "display": "Christopher Sanchez", "first": "Christopher", "last": "Sanchez", "pro": "ASCAP", "ipi": "1012012749", "publisher": "Gem Lab" },
+  { "display": "Christopher Stoll", "first": "Christopher", "last": "Stoll", "pro": "BMI", "ipi": "465711644", "publisher": "Gandepub" },
+  { "display": "Clinton Devaughn Evans", "first": "Clinton Devaughn", "last": "Evans", "pro": "BMI", "ipi": "602373874", "publisher": "Gandepub" },
+  { "display": "Cole Bauer", "first": "Cole", "last": "Bauer", "pro": "ASCAP", "ipi": "581601361", "publisher": "Gem Lab" },
+  { "display": "Corei Taylor", "first": "Corei", "last": "Taylor", "pro": "SESAC", "ipi": "547433433", "publisher": "G&E Music Group LLC" },
+  { "display": "Cory Otis", "first": "Cory", "last": "Otis", "pro": "BMI", "ipi": "479516118", "publisher": "Gandepub" },
+  { "display": "Cory Ross", "first": "Cory", "last": "Ross", "pro": "BMI", "ipi": "734391537", "publisher": "Gandepub" },
+  { "display": "Craig Keith Dodge", "first": "Craig Keith", "last": "Dodge", "pro": "SOCAN", "ipi": "498686472", "publisher": "Gem Lab" },
+  { "display": "Damian McNorton", "first": "Damian", "last": "McNorton", "pro": "BMI", "ipi": "709262542", "publisher": "Gandepub" },
+  { "display": "Daniel DeGeorges", "first": "Daniel", "last": "DeGeorges", "pro": "BMI", "ipi": "1188210165", "publisher": "Gandepub" },
+  { "display": "Daniel Fernando Paz Rekers", "first": "Daniel Fernando", "last": "Paz Rekers", "pro": "SGAE", "ipi": "579230723", "publisher": "Gem Lab" },
+  { "display": "Daniel Lima", "first": "Daniel", "last": "Lima", "pro": "UBC", "ipi": "588350317", "publisher": "Gem Lab" },
+  { "display": "Daniel Patrick McGowan", "first": "Daniel Patrick", "last": "McGowan", "pro": "BMI", "ipi": "613856051", "publisher": "Gandepub" },
+  { "display": "Daniel Villalobos", "first": "Daniel", "last": "Villalobos", "pro": "APRA", "ipi": "701032413", "publisher": "Gem Lab" },
+  { "display": "Daniel Ware", "first": "Daniel", "last": "Ware", "pro": "BMI", "ipi": "730680553", "publisher": "Gandepub" },
+  { "display": "Danny George McLauchlan", "first": "Danny George", "last": "McLauchlan", "pro": "PRS", "ipi": "601587952", "publisher": "Gem Lab" },
+  { "display": "Darcy Jeavons", "first": "Darcy", "last": "Jeavons", "pro": "ASCAP", "ipi": "692025154", "publisher": "Gem Lab" },
+  { "display": "Dashawn Johnson", "first": "Dashawn", "last": "Johnson", "pro": "BMI", "ipi": "770603744", "publisher": "Gandepub" },
+  { "display": "Dave Cavalier", "first": "Dave", "last": "Cavalier", "pro": "BMI", "ipi": "713069364", "publisher": "Gandepub" },
+  { "display": "David Eduardo D'Angelo", "first": "David Eduardo", "last": "D'Angelo", "pro": "BMI", "ipi": "724650940", "publisher": "Gandepub" },
+  { "display": "David Flint", "first": "David", "last": "Flint", "pro": "BMI", "ipi": "143379176", "publisher": "Gandepub" },
+  { "display": "David Hollandsworth", "first": "David", "last": "Hollandsworth", "pro": "BMI", "ipi": "673957592", "publisher": "Gandepub" },
+  { "display": "David John Cerullo", "first": "David John", "last": "Cerullo", "pro": "ASCAP", "ipi": "530978142", "publisher": "Gem Lab" },
+  { "display": "David Nicholas Wagner", "first": "David Nicholas", "last": "Wagner", "pro": "ASCAP", "ipi": "746692304", "publisher": "Gem Lab" },
+  { "display": "David Roy Baron", "first": "David Roy", "last": "Baron", "pro": "ASCAP", "ipi": "781699974", "publisher": "Gem Lab" },
+  { "display": "David Wesley Burnett", "first": "David Wesley", "last": "Burnett", "pro": "BMI", "ipi": "566090342", "publisher": "Gandepub" },
+  { "display": "David Zipse", "first": "David", "last": "Zipse", "pro": "ASCAP", "ipi": "1058469137", "publisher": "Gem Lab" },
+  { "display": "Dean Shot", "first": "Dean", "last": "Shot", "pro": "BMI", "ipi": "1102126335", "publisher": "Gandepub" },
+  { "display": "Delwin Gutierrez", "first": "Delwin", "last": "Gutierrez", "pro": "ASCAP", "ipi": "508624064", "publisher": "Gem Lab" },
+  { "display": "Denise Barbarita", "first": "Denise", "last": "Barbarita", "pro": "BMI", "ipi": "194279336", "publisher": "Gandepub" },
+  { "display": "Dennis Dembeck", "first": "Dennis", "last": "Dembeck", "pro": "ASCAP", "ipi": "722270180", "publisher": "Gem Lab" },
+  { "display": "Dennis James Perkins IV", "first": "Dennis James", "last": "Perkins IV", "pro": "ASCAP", "ipi": "763973497", "publisher": "Gem Lab" },
+  { "display": "Derek Nievergelt", "first": "Derek", "last": "Nievergelt", "pro": "SESAC", "ipi": "514607276", "publisher": "G&E Music Group LLC" },
+  { "display": "Devan T. Reed", "first": "Devan T.", "last": "Reed", "pro": "ASCAP", "ipi": "611127300", "publisher": "Gem Lab" },
+  { "display": "Devon Dixon", "first": "Devon", "last": "Dixon", "pro": "BMI", "ipi": "687676571", "publisher": "Gandepub" },
+  { "display": "Diane Frohman Magalong", "first": "Diane Frohman", "last": "Magalong", "pro": "BMI", "ipi": "621715766", "publisher": "Gandepub" },
+  { "display": "Diriki Mack", "first": "Diriki A.", "last": "Mack", "pro": "ASCAP", "ipi": "426449449", "publisher": "Gem Lab" },
+  { "display": "DMC Music", "first": "DMC", "last": "Music", "pro": "ASCAP", "ipi": "1030025636", "publisher": "Gem Lab" },
+  { "display": "Dmitra Smith", "first": "Dmitra", "last": "Smith", "pro": "ASCAP", "ipi": "615985809", "publisher": "Gem Lab" },
+  { "display": "Domenico Capuano", "first": "Domenico", "last": "Capuano", "pro": "ASCAP", "ipi": "184413963", "publisher": "Gem Lab" },
+  { "display": "Drew Henmi", "first": "Drew", "last": "Henmi", "pro": "BMI", "ipi": "1075204974", "publisher": "Gandepub" },
+  { "display": "Dyami Wilson", "first": "Dyami", "last": "Wilson", "pro": "BMI", "ipi": "360517674", "publisher": "Gandepub" },
+  { "display": "Earnest David Davis", "first": "Earnest David", "last": "Davis", "pro": "BMI", "ipi": "587995069", "publisher": "Gandepub" },
+  { "display": "Ebenezer Marango", "first": "Ebenezer", "last": "Marango", "pro": "PRS", "ipi": "360944161", "publisher": "Gem Lab" },
+  { "display": "Edward Kumpel", "first": "Edward", "last": "Kumpel", "pro": "SESAC", "ipi": "253826263", "publisher": "G&E Music Group LLC" },
+  { "display": "Edward L. Riley", "first": "Edward L.", "last": "Riley", "pro": "ASCAP", "ipi": "", "publisher": "Gem Lab" },
+  { "display": "Elena Dolsa Sciaky", "first": "Elena", "last": "Dolsa Sciaky", "pro": "ASCAP", "ipi": "128306785", "publisher": "Gem Lab" },
+  { "display": "Elisha David Erskine", "first": "Elisha David", "last": "Erskine", "pro": "BMI", "ipi": "1006539975", "publisher": "Gandepub" },
+  { "display": "Ella Blicker", "first": "Ella", "last": "Blicker", "pro": "BMI", "ipi": "1087837904", "publisher": "Gellypub" },
+  { "display": "Elliot Sneider", "first": "Elliot", "last": "Sneider", "pro": "SESAC", "ipi": "467696789", "publisher": "G&E Music Group LLC" },
+  { "display": "Erik Blicker", "first": "Erik", "last": "Blicker", "pro": "BMI", "ipi": "598327301", "publisher": "Gellypub" },
+  { "display": "Erik Jourgensen", "first": "Erik", "last": "Jourgensen", "pro": "ASCAP", "ipi": "731501483", "publisher": "Gem Lab" },
+  { "display": "Fabian Faupel", "first": "Fabian", "last": "Faupel", "pro": "PRS", "ipi": "665964886", "publisher": "Gem Lab" },
+  { "display": "Fabio Campedelli", "first": "Fabio", "last": "Campedelli", "pro": "BMI", "ipi": "492759898", "publisher": "Gandepub" },
+  { "display": "FaLawna Barton", "first": "FaLawna", "last": "Barton", "pro": "ASCAP", "ipi": "441265479", "publisher": "Gem Lab" },
+  { "display": "Fengheng Lee", "first": "Fengheng", "last": "Lee", "pro": "ASCAP", "ipi": "772024947", "publisher": "Gem Lab" },
+  { "display": "Fernando Perez", "first": "Fernando", "last": "Perez", "pro": "BMI", "ipi": "726483721", "publisher": "Gandepub" },
+  { "display": "Fima Ephron", "first": "Fima", "last": "Ephron", "pro": "BMI", "ipi": "244357176", "publisher": "Gandepub" },
+  { "display": "Fiona Lunney", "first": "Fiona", "last": "Lunney", "pro": "APRA", "ipi": "608621751", "publisher": "Gem Lab" },
+  { "display": "Francesco DiCosmo Caccia", "first": "Francesco", "last": "DiCosmo Caccia", "pro": "ASCAP", "ipi": "487751602", "publisher": "Gem Lab" },
+  { "display": "Frank Fusco", "first": "Frank", "last": "Fusco", "pro": "ASCAP", "ipi": "607589028", "publisher": "Gem Lab" },
+  { "display": "Frederick Neve", "first": "Frederick", "last": "Neve", "pro": "PRS", "ipi": "377564712", "publisher": "Gem Lab" },
+  { "display": "Gabriel Jordan Smith", "first": "Gabriel Jordan", "last": "Smith", "pro": "BMI", "ipi": "889025890", "publisher": "Gandepub" },
+  { "display": "Gabriel Pitaro", "first": "Gabriel", "last": "Pitaro", "pro": "BMI", "ipi": "717553729", "publisher": "Gandepub" },
+  { "display": "Gareth Wong", "first": "Gareth", "last": "Wong", "pro": "ASCAP", "ipi": "867009615", "publisher": "Gem Lab" },
+  { "display": "Geoffrey C. Deitch", "first": "Geoffrey C.", "last": "Deitch", "pro": "BMI", "ipi": "760680140", "publisher": "Gandepub" },
+  { "display": "Gerardo Camacho Jr", "first": "Gerardo", "last": "Camacho Jr", "pro": "ASCAP", "ipi": "1016896742", "publisher": "Gem Lab" },
+  { "display": "Giovanni Peter Benedetti", "first": "Giovanni Peter", "last": "Benedetti", "pro": "SESAC", "ipi": "722671745", "publisher": "G&E Music Group LLC" },
+  { "display": "Girish Chandra Varma", "first": "Girish Chandra", "last": "Varma", "pro": "BMI", "ipi": "378429810", "publisher": "Gandepub" },
+  { "display": "Glenn Schloss", "first": "Glenn", "last": "Schloss", "pro": "BMI", "ipi": "338867612", "publisher": "Gellypub" },
+  { "display": "Gordon Rothbard", "first": "Gordon", "last": "Rothbard", "pro": "BMI", "ipi": "743189134", "publisher": "Gandepub" },
+  { "display": "Gregg Allen", "first": "Gregg", "last": "Allen", "pro": "BMI", "ipi": "186477523", "publisher": "Gandepub" },
+  { "display": "Gregory Joseph Wieczorek", "first": "Gregory Joseph", "last": "Wieczorek", "pro": "BMI", "ipi": "350787545", "publisher": "Gandepub" },
+  { "display": "Gregory Mathews", "first": "Gregory", "last": "Mathews", "pro": "BMI", "ipi": "719827800", "publisher": "Gandepub" },
+  { "display": "Gregory Vance Savage Jr", "first": "Gregory Vance", "last": "Savage Jr", "pro": "BMI", "ipi": "722571456", "publisher": "Gandepub" },
+  { "display": "Gregory Williams", "first": "Gregory", "last": "Williams", "pro": "ASCAP", "ipi": "611743081", "publisher": "Gem Lab" },
+  { "display": "Habib Defoundoux", "first": "Habib", "last": "Defoundoux", "pro": "SUISA", "ipi": "769643586", "publisher": "Gem Lab" },
+  { "display": "Hans Fahling", "first": "Hans", "last": "Fahling", "pro": "BMI", "ipi": "193311679", "publisher": "Gandepub" },
+  { "display": "Harini Srinivasa Raghavan", "first": "Harini Srinivasa", "last": "Raghavan", "pro": "ASCAP", "ipi": "748047915", "publisher": "Gem Lab" },
+  { "display": "Harry Nagle", "first": "Harry", "last": "Nagle", "pro": "ASCAP", "ipi": "339497614", "publisher": "Gem Lab" },
+  { "display": "Hasan Mehmet Can Ozbek", "first": "Hasan Mehmet Can", "last": "Ozbek", "pro": "MSG", "ipi": "741077749", "publisher": "Gem Lab" },
+  { "display": "Heather Elle", "first": "Heather", "last": "Elle", "pro": "BMI", "ipi": "642838724", "publisher": "Gandepub" },
+  { "display": "Henning Riez", "first": "Henning", "last": "Riez", "pro": "PRS", "ipi": "750940834", "publisher": "Gem Lab" },
+  { "display": "Henry Isaac Clateman", "first": "Henry Isaac", "last": "Clateman", "pro": "BMI", "ipi": "", "publisher": "Gandepub" },
+  { "display": "Hirobumi Hidaka", "first": "Hirobumi", "last": "Hidaka", "pro": "BMI", "ipi": "711963839", "publisher": "Gandepub" },
+  { "display": "Hugo Newington Smith", "first": "Hugo Newington", "last": "Smith", "pro": "PRS", "ipi": "789219390", "publisher": "Gem Lab" },
+  { "display": "Ian Brenden Stinson", "first": "Ian Brenden", "last": "Stinson", "pro": "ASCAP", "ipi": "768828085", "publisher": "Gem Lab" },
+  { "display": "Isha The Mad Scientist", "first": "Isha The", "last": "Mad Scientist", "pro": "BMI", "ipi": "751815144", "publisher": "Gandepub" },
+  { "display": "Isik Kural", "first": "Isik", "last": "Kural", "pro": "BMI", "ipi": "811241292", "publisher": "Gandepub" },
+  { "display": "Ivan Galvan", "first": "Ivan", "last": "Galvan", "pro": "ASCAP", "ipi": "349650438", "publisher": "Gem Lab" },
+  { "display": "Ivan Offei-Danquah", "first": "Ivan", "last": "Offei-Danquah", "pro": "BMI", "ipi": "1002226828", "publisher": "Gandepub" },
+  { "display": "Jackson Smith", "first": "Jackson", "last": "Smith", "pro": "BMI", "ipi": "1111950104", "publisher": "Gandepub" },
+  { "display": "Jacob Colin Cohen", "first": "Jacob Colin", "last": "Cohen", "pro": "ASCAP", "ipi": "703648842", "publisher": "Gem Lab" },
+  { "display": "Jacqueline Willa Darrow", "first": "Jacqueline Willa", "last": "Darrow", "pro": "BMI", "ipi": "607654148", "publisher": "Gandepub" },
+  { "display": "Jacquelyn C. Ryal-Laufer", "first": "Jacquelyn C.", "last": "Ryal-Laufer", "pro": "BMI", "ipi": "440992153", "publisher": "Gandepub" },
+  { "display": "Jake Clayton", "first": "Jake", "last": "Clayton", "pro": "BMI", "ipi": "641565840", "publisher": "Gandepub" },
+  { "display": "James Allen Street", "first": "James Allen", "last": "Street", "pro": "BMI", "ipi": "1130737", "publisher": "Gandepub" },
+  { "display": "James Quinn", "first": "James", "last": "Quinn", "pro": "ASCAP", "ipi": "870700544", "publisher": "Gem Lab" },
+  { "display": "James Slukhinsky", "first": "James", "last": "Slukhinsky", "pro": "ASCAP", "ipi": "730778038", "publisher": "Gem Lab" },
+  { "display": "Jameson Jackson Hodder", "first": "Jameson Jackson", "last": "Hodder", "pro": "ASCAP", "ipi": "705288050", "publisher": "Gem Lab" },
+  { "display": "Jamey Brizard", "first": "Jamey", "last": "Brizard", "pro": "BMI", "ipi": "1155970145", "publisher": "Gandepub" },
+  { "display": "Jamie Seigel", "first": "Jamie", "last": "Seigel", "pro": "SESAC", "ipi": "", "publisher": "G&E Music Group LLC" },
+  { "display": "Jamil Houston", "first": "Jamil", "last": "Houston", "pro": "BMI", "ipi": "803985420", "publisher": "Gandepub" },
+  { "display": "Janelle Costa", "first": "Janelle", "last": "Costa", "pro": "BMI", "ipi": "374287434", "publisher": "Gandepub" },
+  { "display": "Jared Joseph", "first": "Jared", "last": "Joseph", "pro": "ASCAP", "ipi": "572306558", "publisher": "Gem Lab" },
+  { "display": "Jared Newman", "first": "Jared", "last": "Newman", "pro": "ASCAP", "ipi": "787484085", "publisher": "Gem Lab" },
+  { "display": "Jarrod Pedone", "first": "Jarrod", "last": "Pedone", "pro": "ASCAP", "ipi": "512812485", "publisher": "Gem Lab" },
+  { "display": "Jason Shepherd", "first": "Jason", "last": "Shepherd", "pro": "BMI", "ipi": "454394832", "publisher": "Gandepub" },
+  { "display": "Jean Sim", "first": "Jean", "last": "Sim", "pro": "ASCAP", "ipi": "773218335", "publisher": "Gem Lab" },
+  { "display": "Jeff A. Leauby", "first": "Jeff A.", "last": "Leauby", "pro": "ASCAP", "ipi": "460525178", "publisher": "Gem Lab" },
+  { "display": "Jeff Michael Hanley", "first": "Jeff Michael", "last": "Hanley", "pro": "ASCAP", "ipi": "372513863", "publisher": "Gem Lab" },
+  { "display": "Jeffrey Bellamy", "first": "Jeffrey", "last": "Bellamy", "pro": "ASCAP", "ipi": "490157649", "publisher": "Gem Lab" },
+  { "display": "Jeffrey K Martin", "first": "Jeffrey K", "last": "Martin", "pro": "BMI", "ipi": "732998893", "publisher": "Gandepub" },
+  { "display": "Jeremy Lawrence", "first": "Jeremy", "last": "Lawrence", "pro": "BMI", "ipi": "726208258", "publisher": "Gandepub" },
+  { "display": "Jeremy Levy", "first": "Jeremy", "last": "Levy", "pro": "PRS", "ipi": "552403674", "publisher": "Gem Lab" },
+  { "display": "Jerry Brian Girley", "first": "Jerry Brian", "last": "Girley", "pro": "BMI", "ipi": "602564473", "publisher": "Gandepub" },
+  { "display": "Jesse Billson", "first": "Jesse", "last": "Billson", "pro": "ASCAP", "ipi": "665271433", "publisher": "Gem Lab" },
+  { "display": "Jesse Solomon Clark", "first": "Jesse Solomon", "last": "Clark", "pro": "BMI", "ipi": "731540176", "publisher": "Gandepub" },
+  { "display": "Joanna Isabela Atherton", "first": "Joanna Isabela", "last": "Atherton", "pro": "PRS", "ipi": "814322176", "publisher": "Gem Lab" },
+  { "display": "Joel Campbell", "first": "Joel", "last": "Campbell", "pro": "ASCAP", "ipi": "581172453", "publisher": "Gem Lab" },
+  { "display": "Johanna Stahley", "first": "Johanna", "last": "Stahley", "pro": "ASCAP", "ipi": "342669841", "publisher": "Gem Lab" },
+  { "display": "John \\\"Quixotic\\\" Gundersen", "first": "John \\\"Quixotic\\\"", "last": "Gundersen", "pro": "BMI", "ipi": "354875526", "publisher": "Gandepub" },
+  { "display": "John Leitch", "first": "John J.", "last": "Leitch", "pro": "BMI", "ipi": "229908539", "publisher": "Gandepub" },
+  { "display": "John Owen Danoff", "first": "John Owen", "last": "Danoff", "pro": "ASCAP", "ipi": "633702760", "publisher": "Gem Lab" },
+  { "display": "John Robert Cimino", "first": "John Robert", "last": "Cimino", "pro": "ASCAP", "ipi": "465954903", "publisher": "Gem Lab" },
+  { "display": "John Roggie", "first": "John", "last": "Roggie", "pro": "ASCAP", "ipi": "", "publisher": "Gem Lab" },
+  { "display": "John Salvatore Paterno", "first": "John Salvatore", "last": "Paterno", "pro": "ASCAP", "ipi": "571348738", "publisher": "Gem Lab" },
+  { "display": "Jonah Atkinson", "first": "Jonah", "last": "Atkinson", "pro": "BMI", "ipi": "433797039", "publisher": "Gandepub" },
+  { "display": "Jonathan Knight", "first": "Jonathan", "last": "Knight", "pro": "ASCAP", "ipi": "735276039", "publisher": "Gem Lab" },
+  { "display": "Jonathan Pierre DuBose III", "first": "Jonathan Pierre", "last": "DuBose III", "pro": "BMI", "ipi": "623765440", "publisher": "Gandepub" },
+  { "display": "Jonathan Rosenfeld", "first": "Jonathan", "last": "Rosenfeld", "pro": "BMI", "ipi": "490475338", "publisher": "Gandepub" },
+  { "display": "Jonathan Spurney", "first": "Jonathan", "last": "Spurney", "pro": "ASCAP", "ipi": "337056469", "publisher": "Gem Lab" },
+  { "display": "Joseph Delia", "first": "Joseph", "last": "Delia", "pro": "BMI", "ipi": "39621674", "publisher": "Gandepub" },
+  { "display": "Joseph Howard Miralles", "first": "Joseph Howard", "last": "Miralles", "pro": "BMI", "ipi": "195060763", "publisher": "Gandepub" },
+  { "display": "Joseph Jakubicki", "first": "Joseph", "last": "Jakubicki", "pro": "BMI", "ipi": "550940093", "publisher": "Gandepub" },
+  { "display": "Joseph Reyna", "first": "Joseph", "last": "Reyna", "pro": "ASCAP", "ipi": "700042807", "publisher": "Gem Lab" },
+  { "display": "Joseph Tonnos", "first": "Joseph", "last": "Tonnos", "pro": "BMI", "ipi": "1221342117", "publisher": "Gandepub" },
+  { "display": "Josh Johnson", "first": "Josh", "last": "Johnson", "pro": "ASCAP", "ipi": "607186253", "publisher": "Gem Lab" },
+  { "display": "Josh Verbanets", "first": "Josh", "last": "Verbanets", "pro": "ASCAP", "ipi": "467663513", "publisher": "Gem Lab" },
+  { "display": "Joshua David Raggatt", "first": "Joshua David", "last": "Raggatt", "pro": "PRS", "ipi": "621400503", "publisher": "Gem Lab" },
+  { "display": "Joshua King", "first": "Joshua", "last": "King", "pro": "APRA", "ipi": "781042258", "publisher": "Gem Lab" },
+  { "display": "Joshua Lattanzi", "first": "Joshua", "last": "Lattanzi", "pro": "ASCAP", "ipi": "729015941", "publisher": "Gem Lab" },
+  { "display": "Juliet Lyons", "first": "Juliet", "last": "Lyons", "pro": "ASCAP", "ipi": "501986355", "publisher": "Gem Lab" },
+  { "display": "Justin Roper", "first": "Justin", "last": "Roper", "pro": "BMI", "ipi": "631250685", "publisher": "Gandepub" },
+  { "display": "Kate Mack", "first": "Kate", "last": "Mack", "pro": "ASCAP", "ipi": "", "publisher": "Gem Lab" },
+  { "display": "Katie Marie Richards", "first": "Katie Marie", "last": "Richards", "pro": "ASCAP", "ipi": "592801044", "publisher": "Gem Lab" },
+  { "display": "Keith Duplessis", "first": "Keith", "last": "Duplessis", "pro": "ASCAP", "ipi": "526893321", "publisher": "Gem Lab" },
+  { "display": "Keith Eaddy", "first": "Keith", "last": "Eaddy", "pro": "BMI", "ipi": "140225914", "publisher": "Gandepub" },
+  { "display": "Keith Glover", "first": "Keith", "last": "Glover", "pro": "BMI", "ipi": "653339243", "publisher": "Gandepub" },
+  { "display": "Keith Patchel", "first": "Keith", "last": "Patchel", "pro": "BMI", "ipi": "469060344", "publisher": "Gandepub" },
+  { "display": "Keith Reynolds", "first": "Keith", "last": "Reynolds", "pro": "BMI", "ipi": "484689690", "publisher": "Gandepub" },
+  { "display": "Ken Hankins", "first": "Ken", "last": "Hankins", "pro": "ASCAP", "ipi": "342862754", "publisher": "Gem Lab" },
+  { "display": "Kendall Joshua", "first": "Kendall", "last": "Joshua", "pro": "BMI", "ipi": "880272332", "publisher": "Gandepub" },
+  { "display": "Kevin Farrell", "first": "Kevin", "last": "Farrell", "pro": "ASCAP", "ipi": "510471200", "publisher": "Gem Lab" },
+  { "display": "Kevin James Dubois", "first": "Kevin James", "last": "Dubois", "pro": "BMI", "ipi": "845534521", "publisher": "Gandepub" },
+  { "display": "Kevin Salchert", "first": "Kevin", "last": "Salchert", "pro": "BMI", "ipi": "650472849", "publisher": "Gandepub" },
+  { "display": "Kevin Wilson", "first": "Kevin", "last": "Wilson", "pro": "BMI", "ipi": "799319182", "publisher": "Gandepub" },
+  { "display": "Kimberly Jakubicki", "first": "Kimberly", "last": "Jakubicki", "pro": "ASCAP", "ipi": "347852042", "publisher": "Gem Lab" },
+  { "display": "Kimberly Kate Ellwanger", "first": "Kimberly Kate", "last": "Ellwanger", "pro": "BMI", "ipi": "674713425", "publisher": "Gandepub" },
+  { "display": "Kirth Anthony Atkins", "first": "Kirth Anthony", "last": "Atkins", "pro": "BMI", "ipi": "214686075", "publisher": "Gandepub" },
+  { "display": "Kortni Brannon", "first": "Kortni", "last": "Brannon", "pro": "BMI", "ipi": "580871231", "publisher": "Gandepub" },
+  { "display": "Kris Campbell", "first": "Kris", "last": "Campbell", "pro": "ASCAP", "ipi": "508590935", "publisher": "Gem Lab" },
+  { "display": "Kyle Anne Guffey", "first": "Kyle Anne", "last": "Guffey", "pro": "BMI", "ipi": "747788184", "publisher": "Gandepub" },
+  { "display": "Kyndyl Miller", "first": "Kyndyl", "last": "Miller", "pro": "ASCAP", "ipi": "766775679", "publisher": "Gem Lab" },
+  { "display": "Lawrence May", "first": "Lawrence", "last": "May", "pro": "BMI", "ipi": "337967123", "publisher": "Gandepub" },
+  { "display": "Lawrence Orsini", "first": "Lawrence", "last": "Orsini", "pro": "BMI", "ipi": "718725033", "publisher": "Gandepub" },
+  { "display": "Lee Barbour", "first": "Lee", "last": "Barbour", "pro": "BMI", "ipi": "450844067", "publisher": "Gandepub" },
+  { "display": "Lee Mingh Topping", "first": "Lee Mingh", "last": "Topping", "pro": "BMI", "ipi": "1100099119", "publisher": "Gandepub" },
+  { "display": "Lemarquis Bobo", "first": "Lemarquis", "last": "Bobo", "pro": "BMI", "ipi": "583093533", "publisher": "Gandepub" },
+  { "display": "Leo Capper", "first": "Leo", "last": "Capper", "pro": "IMRO", "ipi": "746391714", "publisher": "Gem Lab" },
+  { "display": "Lisa Monica McIntyre Hite", "first": "Lisa Monica", "last": "McIntyre Hite", "pro": "BMI", "ipi": "659770789", "publisher": "Gandepub" },
+  { "display": "Lisa Remar", "first": "Lisa", "last": "Remar", "pro": "ASCAP", "ipi": "771686994", "publisher": "Gem Lab" },
+  { "display": "Lisa Sniderman", "first": "Lisa", "last": "Sniderman", "pro": "ASCAP", "ipi": "506054094", "publisher": "Gem Lab" },
+  { "display": "Louis Evan Lombardi", "first": "Louis Evan", "last": "Lombardi", "pro": "BMI", "ipi": "847681200", "publisher": "Gandepub" },
+  { "display": "Luca Poloni", "first": "Luca", "last": "Poloni", "pro": "PRS", "ipi": "886354394", "publisher": "Gem Lab" },
+  { "display": "Maddison Wilson", "first": "Maddison", "last": "Wilson", "pro": "APRA", "ipi": "638272825", "publisher": "Gem Lab" },
+  { "display": "Malcolm Shabazz Flythe", "first": "Malcolm Shabazz", "last": "Flythe", "pro": "BMI", "ipi": "448382629", "publisher": "Gandepub" },
+  { "display": "Mardochee Sanon", "first": "Mardochee", "last": "Sanon", "pro": "ASCAP", "ipi": "529184339", "publisher": "Gem Lab" },
+  { "display": "Mark Chisulo", "first": "Mark", "last": "Chisulo", "pro": "BMI", "ipi": "1159465037", "publisher": "Gandepub" },
+  { "display": "Mark Unthank", "first": "Mark", "last": "Unthank", "pro": "BMI", "ipi": "236418571", "publisher": "Gandepub" },
+  { "display": "Marshawn Kerner", "first": "Marshawn", "last": "Kerner", "pro": "BMI", "ipi": "1140090608", "publisher": "Gandepub" },
+  { "display": "Martin Kirkhaug", "first": "Martin", "last": "Kirkhaug", "pro": "TONO", "ipi": "247061775", "publisher": "Gandepub" },
+  { "display": "Marvin Cruz", "first": "Marvin", "last": "Cruz", "pro": "BMI", "ipi": "808454920", "publisher": "Gandepub" },
+  { "display": "Matt Chertkoff", "first": "Matt", "last": "Chertkoff", "pro": "SESAC", "ipi": "609895698", "publisher": "G&E Music Group LLC" },
+  { "display": "Matteo Fioriti", "first": "Matteo", "last": "Fioriti", "pro": "SIAE", "ipi": "803678234", "publisher": "Gem Lab" },
+  { "display": "Matthew Bednarsky", "first": "Matthew", "last": "Bednarsky", "pro": "BMI", "ipi": "678435797", "publisher": "Gandepub" },
+  { "display": "Matthew Block", "first": "Matthew", "last": "Block", "pro": "BMI", "ipi": "739448994", "publisher": "Gandepub" },
+  { "display": "Matthew Corry", "first": "Matthew", "last": "Corry", "pro": "PRS", "ipi": "676882288", "publisher": "Gem Lab" },
+  { "display": "Matthew Volpe", "first": "Matthew", "last": "Volpe", "pro": "ASCAP", "ipi": "349390241", "publisher": "Gem Lab" },
+  { "display": "Max Robert Padula", "first": "Max Robert", "last": "Padula", "pro": "ASCAP", "ipi": "601872270", "publisher": "Gem Lab" },
+  { "display": "Megan Aho Heronemus", "first": "Megan Aho", "last": "Heronemus", "pro": "BMI", "ipi": "550658030", "publisher": "Gandepub" },
+  { "display": "Megan Carnes", "first": "Megan", "last": "Carnes", "pro": "ASCAP", "ipi": "648470814", "publisher": "Gem Lab" },
+  { "display": "Micah Kovacs", "first": "Micah", "last": "Kovacs", "pro": "ASCAP", "ipi": "700860278", "publisher": "Gem Lab" },
+  { "display": "Michael Anthony Cruz", "first": "Michael Anthony", "last": "Cruz", "pro": "ASCAP", "ipi": "419193059", "publisher": "Gem Lab" },
+  { "display": "Michael Engelhardt", "first": "Michael", "last": "Engelhardt", "pro": "BMI", "ipi": "511599649", "publisher": "Gandepub" },
+  { "display": "Michael Glaser", "first": "Michael", "last": "Glaser", "pro": "ASCAP", "ipi": "526383252", "publisher": "Gem Lab" },
+  { "display": "Michael James Getches", "first": "Michael James", "last": "Getches", "pro": "BMI", "ipi": "515259754", "publisher": "Gandepub" },
+  { "display": "Michael Katz", "first": "Michael", "last": "Katz", "pro": "BMI", "ipi": "566519714", "publisher": "Gandepub" },
+  { "display": "Michael Nappi", "first": "Michael", "last": "Nappi", "pro": "ASCAP", "ipi": "433561569", "publisher": "Gem Lab" },
+  { "display": "Mirage Zamprioli", "first": "Mirage Andante", "last": "Zamprioli", "pro": "ASCAP", "ipi": "733990320", "publisher": "Gem Lab" },
+  { "display": "Montana Tucker", "first": "Montana", "last": "Tucker", "pro": "ASCAP", "ipi": "686593485", "publisher": "Gem Lab" },
+  { "display": "Moses J. Patrou", "first": "Moses J.", "last": "Patrou", "pro": "ASCAP", "ipi": "347522069", "publisher": "Gem Lab" },
+  { "display": "Nadeem Majdalany", "first": "Nadeem", "last": "Majdalany", "pro": "ASCAP", "ipi": "507181472", "publisher": "Gem Lab" },
+  { "display": "Natalynn Nu\u00f1ez", "first": "Natalynn", "last": "Nu\u00f1ez", "pro": "BMI", "ipi": "829624510", "publisher": "Gandepub" },
+  { "display": "Nate Smith", "first": "Nate", "last": "Smith", "pro": "ASCAP", "ipi": "341715580", "publisher": "Gem Lab" },
+  { "display": "Nathalie Claude Daxelhofer", "first": "Nathalie Claude", "last": "Daxelhofer", "pro": "GEMA", "ipi": "536563537", "publisher": "Gandepub" },
+  { "display": "Nathan Nasby", "first": "Nathan", "last": "Nasby", "pro": "SOCAN", "ipi": "605590161", "publisher": "Gem Lab" },
+  { "display": "Nathan Riebli", "first": "Nathan", "last": "Riebli", "pro": "ASCAP", "ipi": "544537346", "publisher": "Gem Lab" },
+  { "display": "Nathaniel Nolan Clint", "first": "Nathaniel Nolan", "last": "Clint", "pro": "BMI", "ipi": "1179203455", "publisher": "Gandepub" },
+  { "display": "Nathaniel Smith", "first": "Nathaniel", "last": "Smith", "pro": "BMI", "ipi": "701050117", "publisher": "Gandepub" },
+  { "display": "Neysa Malone", "first": "Neysa", "last": "Malone", "pro": "SESAC", "ipi": "430163010", "publisher": "G&E Music Group LLC" },
+  { "display": "Ngqabutho Mbongeni Mpofu", "first": "Ngqabutho Mbongeni", "last": "Mpofu", "pro": "PRS", "ipi": "622568251", "publisher": "Gem Lab" },
+  { "display": "Nicholas Capuano", "first": "Nicholas", "last": "Capuano", "pro": "BMI", "ipi": "763865400", "publisher": "Gandepub" },
+  { "display": "Nicholas Harris", "first": "Nicholas Alan", "last": "Harris", "pro": "BMI", "ipi": "864766978", "publisher": "Gandepub" },
+  { "display": "Nicholas Phelps", "first": "Nicholas", "last": "Phelps", "pro": "BMI", "ipi": "844108939", "publisher": "Gandepub" },
+  { "display": "Nicole Stipp", "first": "Nicole", "last": "Stipp", "pro": "BMI", "ipi": "744906815", "publisher": "Gandepub" },
+  { "display": "Nigel Boyd Robinson", "first": "Nigel Boyd", "last": "Robinson", "pro": "PRS", "ipi": "799097073", "publisher": "Gem Lab" },
+  { "display": "Noah Gale", "first": "Noah", "last": "Gale", "pro": "SESAC", "ipi": "57694729", "publisher": "G&E Music Group LLC" },
+  { "display": "Noah Meyer", "first": "Noah", "last": "Meyer", "pro": "BMI", "ipi": "733489616", "publisher": "Gandepub" },
+  { "display": "Nolan Thies", "first": "Nolan", "last": "Thies", "pro": "ASCAP", "ipi": "521883943", "publisher": "Gem Lab" },
+  { "display": "Owen Elijah Brown", "first": "Owen Elijah", "last": "Brown", "pro": "ASCAP", "ipi": "495178216", "publisher": "Gem Lab" },
+  { "display": "Owen O'Mahony", "first": "Owen", "last": "O'Mahony", "pro": "ASCAP", "ipi": "529104567", "publisher": "Gem Lab" },
+  { "display": "Pablo J. Garmon", "first": "Pablo J.", "last": "Garmon", "pro": "SGAE", "ipi": "805744633", "publisher": "Gem Lab" },
+  { "display": "Pablo Perez", "first": "Pablo", "last": "Perez", "pro": "ASCAP", "ipi": "1189032547", "publisher": "Gem Lab" },
+  { "display": "Panos Kolias", "first": "Panos", "last": "Kolias", "pro": "GEMA", "ipi": "258990610", "publisher": "Gem Lab" },
+  { "display": "Parker Christian Wiksell", "first": "Parker Christian", "last": "Wiksell", "pro": "ASCAP", "ipi": "730947631", "publisher": "Gem Lab" },
+  { "display": "Patrick Deeney", "first": "Patrick", "last": "Deeney", "pro": "ASCAP", "ipi": "559562116", "publisher": "Gem Lab" },
+  { "display": "Patrick Joseph", "first": "Patrick", "last": "Joseph", "pro": "BMI", "ipi": "657632715", "publisher": "Gandepub" },
+  { "display": "Patrick Ryan Finnegan", "first": "Patrick Ryan", "last": "Finnegan", "pro": "ASCAP", "ipi": "588528788", "publisher": "Gem Lab" },
+  { "display": "Paul Anstey", "first": "Paul", "last": "Anstey", "pro": "APRA", "ipi": "736511547", "publisher": "Gem Lab" },
+  { "display": "Paul Anthony Longland", "first": "Paul Anthony", "last": "Longland", "pro": "PRS", "ipi": "161782661", "publisher": "Gem Lab" },
+  { "display": "Paul Doust", "first": "Paul", "last": "Doust", "pro": "APRA", "ipi": "588695568", "publisher": "Gem Lab" },
+  { "display": "Paul Henry Croteau", "first": "Paul Henry", "last": "Croteau", "pro": "BMI", "ipi": "776265995", "publisher": "Gandepub" },
+  { "display": "Paul Philip Harris", "first": "Paul Philip", "last": "Harris", "pro": "APRA", "ipi": "867766666", "publisher": "Gem Lab" },
+  { "display": "Peter Maness", "first": "Peter", "last": "Maness", "pro": "SESAC", "ipi": "", "publisher": "G&E Music Group LLC" },
+  { "display": "Peter Palestina", "first": "Peter", "last": "Palestina", "pro": "BMI", "ipi": "535605752", "publisher": "Gandepub" },
+  { "display": "Rahul Hiren Popawala", "first": "Rahul Hiren", "last": "Popawala", "pro": "ASCAP", "ipi": "792905207", "publisher": "Gem Lab" },
+  { "display": "Rauri Finan", "first": "Rauri", "last": "Finan", "pro": "BMI", "ipi": "439938112", "publisher": "Gandepub" },
+  { "display": "Raymond Boone", "first": "Raymond", "last": "Boone", "pro": "BMI", "ipi": "600548677", "publisher": "Gandepub" },
+  { "display": "Raymond Suh", "first": "Raymond", "last": "Suh", "pro": "ASCAP", "ipi": "842376527", "publisher": "Gem Lab" },
+  { "display": "Rekha Flow", "first": "Stephanie", "last": "Sahi", "pro": "SOCAN", "ipi": "738435912", "publisher": "Gem Lab" },
+  { "display": "Richard Agren", "first": "Richard", "last": "Agren", "pro": "ASCAP", "ipi": "588523016", "publisher": "Gem Lab" },
+  { "display": "Richard Austin Tozzoli", "first": "Richard Austin", "last": "Tozzoli", "pro": "ASCAP", "ipi": "183476152", "publisher": "Gem Lab" },
+  { "display": "Richard Emery", "first": "Richard", "last": "Emery", "pro": "BMI", "ipi": "898901668", "publisher": "Gandepub" },
+  { "display": "Richard Friedman", "first": "Richard", "last": "Friedman", "pro": "ASCAP", "ipi": "128741568", "publisher": "Gem Lab" },
+  { "display": "Rob Greenfield", "first": "Rob", "last": "Greenfield", "pro": "ASCAP", "ipi": "660165852", "publisher": "Gem Lab" },
+  { "display": "Robert Lualhati", "first": "Robert", "last": "Lualhati", "pro": "ASCAP", "ipi": "482431263", "publisher": "Gem Lab" },
+  { "display": "Robert Sinclair", "first": "Robert William", "last": "Sinclair", "pro": "ASCAP", "ipi": "428535448", "publisher": "Gem Lab" },
+  { "display": "Robert Stander", "first": "Robert", "last": "Stander", "pro": "ASCAP", "ipi": "126363292", "publisher": "Gem Lab" },
+  { "display": "Robin Brourman Munson", "first": "Robin Brourman", "last": "Munson", "pro": "BMI", "ipi": "230088302", "publisher": "Gandepub" },
+  { "display": "Rogerio Lotufo Maudonnet", "first": "Rogerio Lotufo", "last": "Maudonnet", "pro": "ASCAP", "ipi": "505943552", "publisher": "Gem Lab" },
+  { "display": "Roland Leonard", "first": "Roland", "last": "Leonard", "pro": "ASCAP", "ipi": "1206045698", "publisher": "Gem Lab" },
+  { "display": "Rolf Schnyder", "first": "Rolf", "last": "Schnyder", "pro": "BMI", "ipi": "496085514", "publisher": "Gandepub" },
+  { "display": "Ronald Martin Gamache", "first": "Ronald Martin", "last": "Gamache", "pro": "BMI", "ipi": "62126408", "publisher": "Gandepub" },
+  { "display": "Rudolph Albin Petschauer", "first": "Rudolph Albin", "last": "Petschauer", "pro": "BMI", "ipi": "1043016220", "publisher": "Gandepub" },
+  { "display": "Russell Huiskamp", "first": "Russell", "last": "Huiskamp", "pro": "ASCAP", "ipi": "627596803", "publisher": "Gem Lab" },
+  { "display": "Ryan Christopher Dozer", "first": "Ryan Christopher", "last": "Dozer", "pro": "BMI", "ipi": "1103437405", "publisher": "Gandepub" },
+  { "display": "Ryan Hobler", "first": "Ryan", "last": "Hobler", "pro": "SESAC", "ipi": "560491453", "publisher": "G&E Music Group LLC" },
+  { "display": "Ryan M Gonzales", "first": "Ryan M", "last": "Gonzales", "pro": "BMI", "ipi": "750375837", "publisher": "Gandepub" },
+  { "display": "Ryan Nach", "first": "Ryan", "last": "Nach", "pro": "ASCAP", "ipi": "621624770", "publisher": "Gem Lab" },
+  { "display": "Ryan Thomas Majoris", "first": "Ryan Thomas", "last": "Majoris", "pro": "ASCAP", "ipi": "626908035", "publisher": "Gem Lab" },
+  { "display": "Salvador Fornieles", "first": "Salvador", "last": "Fornieles", "pro": "SGAE", "ipi": "435552558", "publisher": "Gem Lab" },
+  { "display": "Samuel Alexander Morrison", "first": "Samuel Alexander", "last": "Morrison", "pro": "APRA", "ipi": "280379942", "publisher": "Gem Lab" },
+  { "display": "Samuel Bradley", "first": "Samuel", "last": "Bradley", "pro": "APRA", "ipi": "801407679", "publisher": "Gem Lab" },
+  { "display": "Samuel Lee", "first": "Samuel", "last": "Lee", "pro": "BMI", "ipi": "553592336", "publisher": "Gandepub" },
+  { "display": "Samuel Perry", "first": "Samuel", "last": "Perry", "pro": "APRA", "ipi": "655226935", "publisher": "Gem Lab" },
+  { "display": "Sanjay Taverna", "first": "Sanjay", "last": "Taverna", "pro": "APRA", "ipi": "736511351", "publisher": "Gem Lab" },
+  { "display": "Sarah Lynn Onyschuk", "first": "Sarah Lynn", "last": "Onyschuk", "pro": "SOCAN", "ipi": "672454923", "publisher": "Gem Lab" },
+  { "display": "Sean Smith", "first": "Sean", "last": "Smith", "pro": "BMI", "ipi": "849318898", "publisher": "Gandepub" },
+  { "display": "Sebastian H\u00fcmmer", "first": "Sebastian", "last": "H\u00fcmmer", "pro": "GEMA", "ipi": "1118673455", "publisher": "Gem Lab" },
+  { "display": "Shane Schlick", "first": "Shane", "last": "Schlick", "pro": "BMI", "ipi": "1099901714", "publisher": "Gandepub" },
+  { "display": "Shaun Brown", "first": "Shaun", "last": "Brown", "pro": "BMI", "ipi": "1055826846", "publisher": "Gandepub" },
+  { "display": "Shaun Hettinger", "first": "Shaun", "last": "Hettinger", "pro": "BMI", "ipi": "529938405", "publisher": "Gandepub" },
+  { "display": "Shedrick Kennedy", "first": "Shedrick", "last": "Kennedy", "pro": "ASCAP", "ipi": "1091153776", "publisher": "Gem Lab" },
+  { "display": "Silas Hite", "first": "Silas Lee", "last": "Hite", "pro": "BMI", "ipi": "443670948", "publisher": "Gandepub" },
+  { "display": "Sjors Joris Koen Verpalen", "first": "Sjors Joris Koen", "last": "Verpalen", "pro": "BMI", "ipi": "738203450", "publisher": "Gandepub" },
+  { "display": "Skip Brevis", "first": "Skip", "last": "Brevis", "pro": "SESAC", "ipi": "292563641", "publisher": "G&E Music Group LLC" },
+  { "display": "Spencer Stewart", "first": "Spencer", "last": "Stewart", "pro": "BMI", "ipi": "817685404", "publisher": "Gandepub" },
+  { "display": "Stefan Schnabel", "first": "Stefan", "last": "Schnabel", "pro": "BMI", "ipi": "676660701", "publisher": "Gandepub" },
+  { "display": "Steve Booke", "first": "Steve", "last": "Booke", "pro": "SESAC", "ipi": "197793107", "publisher": "G&E Music Group LLC" },
+  { "display": "Steve Eugene", "first": "Steve", "last": "Eugene", "pro": "BMI", "ipi": "638548510", "publisher": "Gandepub" },
+  { "display": "Steve Mark Collom", "first": "Steve Mark", "last": "Collom", "pro": "APRA", "ipi": "451198946", "publisher": "Gem Lab" },
+  { "display": "Steven Calderon", "first": "Steven", "last": "Calderon", "pro": "BMI", "ipi": "555477224", "publisher": "Gandepub" },
+  { "display": "Steven Joseph Mochel", "first": "Steven Joseph", "last": "Mochel", "pro": "ASCAP", "ipi": "126312900", "publisher": "Gem Lab" },
+  { "display": "Tess M. Santos", "first": "Tess M.", "last": "Santos", "pro": "ASCAP", "ipi": "484632826", "publisher": "Gem Lab" },
+  { "display": "Thomas A. Crowell", "first": "Thomas A.", "last": "Crowell", "pro": "ASCAP", "ipi": "465986986", "publisher": "Gem Lab" },
+  { "display": "Thomas Greene", "first": "Thomas", "last": "Greene", "pro": "ASCAP", "ipi": "474522450", "publisher": "Gem Lab" },
+  { "display": "Thug Spasam", "first": "Thug", "last": "Spasam", "pro": "ASCAP", "ipi": "", "publisher": "Gem Lab" },
+  { "display": "Tiffany M. Carter", "first": "Tiffany M.", "last": "Carter", "pro": "ASCAP", "ipi": "555104178", "publisher": "Gem Lab" },
+  { "display": "Tim Cilento", "first": "Timothy", "last": "Cilento", "pro": "BMI", "ipi": "550406182", "publisher": "Gandepub" },
+  { "display": "Timothy Hare", "first": "Timothy", "last": "Hare", "pro": "BMI", "ipi": "769088487", "publisher": "Gandepub" },
+  { "display": "Toby Karlin", "first": "Toby", "last": "Karlin", "pro": "ASCAP", "ipi": "738750708", "publisher": "Gem Lab" },
+  { "display": "Todd Guarineri", "first": "Todd", "last": "Guarineri", "pro": "SESAC", "ipi": "681757999", "publisher": "G&E Music Group LLC" },
+  { "display": "Todd Herzog", "first": "Todd", "last": "Herzog", "pro": "ASCAP", "ipi": "342883547", "publisher": "Gem Lab" },
+  { "display": "Travis Samuel", "first": "Travis", "last": "Samuel", "pro": "BMI", "ipi": "1314567264", "publisher": "Gandepub" },
+  { "display": "Trevis Montrell Thomas", "first": "Trevis Montrell", "last": "Thomas", "pro": "BMI", "ipi": "433040602", "publisher": "Gandepub" },
+  { "display": "Trevor Gale", "first": "Trevor", "last": "Gale", "pro": "SESAC", "ipi": "122632509", "publisher": "G&E Music Group LLC" },
+  { "display": "Ty Frankel", "first": "Ty", "last": "Frankel", "pro": "BMI", "ipi": "707404464", "publisher": "Gandepub" },
+  { "display": "Veronika Jokel", "first": "Veronika", "last": "Jokel", "pro": "ASCAP", "ipi": "665274032", "publisher": "Gem Lab" },
+  { "display": "Vince Michael Villafan", "first": "Vince Michael", "last": "Villafan", "pro": "ASCAP", "ipi": "768817974", "publisher": "Gem Lab" },
+  { "display": "Vincent Tancredi", "first": "Vincent", "last": "Tancredi", "pro": "BMI", "ipi": "730649248", "publisher": "Gandepub" },
+  { "display": "Vittorio Iu\u00e9", "first": "Vittorio", "last": "Iu\u00e9", "pro": "ASCAP", "ipi": "158609348", "publisher": "Gem Lab" },
+  { "display": "Walter Bowie", "first": "Walter", "last": "Bowie", "pro": "BMI", "ipi": "862995971", "publisher": "Gandepub" },
+  { "display": "Warren John McRae", "first": "Warren John", "last": "McRae", "pro": "SESAC", "ipi": "477173625", "publisher": "G&E Music Group LLC" },
+  { "display": "Will Adler", "first": "Will", "last": "Adler", "pro": "BMI", "ipi": "550633659", "publisher": "Gandepub" },
+  { "display": "William Latimer", "first": "William", "last": "Latimer", "pro": "BMI", "ipi": "395406831", "publisher": "Gandepub" },
+  { "display": "William Longyear Mayo", "first": "William Longyear", "last": "Mayo", "pro": "BMI", "ipi": "625526248", "publisher": "Gandepub" },
+  { "display": "William Morrison Hankins", "first": "William Morrison", "last": "Hankins", "pro": "ASCAP", "ipi": "847324915", "publisher": "Gem Lab" },
+  { "display": "Wood Rowe Farguheson", "first": "Wood Rowe", "last": "Farguheson", "pro": "ASCAP", "ipi": "560093565", "publisher": "Gem Lab" },
+  { "display": "Xiao'an Li", "first": "Xiao'an", "last": "Li", "pro": "ASCAP", "ipi": "713719447", "publisher": "Gem Lab" },
+  { "display": "Yaman Palak", "first": "Yaman", "last": "Palak", "pro": "ASCAP", "ipi": "796392973", "publisher": "Gem Lab" },
+  { "display": "Yarley Geffrard", "first": "Yarley", "last": "Geffrard", "pro": "ASCAP", "ipi": "615785819", "publisher": "Gem Lab" },
+  { "display": "Zach Reynolds", "first": "Zach", "last": "Reynolds", "pro": "ASCAP", "ipi": "659055520", "publisher": "Gem Lab" },
+  { "display": "Zachariah Calluori", "first": "Zachariah", "last": "Calluori", "pro": "BMI", "ipi": "829628697", "publisher": "Gandepub" }
 ];
 
 const PUBLISHERS = [
@@ -3936,11 +1257,13 @@ const DEFAULT_ALBUMS = [
 
 // ─── STATE ────────────────────────────────────────────────────────
 let tracks = [], currentTrackId = null, currentAltIndex = null, queue = [];
-let sessionArtists = []; // New artists added during the session
+let sessionArtists = []; 
 let currentPage = 'sourceaudio';
+let trackToCopy = null;
 
 function getAlbums() { try { const s=localStorage.getItem('ptb_custom_albums'); return s?[...DEFAULT_ALBUMS,...JSON.parse(s)]:DEFAULT_ALBUMS; } catch(e){return DEFAULT_ALBUMS;} }
 function getArtists() { try { const s=localStorage.getItem('ptb_custom_artists'); return s?JSON.parse(s):[]; } catch(e){return [];} }
+function getCustomWriters() { try { const s = localStorage.getItem('ptb_custom_writers'); return s ? JSON.parse(s) : []; } catch(e) { return []; } }
 function getCurrentTrackGroup() { return tracks.find(t=>t.id===currentTrackId)||null; }
 function getCurrentEntry() { const g=getCurrentTrackGroup(); if(!g)return null; return currentAltIndex===null?g.fullMix:g.alternates[currentAltIndex]||null; }
 
@@ -3963,8 +1286,6 @@ function switchPage(page) {
 function onCatalogChange(val) {
   const e=getCurrentEntry(); if(!e)return; 
   e.catalog=val;
-  
-  // Clear album if it doesn't belong to newly selected catalog
   const albumObj = getAlbums().find(a=>a.name===e.album);
   if(albumObj && albumObj.catalog && albumObj.catalog !== val) {
      e.album = '';
@@ -3972,7 +1293,6 @@ function onCatalogChange(val) {
      const acEl = document.getElementById('f_albumCode');
      if(acEl) acEl.value = '';
   }
-  
   populateAlbumDropdown();
   saveToStorage();
 }
@@ -3984,9 +1304,9 @@ function populateAlbumDropdown() {
   const currentCat=entry?entry.catalog:'';
   
   const availableAlbums = getAlbums().filter(a => {
-      if (!a.catalog) return true; // Show uncategorized albums for all catalogs
+      if (!a.catalog) return true;
       if (currentCat) return a.catalog === currentCat;
-      return true; // Show all if no catalog is selected yet
+      return true;
   });
 
   sel.innerHTML='<option value="">–</option>'+availableAlbums.map(a=>`<option value="${a.name}" ${currentAlb===a.name?'selected':''}>${a.name}</option>`).join('');
@@ -4024,9 +1344,10 @@ function onArtistSearch(val) {
   if(!val.trim())return;
   
   const customArtists=getArtists();
-  const sessionMatches=sessionArtists.filter(a=>a.toLowerCase().includes(val.toLowerCase())).slice(0,4);
-  const mainMatches=ARTISTS.filter(a=>a.toLowerCase().includes(val.toLowerCase())).slice(0,6);
-  const customMatches=customArtists.filter(a=>a.toLowerCase().includes(val.toLowerCase())).slice(0,4);
+  const term = val.toLowerCase();
+  const sessionMatches=sessionArtists.filter(a=>a.toLowerCase().startsWith(term)).slice(0,4);
+  const mainMatches=ARTISTS.filter(a=>a.toLowerCase().startsWith(term)).slice(0,6);
+  const customMatches=customArtists.filter(a=>a.toLowerCase().startsWith(term)).slice(0,4);
   const suggestions=[...new Set([...sessionMatches,...customMatches,...mainMatches])].slice(0,10);
   
   drop=document.createElement('div');drop.className='writer-dropdown';drop.id='artistDrop';
@@ -4035,7 +1356,6 @@ function onArtistSearch(val) {
     html += suggestions.map(s=>`<div class="writer-option" onclick="selectArtist('${s.replace(/'/g,"\\'")}')">${s}</div>`).join('');
   }
   
-  // If no exact match exists, provide an option to add it
   if(!suggestions.some(s => s.toLowerCase() === val.trim().toLowerCase())) {
      html += `<div class="writer-option" style="color:var(--ptb-teal-bright)" onclick="addNewArtist('${val.replace(/'/g,"\\'")}')">+ Add "${val.trim()}"</div>`;
   }
@@ -4076,6 +1396,15 @@ function newTrack() {
   renderTrackList();loadEntryIntoForm();document.getElementById('titleInput').focus();saveToStorage();
 }
 function selectTrack(id,altIdx=null) { currentTrackId=id;currentAltIndex=altIdx;renderTrackList();loadEntryIntoForm(); }
+function deleteTrack(id, e) {
+  e.stopPropagation();
+  if(!confirm('Are you sure you want to delete this track?')) return;
+  tracks = tracks.filter(t => t.id !== id);
+  if(currentTrackId === id) { currentTrackId = null; currentAltIndex = null; }
+  queue = queue.filter(q => q.id !== id);
+  renderTrackList(); renderQueue(); loadEntryIntoForm(); saveToStorage();
+}
+
 function addAlternate() {
   const g=getCurrentTrackGroup();if(!g)return;
   const alt=JSON.parse(JSON.stringify(g.fullMix));
@@ -4087,6 +1416,35 @@ function removeAlternate(idx) {
   const g=getCurrentTrackGroup();if(!g)return;g.alternates.splice(idx,1);
   if(currentAltIndex===idx){currentAltIndex=null;loadEntryIntoForm();}else if(currentAltIndex>idx)currentAltIndex--;
   renderTrackList();renderAltChips();saveToStorage();
+}
+
+// ─── COPY TRACK ────────────────────────────────────────────────────
+function promptCopyTrack(id, isQueue, e) {
+  e.stopPropagation();
+  trackToCopy = isQueue ? queue[id].fullMix : tracks.find(t => t.id === id).fullMix;
+  if(!trackToCopy) return;
+  document.getElementById('copySourceName').textContent = trackToCopy.title || 'Untitled';
+  document.getElementById('copyTrackModal').style.display = 'flex';
+}
+function executeCopyTrack() {
+  if(!trackToCopy) return;
+  const checkboxes = document.querySelectorAll('#copyFieldsGroup input[type="checkbox"]:checked');
+  const selectedFields = Array.from(checkboxes).map(cb => cb.value);
+  
+  const id=Date.now().toString();
+  const newEntry = freshEntry('Copy of ' + (trackToCopy.title || 'Untitled'));
+  
+  selectedFields.forEach(f => {
+    if(trackToCopy[f] !== undefined) {
+      newEntry[f] = JSON.parse(JSON.stringify(trackToCopy[f]));
+    }
+  });
+
+  tracks.push({id, fullMix: newEntry, alternates:[]});
+  currentTrackId=id; currentAltIndex=null;
+  document.getElementById('copyTrackModal').style.display='none';
+  renderTrackList(); loadEntryIntoForm(); saveToStorage();
+  showToast('Track copied to new track ✓', true);
 }
 
 // ─── FORM ──────────────────────────────────────────────────────────
@@ -4102,7 +1460,6 @@ function loadEntryIntoForm() {
   
   populateAlbumDropdown();
   
-  // Migration for artist array if needed
   if (typeof entry.artist === 'string') {
      entry.artist = entry.artist ? [entry.artist] : [];
   }
@@ -4160,7 +1517,6 @@ function renderTags(field) {
   };
 
   if (!map[field]) return;
-
   const container = document.getElementById(map[field].out);
   if (!container) return;
 
@@ -4197,7 +1553,7 @@ function filterCheckboxes(input, groupId) {
   const items = document.getElementById(groupId).querySelectorAll('.cb-item');
   items.forEach(item => {
     const text = item.querySelector('span').textContent.toLowerCase();
-    item.style.display = text.includes(term) ? 'flex' : 'none';
+    item.style.display = text.startsWith(term) ? 'flex' : 'none';
   });
 }
 
@@ -4206,14 +1562,18 @@ function writerSearch(idx,val){
   const e=getCurrentEntry();if(!e)return;e.writers[idx].searchVal=val;
   const wrap=document.getElementById(`writerSearchWrap_${idx}`);let drop=document.getElementById(`writerDrop_${idx}`);if(drop)drop.remove();
   if(!val.trim())return;
-  const matches=WRITERS.filter(w=>w.display.toLowerCase().includes(val.toLowerCase())).slice(0,12);
+  const term = val.toLowerCase();
+  const fullList = [...getCustomWriters(), ...WRITERS];
+  const matches=fullList.filter(w=>w.display.toLowerCase().startsWith(term)).slice(0,12);
   if(!matches.length)return;
   drop=document.createElement('div');drop.className='writer-dropdown';drop.id=`writerDrop_${idx}`;
   drop.innerHTML=matches.map(w=>`<div class="writer-option" onclick="selectWriter(${idx},'${w.display.replace(/'/g,"\\'")}')"><span>${w.display}</span><span class="writer-option-meta">${w.pro} · ${w.ipi}</span></div>`).join('');
   wrap.appendChild(drop);
 }
 function selectWriter(idx,displayName){
-  const e=getCurrentEntry();if(!e)return;const w=WRITERS.find(x=>x.display===displayName);if(!w)return;
+  const e=getCurrentEntry();if(!e)return;
+  const fullList = [...getCustomWriters(), ...WRITERS];
+  const w=fullList.find(x=>x.display===displayName);if(!w)return;
   e.writers[idx]={...e.writers[idx],searchVal:w.display,firstName:w.first,lastName:w.last,pro:w.pro,ipi:w.ipi,publisher:w.publisher,role:'Composer/Writer'};
   renderWriterBlocks();saveToStorage();
 }
@@ -4223,14 +1583,18 @@ function tsWriterSearch(idx,val){
   const e=getCurrentEntry();if(!e)return;e.ts_writers[idx].searchVal=val;
   const wrap=document.getElementById(`tsWriterWrap_${idx}`);let drop=document.getElementById(`tsWriterDrop_${idx}`);if(drop)drop.remove();
   if(!val.trim())return;
-  const matches=WRITERS.filter(w=>w.display.toLowerCase().includes(val.toLowerCase())).slice(0,12);
+  const term = val.toLowerCase();
+  const fullList = [...getCustomWriters(), ...WRITERS];
+  const matches=fullList.filter(w=>w.display.toLowerCase().startsWith(term)).slice(0,12);
   if(!matches.length)return;
   drop=document.createElement('div');drop.className='writer-dropdown';drop.id=`tsWriterDrop_${idx}`;
   drop.innerHTML=matches.map(w=>`<div class="writer-option" onclick="selectTsWriter(${idx},'${w.display.replace(/'/g,"\\'")}')"><span>${w.display}</span><span class="writer-option-meta">${w.pro} · ${w.ipi}</span></div>`).join('');
   wrap.appendChild(drop);
 }
 function selectTsWriter(idx,displayName){
-  const e=getCurrentEntry();if(!e)return;const w=WRITERS.find(x=>x.display===displayName);if(!w)return;
+  const e=getCurrentEntry();if(!e)return;
+  const fullList = [...getCustomWriters(), ...WRITERS];
+  const w=fullList.find(x=>x.display===displayName);if(!w)return;
   e.ts_writers[idx]={...e.ts_writers[idx],searchVal:w.display,firstName:w.first,lastName:w.last,pro:w.pro,ipi:w.ipi,publisher:w.publisher,role:'C'};
   renderTunesatWriterBlocks();saveToStorage();
 }
@@ -4366,6 +1730,10 @@ function renderTrackList(){
         <div class="track-item-name">${g.fullMix.title||'Untitled track'}</div>
         <div class="track-item-meta">${g.fullMix.albumCode||'—'} · ${(Array.isArray(g.fullMix.genre) ? g.fullMix.genre.join(', ') : g.fullMix.genre) || 'no genre'}</div>
         ${g.alternates.length?`<div class="alt-badge">${g.alternates.length} alt${g.alternates.length>1?'s':''}</div>`:''}
+        <div class="track-item-actions">
+           <button class="btn btn-action" title="Copy to new track" onclick="promptCopyTrack('${g.id}', false, event)">⎘</button>
+           <button class="btn btn-danger" style="border: 1px solid var(--danger); background:rgba(255,68,68,0.15);" title="Delete track" onclick="deleteTrack('${g.id}', event)">×</button>
+        </div>
       </div>
       ${isActive?g.alternates.map((alt,i)=>`
         <div class="alt-item ${currentAltIndex===i?'active':''}" onclick="selectTrack('${g.id}',${i})">
@@ -4390,7 +1758,10 @@ function renderQueue(){
     <div class="queue-item">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
         <div style="overflow:hidden"><div class="queue-item-name">${g.fullMix.title||'Untitled'}</div><div class="queue-item-meta">${1+g.alternates.length} version${g.alternates.length?'s':''} · ${(Array.isArray(g.fullMix.genre) ? g.fullMix.genre.join(', ') : g.fullMix.genre) || '—'}</div></div>
-        <button class="btn btn-danger btn-sm" onclick="removeFromQueue(${i})" style="padding:2px 6px;flex-shrink:0">×</button>
+        <div class="queue-item-actions" style="right:4px; top:4px;">
+            <button class="btn btn-action" title="Copy to new track" onclick="promptCopyTrack(${i}, true, event)">⎘</button>
+            <button class="btn btn-danger btn-sm" onclick="removeFromQueue(${i})" style="padding:2px 6px;flex-shrink:0">×</button>
+        </div>
       </div></div>`).join('');
   const total=queue.reduce((s,g)=>s+1+g.alternates.length,0);
   countEl.innerHTML=`<span>${queue.length}</span> track${queue.length>1?'s':''} · <span>${total}</span> rows`;
@@ -4400,7 +1771,6 @@ function removeFromQueue(idx){queue.splice(idx,1);renderQueue();saveToStorage();
 // ─── EXIT INTENT MODAL ────────────────────────────────────────────
 let exitPromptShown = sessionStorage.getItem('exitPromptShown');
 document.addEventListener('mouseleave', (e) => {
-  // Triggers if mouse moves out of the top of the window (attempting to close/change tab)
   if (e.clientY <= 0 && !exitPromptShown) {
     document.getElementById('exitIntentModal').style.display = 'flex';
     exitPromptShown = true;
@@ -4475,8 +1845,9 @@ function exportCurrent(){
 }
 
 // ─── ADMIN ────────────────────────────────────────────────────────
-function openAdmin(){document.getElementById('adminModal').style.display='flex';renderAdminAlbums();renderAdminArtists();}
+function openAdmin(){document.getElementById('adminModal').style.display='flex';renderAdminAlbums();renderAdminArtists();renderAdminWriters();}
 function closeAdmin(){document.getElementById('adminModal').style.display='none';}
+
 function renderAdminAlbums(){
   const custom=JSON.parse(localStorage.getItem('ptb_custom_albums')||'[]');
   document.getElementById('adminAlbumList').innerHTML=custom.length?custom.map((a,i)=>`<div class="admin-row"><span>${a.name} · ${a.code}</span><button class="btn btn-danger btn-sm" onclick="removeCustomAlbum(${i})">×</button></div>`).join(''):'<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No custom albums</div>';
@@ -4489,12 +1860,39 @@ function addCustomAlbum(){
   renderAdminAlbums();populateAlbumDropdown();showToast('Album added ✓',true);
 }
 function removeCustomAlbum(idx){const existing=JSON.parse(localStorage.getItem('ptb_custom_albums')||'[]');existing.splice(idx,1);localStorage.setItem('ptb_custom_albums',JSON.stringify(existing));renderAdminAlbums();populateAlbumDropdown();}
+
 function renderAdminArtists(){
   const artists=getArtists();
   document.getElementById('adminArtistList').innerHTML=artists.length?artists.map((a,i)=>`<div class="admin-row"><span>${a}</span><button class="btn btn-danger btn-sm" onclick="removeCustomArtist(${i})">×</button></div>`).join(''):'<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No saved artists</div>';
 }
 function addCustomArtist(){const val=document.getElementById('aa_artist').value.trim();if(!val)return;const existing=getArtists();if(!existing.includes(val)){existing.push(val);localStorage.setItem('ptb_custom_artists',JSON.stringify(existing));}document.getElementById('aa_artist').value='';renderAdminArtists();showToast('Artist saved ✓',true);}
 function removeCustomArtist(idx){const existing=getArtists();existing.splice(idx,1);localStorage.setItem('ptb_custom_artists',JSON.stringify(existing));renderAdminArtists();}
+
+function renderAdminWriters() {
+  const writers = getCustomWriters();
+  document.getElementById('adminWriterList').innerHTML = writers.length ? writers.map((w,i)=>`<div class="admin-row"><span>${w.first} ${w.last} (${w.pro})</span><button class="btn btn-danger btn-sm" onclick="removeCustomWriter(${i})">×</button></div>`).join('') : '<div style="color:var(--text-muted);font-size:12px;padding:6px 0">No saved writers</div>';
+}
+function addCustomWriter() {
+  const first = document.getElementById('aw_first').value.trim();
+  const last = document.getElementById('aw_last').value.trim();
+  const pro = document.getElementById('aw_pro').value.trim();
+  const ipi = document.getElementById('aw_ipi').value.trim();
+  const pub = document.getElementById('aw_pub').value.trim();
+  if(!first || !last) { showToast('First and Last name required'); return; }
+  
+  const existing = getCustomWriters();
+  existing.push({ display: first + ' ' + last, first, last, pro, ipi, publisher: pub });
+  localStorage.setItem('ptb_custom_writers', JSON.stringify(existing));
+  
+  ['aw_first','aw_last','aw_pro','aw_ipi','aw_pub'].forEach(id=>document.getElementById(id).value='');
+  renderAdminWriters(); showToast('Writer added ✓', true);
+}
+function removeCustomWriter(idx) {
+  const existing = getCustomWriters();
+  existing.splice(idx,1);
+  localStorage.setItem('ptb_custom_writers', JSON.stringify(existing));
+  renderAdminWriters();
+}
 
 function showToast(msg,success=false){
   const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(success?' success':'');
@@ -4527,6 +1925,7 @@ init();
       <span class="modal-title">⚙ Admin Panel</span>
       <button class="btn btn-ghost btn-sm" onclick="closeAdmin()">Close</button>
     </div>
+    
     <div class="admin-section">
       <div class="admin-section-title">Albums</div>
       <div id="adminAlbumList"></div>
@@ -4537,6 +1936,7 @@ init();
       </div>
       <button class="btn btn-ghost btn-sm" onclick="addCustomAlbum()" style="margin-top:8px">+ Add album</button>
     </div>
+    
     <div class="admin-section">
       <div class="admin-section-title">Saved Artist Names</div>
       <div id="adminArtistList"></div>
@@ -4544,6 +1944,21 @@ init();
         <input type="text" id="aa_artist" placeholder="e.g. Calvin Ross - Flavorlab PTB" style="flex:3">
       </div>
       <button class="btn btn-ghost btn-sm" onclick="addCustomArtist()" style="margin-top:8px">+ Save artist</button>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">Saved Writers</div>
+      <div id="adminWriterList"></div>
+      <div class="admin-input-row">
+        <input type="text" id="aw_first" placeholder="First Name">
+        <input type="text" id="aw_last" placeholder="Last Name">
+        <input type="text" id="aw_pro" placeholder="PRO Affiliation" style="max-width: 100px;">
+      </div>
+      <div class="admin-input-row">
+        <input type="text" id="aw_ipi" placeholder="CAE/IPI">
+        <input type="text" id="aw_pub" placeholder="Publishing Interest (e.g. Gem Lab)">
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="addCustomWriter()" style="margin-top:8px">+ Save writer</button>
     </div>
   </div>
 </div>
