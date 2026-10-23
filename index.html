@@ -360,7 +360,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 
         <div class="section">
           <div class="section-label">Musical</div>
-          <div class="field-grid cols-3">
+          <div class="field-grid cols-4">
             <div class="field"><label class="field-label">Tempo <span class="req">*</span></label>
               <select id="f_tempo" onchange="syncField('tempo',this.value)">
                 <option value="">–</option>
@@ -373,10 +373,17 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
             <div class="field"><label class="field-label">BPM <span class="req">*</span></label><input type="number" id="f_bpm" placeholder="e.g., 120" oninput="onBpmChange(this.value)"></div>
             <div class="field">
               <label class="field-label" style="display:flex;align-items:center;">Genre <span class="req">*</span>
-                <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'genreGroup')">
+                <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'genreGroup')">
               </label>
               <div class="desc-output" id="genreOutput"></div>
               <div class="checkbox-group" id="genreGroup" style="max-height: 80px;"></div>
+            </div>
+            <div class="field">
+              <label class="field-label" style="display:flex;align-items:center;">Sub Genre <span class="req">*</span>
+                <input type="text" class="group-search" placeholder="Search..." oninput="filterCheckboxes(this, 'subGenreGroup')">
+              </label>
+              <div class="desc-output" id="subGenreOutput"></div>
+              <div class="checkbox-group" id="subGenreGroup" style="max-height: 80px;"></div>
             </div>
           </div>
           <div class="field-grid cols-3" style="margin-top:8px">
@@ -431,12 +438,6 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
           <div class="section-label">Film / TV Genre <span class="req">*</span> <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'filmGenreGroup')"></div>
           <div class="desc-output" id="filmGenreOutput"></div>
           <div class="checkbox-group" id="filmGenreGroup"></div>
-        </div>
-
-        <div class="section">
-          <div class="section-label">Sub Genre <span class="req">*</span> <input type="text" class="group-search" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'subGenreGroup')"></div>
-          <div class="desc-output" id="subGenreOutput"></div>
-          <div class="checkbox-group" id="subGenreGroup"></div>
         </div>
       </div>
 
@@ -1112,7 +1113,6 @@ const DEFAULT_ALBUMS = [
   { name: "Flavorlab Records - Black Magic", code: "FLR002", catalog: "Flavorlab Records" },
   { name: "Flavorlab Records - Carey Clayton", code: "FLR009", catalog: "Flavorlab Records" },
   { name: "Flavorlab Records - Chill Hours", code: "FLR003", catalog: "Flavorlab Records" },
-  { name: "Flavorlab Records - Christine Cooney", code: "FLR010", catalog: "Flavorlab Records" },
   { name: "Flavorlab Records - Climbing Trees", code: "FLR004", catalog: "Flavorlab Records" },
   { name: "Flavorlab Records - Come and Take a Walk with Me", code: "FLR005", catalog: "Flavorlab Records" },
   { name: "Flavorlab Records - Cuz I", code: "FLR011", catalog: "Flavorlab Records" },
