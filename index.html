@@ -149,6 +149,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 .writer-option { padding: 7px 10px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 .writer-option:hover { background: var(--surface2); }
 .writer-option-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.styleof-add { background: var(--surface3); border: 1px solid var(--border-hover); border-radius: var(--radius); margin-top: 6px; overflow: hidden; }
 
 /* Checkbox group */
 .checkbox-group { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); max-height: 150px; overflow-y: auto; padding: 4px; }
@@ -403,7 +404,8 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 
         <div class="section">
           <div class="section-label">Style Of <span class="req">*</span></div>
-          <div class="field"><input type="text" id="f_styleOf" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'styleOfGroup')" autocomplete="off"></div>
+          <div class="field"><input type="text" id="f_styleOf" placeholder="Search, select from below, or add your own..." oninput="filterCheckboxes(this, 'styleOfGroup'); refreshStyleOfAdd()" onkeydown="onStyleOfKeyDown(event)" autocomplete="off"></div>
+          <div class="styleof-add" id="styleOfAdd" style="display:none"></div>
           <div class="desc-output" id="styleOfOutput" style="margin-top:6px;"></div>
           <div class="field-hint" id="styleOfHint" style="display:none;margin:-2px 0 6px;"></div>
           <div class="checkbox-group" id="styleOfGroup"></div>
@@ -2338,6 +2340,58 @@ function applyStyleOfFilter() {
   else if (subs.length) hint.textContent = 'No artist list for the selected Sub Genre — showing all options';
   else hint.textContent = '';
   hint.style.display = hint.textContent ? '' : 'none';
+  refreshStyleOfAdd();
+}
+
+// ─── STYLE OF: ADD YOUR OWN ───────────────────────────────────────
+// Works like Artist: type a name that is not in the list, then click "+ Add" or press Enter and it becomes a selected Style Of tag.
+// Names added this session are suggested again while typing. Several names can be added at once by separating them with commas.
+let sessionStyleOf = [];
+const escAttr = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function findKnownStyleOf(name) {
+  const t = name.toLowerCase();
+  for (const list of Object.values(STYLE_OF_ARTISTS)) { const hit = list.find(a => a.toLowerCase() === t); if (hit) return hit; }
+  return sessionStyleOf.find(a => a.toLowerCase() === t) || null;
+}
+function refreshStyleOfAdd() {
+  const box = document.getElementById('styleOfAdd'), input = document.getElementById('f_styleOf'); if (!box || !input) return;
+  const term = input.value.trim(), e = getCurrentEntry();
+  if (!term || !e) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const lt = term.toLowerCase(), picked = Array.isArray(e.styleOf) ? e.styleOf : [];
+  const isPicked = a => picked.some(p => p.toLowerCase() === a.toLowerCase());
+  const visibleExact = [...document.querySelectorAll('#styleOfGroup .cb-item')].some(it =>
+    it.style.display !== 'none' && !it.closest('.cb-section').classList.contains('sg-hidden') && it.querySelector('span').textContent.toLowerCase() === lt);
+  const session = sessionStyleOf.filter(a => a.toLowerCase().startsWith(lt) && !isPicked(a)).slice(0, 4);
+  let html = session.map(a => `<div class="writer-option" data-name="${escAttr(a)}" onclick="addNewStyleOf(this.dataset.name)">${escAttr(a)}</div>`).join('');
+  if (!visibleExact && !isPicked(term) && !session.some(a => a.toLowerCase() === lt)) {
+    html += `<div class="writer-option" style="color:var(--ptb-teal-bright)" data-name="${escAttr(term)}" onclick="addNewStyleOf(this.dataset.name)">+ Add "${escAttr(term)}"</div>`;
+  }
+  box.innerHTML = html; box.style.display = html ? '' : 'none';
+}
+function onStyleOfKeyDown(ev) {
+  if (ev.key === 'Enter') {
+    ev.preventDefault();
+    const val = ev.target.value.trim();
+    if (val) addNewStyleOf(val);
+  }
+}
+function addNewStyleOf(val) {
+  const e = getCurrentEntry(); if (!e) return;
+  const names = String(val).split(',').map(s => s.trim()).filter(Boolean);
+  if (!names.length) return;
+  if (names.some(n => /[<>\\]/.test(n))) { showToast('Style Of names can\'t include < > or \\'); return; }
+  if (!Array.isArray(e.styleOf)) e.styleOf = e.styleOf ? [e.styleOf] : [];
+  names.forEach(n => {
+    const known = findKnownStyleOf(n), name = known || n;
+    if (!known) sessionStyleOf.push(n);
+    if (!e.styleOf.some(a => a.toLowerCase() === name.toLowerCase())) e.styleOf.push(name);
+    document.querySelectorAll('#styleOfGroup input[type=checkbox]').forEach(cb => { if (cb.value === name) cb.checked = true; });
+  });
+  const input = document.getElementById('f_styleOf');
+  input.value = ''; filterCheckboxes(input, 'styleOfGroup'); input.focus();
+  renderTags('styleOf');
+  saveToStorage();
+  refreshStyleOfAdd();
 }
 // Changing Sub Genres re-filters the list and, like Album when the Catalog changes, drops Style Of picks that are no longer offered.
 // Names that are not in the artist list (e.g. text typed before the checklist existed) are left alone.
