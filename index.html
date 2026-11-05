@@ -156,6 +156,8 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 .cb-item:hover { background: var(--surface3); }
 .cb-item input[type="checkbox"] { width: 13px; height: 13px; accent-color: var(--ptb-teal-bright); cursor: pointer; flex-shrink: 0; }
 .cb-item span { font-size: 12px; color: var(--text-mid); cursor: pointer; }
+.cb-section.sg-hidden { display: none; }
+.cb-section-title { position: sticky; top: -4px; z-index: 1; background: var(--surface2); padding: 5px 8px 3px; margin-top: 2px; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ptb-teal); border-bottom: 1px solid var(--border); }
 
 /* Search within checkbox groups */
 .group-search {
@@ -401,7 +403,10 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 
         <div class="section">
           <div class="section-label">Style Of <span class="req">*</span></div>
-          <div class="field"><input type="text" id="f_styleOf" placeholder="Search, or select from below..." oninput="syncField('styleOf',this.value)"></div>
+          <div class="field"><input type="text" id="f_styleOf" placeholder="Search, or select from below..." oninput="filterCheckboxes(this, 'styleOfGroup')" autocomplete="off"></div>
+          <div class="desc-output" id="styleOfOutput" style="margin-top:6px;"></div>
+          <div class="field-hint" id="styleOfHint" style="display:none;margin:-2px 0 6px;"></div>
+          <div class="checkbox-group" id="styleOfGroup"></div>
         </div>
 
         <div class="section">
@@ -1044,7 +1049,155 @@ const MOODS = ["Abstract","Achievement","Active","Activity","Adrenaline","Advent
 const STYLES = ["Arabesque","Arco","Arpeggiated","Atmospheric","Atonal","Backbeat","Background","Badass","Ballad","Bass Slapping","Bells","Big Band","Bizarre","Bluesy","Boogie","Bouncy","Bowed","Brass","Brassy","Bravado","Breakbeat","Breathy","Building","Call And Response","Catchy","Celebratory","Celestial","Cello","Ceremonial","Chamber Ensemble","Chant","Childhood","Childlike","Chill","Chimes","Chiptune","Chorusing","Cinematic","Circular","Clave","Clock","Col Legno","Complex","Cozy","Crunchy","Cymbals","Dark","Delay","Delicate","Dirty","Discovery","Dissonant","Distorted","Distortion","Driving","Drones","Drum Line","Drum Machine","Drumbeat","Dynamic","Dystopian","Earthy","Easy Going","Easy Listening","Echo","Eclectic","Edgy","Electric","Electronic","Elegant","Epic","Ethereal","Experimental","Exploration","Fanfare","Fast","Feel-good","Filtering","Finger Picking","Fist Pump","Flowing","Folksy","Four On The Floor","Fractured","Friendship","Funky","Futuristic","Glitchy","Good Times","Gritty","Groovy","Growling","Guitar Trio","Hard-hitting","Hardcore","Headbanging","Heavy","Heroic","Hipster","Hook","Horn Hits","Horn Section","Hypnotic","Indie Band","Industrial","Informational","Intense","Introspective","Jam Band","Jazz Band","Jazz Combo","Jazz Trio","Jazzy","Kitsch","Laid-back","Late Night","Liturgical","Lo-Fi","Looping","Lush","March","Marching Band","Mechanical","Medley","Melodic","Messy","Minimalist","Modern","Modulating","Montuno","Moody","Musique Concrete","News","Orchestral","Organic","Ornamented","Oscillating","Patriotic","Percussive","Piano","Pitch Shift","Pizzicato","Polyrhythmic","Pulsing","Raga","Rap","Raw","Repetitive","Retro","Reverb","Reversed","Rhythmic","Riff","Ritualistic","Roots","Rootsy","Rubato","Rugged","Rustic","Sampling","Scratching","Sequencer","Serenade","SFX","Shuffle","Singer-Songwriter","Sitar","Smooth","Soaring","Solo","Soulful","Spirited","Sports","Straight Eighths","Suspense","Sustained","Swagger","Symphonic Ensemble","Syncopated","Synthesizer","Tango","Textural","Theatrical","Tremolo","Tribal","Trill","Tropical","Turntable","Two-step","Underscore","Upbeat","Vamp","Vibrato","Vocal Pads","Vocals","Walking Bass","Waltz","Wholesome","Worldbeat"];
 const INSTRUMENTS = ["12-String Guitar","Accordion","Acoustic Guitar","African Percussion","Airhorn","Alto Saxophone","Autoharp","B3 Hammond Organ","Bagpipes","Bandoneon","Banjo","Bansuri Flute","Baritone Saxophone","Bass Clarinet","Bass Drum","Bass Guitar","Bassoon","Beatboxing","Bells","Berimbau","Bodhran","Bongos","Bouzouki","Brass Section","Brushes","Cajon","Castanets","Celesta","Cello","Chimes","Choir","Chorale","Chorus","Claps","Clarinet","Classical Guitar","Clave","Clavichord","Clavinet","Congas","Contra Bass","Cowbell","Crash Cymbal","Cymbals","Didgeridoo","Distorted Guitar","Djembe","Dobro","Doumbek","Drone","Drum Machine","Drum Set","Dulcimer","Electric Bass","Electric Guitar","Electric Piano","English Horn","Erhu","Female Vocals","Fender Rhodes","Finger Snaps","Flugelhorn","Flute","French Horn","Fretless Bass","Gamelan Bells","Glass Marimba","Glockenspiel","Gong","Gu-zheng","Guiro","Guitar","Guitarron","Hammond Organ","Hand Claps","Hand Drums","Hapi Drum","Harmonica","Harp","Harpsichord","Hi-Hat","Horn Section","Jaw Harp","Jazz Guitar","Kalimba","Kazoo","Kettle Drum","Keyboard","Kora","Koto","Latin Percussion","Low Brass Section","Male Vocals","Mandolin","Maracas","Marimba","Mbira","Mellotron","Melodica","Metallophone","Middle-Eastern Percussion","Music Box","Muted Trombone","Muted Trumpet","Ney","Nylon Guitar","Oboe","Omnichord","Optigan","Organ","Oscillator","Oud","Pads","Pan Flute","Pedal Steel Guitar","Percussion","Piano","Rain Stick","Reverse Guitar","Rhythm Guitar","Sarod","Saxophone","Saxophone Section","Sequencer","SFX","Shaker","Sitar","Sleigh Bells","Slide Guitar","Snaps","Snare Drum","Steel Drum","Steel Guitar","String Quartet","String Section","Strings Pad","Synth Bass","Synth Lead","Synth Pad","Synthesizer","Tabla","Taiko","Tambourine","Tenor Saxophone","Theremin","Tibetan Singing Bowl","Timbales","Timpani","Tin Whistle","Tom Toms","Toy Piano","Triangle","Trombone","Trumpet","Tuba","Tubular Bells","Ukulele","Upright Bass","Vibraphone","Vihuela","Viola","Violin","Vittorio","Vocal Pads","Vocal Sampling","Vocoder","Wah Guitar","Whistling","Wind Chimes","Wood Block","Wood Flute","Woodwinds","Wurlitzer","Xylophone","Zither"];
 const FILM_GENRES = ["Action","Adventure","Advertising","AI","Aliens","Androids","Animation","Artificial Intelligence","Awards","Background","Badass","Ballet","Ballroom","Ballroom Dance","Bar","Barbecue","Baseball","Basketball","Battle","Beach","Behind the Scenes","Big City","Bootlegging","Boxing","Brawl","Bumpers","Business","Carnival","Cartoon","Casino","Catch Me If You Can","Cathedral","Catwalk","Chase","Chase Scenes","Children","Christmas","Cinematic","Circus","City","Closing Credits","Club","Cocktail","Combat","Comedy","Commercial","Computer Game","Construction","Cooking","Cop Show","Corporate","Cosmopolitan","Crime","Cruise","Dance Battle","Dancing","Detective","Dinner","Documentary","Drama","Dream","Drinking","Driving","Dystopia","Education","Elevator Music","End Credits","Epic","Espionage","Evil","Family","Fantasy","Farming","Fashion","Feel Good","Fight","Film Noir","Fitness","Flashback","Fleeing","Flight","Football","Forest","Gambling","Game Show","Gaming","Golf","Good Times","Heist","Heroic","High Tech","Highbrow","Highlights","Historic","Hockey","Holiday","Home Improvement","Homecoming","Horror","Investigation","Investigative","Joyride","Kids Show","Knight","Las Vegas","Late Night","Legal","Lounge","Medicine","Medieval","Meditation","Melodrama","Middle Ages","Military","Modeling","Monastery","Montage","Motocross","Mystery","Nautical","News","Newsreel","Night","Nightclub","Nightlife","Olympics","Opening Credits","Outlaw","Panorama","Parade","Party","Prison","Prom","Promo","Quest","Racing","Rap Battle","Reality","Reality TV","Renovation","Rescue","Restaurant","Reunion","Revolution","Robots","Romance","Romantic Comedy","Running","Saloon","School","Sci-Fi","Science","Science Fiction","Secret Agent","Show Biz","Sitcom","Skateboarding","Skiing","Slapstick","Soap Opera","Space","Sports","Spy","Striptease","Strutting","Summer","Superhero","Surfing","Suspense","Tailgate","Talk Show","Tech","Teen","Teen Comedy","Teen Drama","Thriller","Trailer","Travel","Tropical","Trucking","TV Commercial","Undercover","Underground","Underscore","Urban","Vacation","Vaudeville","Video Game","War","Wedding","Western","Woods","Workout"];
-const SUB_GENRES = ["Acid Jazz","Adult Contemporary","African","Afro Beat","Afro-Cuban","Alt Soul","Alt-Country","Alternative","Alternative Country","Alternative Hip Hop","Alternative R&B","Alternative Rock","Ambient","Ambient Avant-Garde","Ambient New Age","Baroque / Chamber Pop","Bedroom Pop","Big Beat","Bluegrass","Blues Rock","Bossa Nova","Celtic","Chill-Hop","Christmas","Classic Blues","Classic Folk","Classic Rock","Classical","Classical Avant-Garde","Contemporary Classical","Contemporary Country","Contemporary Hip Hop","Contemporary Hip Hop 2000s","Contemporary Hip Hop 2010s","Contemporary House","Contemporary House","Contemporary Jazz","Contemporary Pop","Contemporary R&B","Cool Jazz","Country Pop","Country Rock","Dance Pop","Dancehall","Dirty South / Southern Rap","Disco","Dixieland","Doo Wop","Downbeat","Downtempo","Drum and Bass","Dub","Dubstep","East Asian","East Coast Rap","Eastern European","Electronic Dance","Electropop","Emo Rap","Experimental / Alternative Hip Hop","Flamenco","Folk Rock","Freestyle","French House","French Touch","Funk","Future Bass","Gangsta / Hardcore","Garage Rock","Glam Rock","Grunge","Hard Rock","Hawaiian","Heartland Rock","Heavy Metal","Hip Hop","Holiday","House","Indian","Indie Folk","Indie Pop","Indie Rock","Indietronica","Industrial Rock","Jazz Fusion","Jazz Pop","Jersey Club","Latin","Lo-Fi","Mediterranean","Middle Eastern","Neo-Soul","Nu Jazz","Oceanic","Old School / Golden Age Hip Hop","Old School House","Orchestral","Pop","Pop Punk","Pop Rock","Post Rock","Progressive Rock","Psychedelic Rock","Punk Rock","R&B","Ragtime","Reggae","Reggaeton","Rock","Rockabilly","Romantic","Ska Punk","Smooth Jazz","Soft Rock","Soul","Southern Rap","Southern Rock","Surf Rock","Swing","Synthpop","Tango","Techno","Traditional Country","Trance","Trap","Trap Soul","Trip Hop","Tropical House","West Coast Rap / G-Funk","Western European","World Beat","Zydeco"];
+const SUB_GENRES = ["Acid Jazz","Adult Contemporary","African","Afro Beat","Afro-Cuban","Alt Soul","Alternative","Alternative Country","Alternative Hip Hop","Alternative R&B","Alternative Rock","Ambient","Ambient Avant-Garde","Ambient New Age","Baroque / Chamber Pop","Bedroom Pop","Big Beat","Bluegrass","Blues Rock","Bossa Nova","Celtic","Chill-Hop","Christmas","Classic Blues","Classic Folk","Classic Rock","Classical","Classical Avant-Garde","Contemporary Classical","Contemporary Country","Contemporary Hip Hop","Contemporary Hip Hop 2000s","Contemporary Hip Hop 2010s","Contemporary House","Contemporary House","Contemporary Jazz","Contemporary Pop","Contemporary R&B","Cool Jazz","Country Pop","Country Rock","Dance Pop","Dancehall","Dirty South / Southern Rap","Disco","Dixieland","Doo Wop","Downbeat","Downtempo","Drum and Bass","Dub","Dubstep","East Asian","East Coast Rap","Eastern European","Electronic Dance","Electropop","Emo Rap","Experimental / Alternative Hip Hop","Flamenco","Folk Rock","Freestyle","French House","French Touch","Funk","Future Bass","Gangsta / Hardcore","Garage Rock","Glam Rock","Grunge","Hard Rock","Hawaiian","Heartland Rock","Heavy Metal","Hip Hop","Holiday","House","Indian","Indie Folk","Indie Pop","Indie Rock","Indietronica","Industrial Rock","Jazz Fusion","Jazz Pop","Jersey Club","Latin","Lo-Fi","Mediterranean","Middle Eastern","Neo-Soul","Nu Jazz","Oceanic","Old School / Golden Age Hip Hop","Old School House","Orchestral","Pop","Pop Punk","Pop Rock","Post Rock","Progressive Rock","Psychedelic Rock","Punk Rock","R&B","Ragtime","Reggae","Reggaeton","Rock","Rockabilly","Romantic","Ska Punk","Smooth Jazz","Soft Rock","Soul","Southern Rap","Southern Rock","Surf Rock","Swing","Synthpop","Tango","Techno","Traditional Country","Trance","Trap","Trap Soul","Trip Hop","Tropical House","West Coast Rap / G-Funk","Western European","World Beat","Zydeco"];
+
+const STYLE_OF_ARTISTS = {
+  "African": ["Alberto Iglesias", "Dorothee Munyaneza", "James Newton Howard"],
+  "Afro Beat": ["Fela Kuti", "Hugh Masekela"],
+  "Alternative Country": ["Blitzen Trapper", "Brandi Carlile", "Son Volt", "Uncle Tupelo", "Wilco"],
+  "Alternative Rock": ["Alanis Morissette", "Bjork", "Blur", "Imagine Dragons", "Oasis", "Phish",
+    "Public Image Ltd.", "R.E.M.", "Radiohead", "Red Hot Chili Peppers", "Siouxsie and the Banshees", "The Cure",
+    "The Smashing Pumpkins", "The Smiths", "Violent Femmes", "Weezer"],
+  "Ambient Avant-Garde": ["Brian Eno", "Jean-Michel Jarre", "Mike Oldfield", "Steve Roach", "Tangerine Dream"],
+  "Ambient New Age": ["Aeoliah", "Dakini Mandarava", "Deuter", "Hennie Bekker", "Mars Lasar", "Parijat",
+    "Paul Avgerinos", "Steven Halpern"],
+  "Baroque / Chamber Pop": ["Belle & Sebastian", "The Free Design", "The Left Banke", "The Zombies"],
+  "Big Beat": ["Fatboy Slim", "Groove Armada", "Propellerheads", "The Chemical Brothers", "The Crystal Method",
+    "The Prodigy"],
+  "Bluegrass": ["Alison Krauss", "Ben Sollee", "Earl Scruggs", "Lester Flatt", "Nickel Creek",
+    "Old Crow Medicine Show", "Punch Brothers", "Steep Canyon Rangers"],
+  "Blues Rock": ["Albert King", "B.B. King", "Bo Diddley", "Buddy Guy", "Gary Clark Jr.", "Jeff Beck",
+    "Johnny Winter", "Robert Cray", "Savoy Brown", "Stevie Ray Vaughan", "The Derek Trucks Band"],
+  "Bossa Nova": ["Antonio Carlos Jobim", "Black Orpheus", "Joao Gilberto", "Stan Getz", "Toquinho",
+    "Vinicius de Moraes"],
+  "Celtic": ["Enya", "James Horner", "Moya Brennan", "Patrick Doyle"],
+  "Classic Blues": ["Blind Lemon Jefferson", "Howlin' Wolf", "John Lee Hooker", "Lead Belly", "Lightnin' Hopkins",
+    "Muddy Waters", "Robert Johnson", "Son House", "T-Bone Walker"],
+  "Classic Folk": ["Burl Ives", "The Weavers", "Woody Guthrie"],
+  "Classical": ["Antonio Vivaldi", "Arcangelo Corelli", "Claudio Monteverdi", "Franz Joseph Haydn",
+    "George Frideric Handel", "Glenn Gould", "Henry Purcell", "Johann Sebastian Bach", "Ludwig van Beethoven",
+    "Pyotr Ilyich Tchaikovsky", "Wolfgang Amadeus Mozart"],
+  "Classical Avant-Garde": ["David Tudor", "Edgard Varèse", "John Cage", "Karlheinz Stockhausen", "Olivier Messiaen"],
+  "Contemporary Classical": ["Arvo Part", "Benjamin Britten", "Philip Glass", "Steve Reich", "Terry Riley"],
+  "Contemporary Country": ["Alan Jackson", "Blake Shelton", "Brad Paisley", "Keith Urban", "Lady Antebellum",
+    "Lee Brice", "Miranda Lambert", "Rascal Flatts", "Tim McGraw"],
+  "Contemporary Hip Hop 2000s": ["50 Cent", "Common", "Diddy", "Eminem", "N.E.R.D.", "Pharrell", "Pitbull", "T.I.",
+    "Talib Kweli", "The Game", "Young Jeezy"],
+  "Contemporary Hip Hop 2010s": ["Cardi B", "Kanye West", "Meek Mill", "Megan Thee Stallion", "Rick Ross"],
+  "Contemporary House": ["Alex Gaudino", "Benny Benassi", "Christian Burns", "David Guetta", "Fedde Le Grand",
+    "Justice", "Krewella", "Martin Solveig", "Swedish House Mafia", "Tiësto"],
+  "Contemporary Jazz": ["Aaron Parks", "BADBADNOTGOOD", "Brian Blade", "Esperanza Spalding", "Kurt Rosenwinkel",
+    "Pat Metheny", "Robert Glasper"],
+  "Contemporary R&B": ["Aaliyah", "Alicia Keys", "Babyface", "Estelle", "Janelle Monae", "Justin Timberlake",
+    "Miguel", "Ne-Yo", "TLC"],
+  "Cool Jazz": ["Bill Evans", "Bud Powell", "Charlie Parker", "Chet Baker", "Clifford Brown", "Dave Brubeck",
+    "Dizzy Gillespie", "Gerry Mulligan", "Miles Davis", "Thelonious Monk"],
+  "Country Pop": ["Faith Hill", "Kacey Musgraves", "LeAnn Rimes", "Lee Ann Womack", "Shania Twain"],
+  "Country Rock": ["Buffalo Springfield", "Loggins & Messina", "Pure Prairie League", "The Byrds",
+    "The Doobie Brothers", "The Eagles", "The Flying Burrito Brothers", "Waylon Jennings", "Willie Nelson"],
+  "Dance Pop": ["Alessia Cara", "Betty Who", "BLACKPINK", "BTS", "Camila Cabello", "Daft Punk", "DNCE", "Halsey",
+    "Hayley Kiyoko", "Jessie J", "Julia Michaels", "Karmin", "Katy Perry", "Ke$ha", "Lady Gaga", "Miley Cyrus",
+    "P!nk", "Robyn", "Ryn Weaver", "Selena Gomez", "Shawn Mendes", "Taio Cruz", "The Aces", "Troye Sivan", "TWICE",
+    "WINNER", "ZAYN"],
+  "Dancehall": ["Mad Cobra", "Major Lazer", "Sean Paul", "Shaggy", "Vybz Kartel"],
+  "Dirty South / Southern Rap": ["Killer Mike", "Lil Jon", "Lil Wayne", "Ludacris", "Master P", "Nelly", "Outkast",
+    "T-Pain", "Waka Flocka Flame"],
+  "Disco": ["Bee Gees", "Chic", "Donna Summer", "Kool & The Gang", "Saturday Night Fever", "Sylvester", "Tavares",
+    "The Trammps", "Van McCoy", "Walter Murphy", "Yvonne Elliman"],
+  "Dixieland": ["Bix Beiderbecke", "King Oliver", "Louis Armstrong"],
+  "Doo Wop": ["Dion", "Four Tops", "Martha Reeves & The Vandellas", "Smokey Robinson & The Miracles", "The Coasters",
+    "The Drifters", "The Marvelettes", "The Shirelles", "The Supremes", "The Temptations"],
+  "Downtempo": ["Air", "Beacon", "Boards of Canada", "Brazilian Girls", "Caribou", "Evenings", "Goldie", "Photek",
+    "Röyksopp", "Smoke City", "Thievery Corporation", "Zero 7"],
+  "Drum and Bass": ["Black Sun Empire", "Gridlok", "Grooverider", "High Contrast", "Pendulum", "The Upbeats"],
+  "Dub": ["King Tubby", "Mikey Dread", "The Upsetters"],
+  "Dubstep": ["Benga", "Knife Party", "Mord Fustang", "Nero", "Rusko", "Skream", "Skrillex", "Zomboy"],
+  "East Coast Rap": ["Nas", "Naughty By Nature", "Public Enemy", "The Notorious B.I.G.", "Wu-Tang Clan"],
+  "Emo Rap": ["Chance the Rapper", "Drake", "Jaden", "Tyler the Creator"],
+  "Experimental / Alternative Hip Hop": ["Arrested Development", "Gnarls Barkley", "Gorillaz", "Hiatus Kaiyote",
+    "J Dilla", "Jurassic 5", "Madvillain", "MF Doom", "Mos Def", "Shabazz Palaces", "The Foreign Exchange",
+    "The Pharcyde", "The Roots", "THEESatisfaction"],
+  "Folk Rock": ["America", "Bob Dylan", "Buffalo Springfield", "Cat Stevens", "Crosby Stills Nash and Young",
+    "Joan Baez", "Joni Mitchell", "Nick Drake", "Peter Paul and Mary", "The Byrds"],
+  "Freestyle": ["Debbie Deb", "Exposé", "Ghostown DJs", "Nu Shooz", "Rockell", "Samantha Fox", "Shannon"],
+  "Funk": ["Curtis Mayfield", "Earth Wind & Fire", "Funkadelic", "George Clinton", "Parliament", "Rick James",
+    "Sly & The Family Stone", "The Meters", "The O'Jays", "Zapp & Roger"],
+  "Future Bass": ["Disclosure", "Flume", "Louis The Child", "Mura Masa", "ODESZA", "Slow Magic"],
+  "Gangsta / Hardcore": ["Geto Boys", "Ice-T", "Jedi Mind Tricks", "N.W.A.", "Westside Connection"],
+  "Garage Rock": ["Iggy Pop", "Jack White", "Los Saicos", "The Animals", "The Black Keys", "The Stooges",
+    "The Strokes", "The White Stripes", "The Who", "The Yardbirds"],
+  "Glam Rock": ["Alice Cooper", "David Bowie", "Gary Glitter", "Lou Reed", "Roxy Music", "Sweet", "T. Rex"],
+  "Grunge": ["Alice in Chains", "Nirvana", "Pearl Jam", "Soundgarden", "Stone Temple Pilots", "Temple of the Dog"],
+  "Hard Rock": ["AC/DC", "Aerosmith", "Deep Purple", "Def Leppard", "Guns N' Roses", "Kiss", "Led Zeppelin",
+    "Motley Crue", "The Rolling Stones", "Van Halen", "Whitesnake"],
+  "Heartland Rock": ["Bob Seger", "Bruce Springsteen", "Jackson Browne", "John Mellencamp",
+    "Tom Petty and the Heartbreakers"],
+  "Heavy Metal": ["Anthrax", "Black Sabbath", "DragonForce", "Extreme Noise Terror", "Iron Maiden", "Judas Priest",
+    "Megadeth", "Metallica", "Motorhead", "Napalm Death", "Pantera", "Slayer", "Venom"],
+  "Indian": ["A.R. Rahman", "Life of Pi", "Mychael Danna", "Ravi Shankar", "Slumdog Millionaire"],
+  "Indie Folk": ["Bon Iver", "Edward Sharpe & The Magnetic Zeros", "Fleet Foxes", "Ingrid Michaelson",
+    "Julien Baker", "Lou Barlow", "Mumford & Sons", "Of Monsters and Men", "The Avett Brothers", "The Lumineers"],
+  "Indie Rock": ["Alt-J", "Arcade Fire", "Arctic Monkeys", "Death Cab for Cutie", "Dinosaur Jr.", "Le Tigre",
+    "Lykke Li", "MGMT", "Modest Mouse", "Pavement", "Sonic Youth", "The Breeders", "The Killers", "Vampire Weekend"],
+  "Indietronica": ["Capital Cities", "Goldfrapp", "Hot Chip", "LCD Soundsystem", "Neon Indian", "Passion Pit",
+    "Ratatat", "The Postal Service", "Tobacco"],
+  "Industrial Rock": ["KMFDM", "Ministry", "Nine Inch Nails", "Rammstein", "Throbbing Gristle"],
+  "Jazz Fusion": ["Chick Corea", "Chuck Mangione", "Herbie Hancock", "John McLaughlin", "John Scofield",
+    "Mahavishnu Orchestra", "Steely Dan", "Wayne Shorter", "Weather Report"],
+  "Lo-Fi": ["Black Moth Super Rainbow", "Emancipator", "Idealism", "In Love With A Ghost", "Pogo", "Pretty Lights",
+    "Tomppabeats"],
+  "Neo-Soul": ["Bilal", "BJ the Chicago Kid", "D'Angelo", "Eric Benet", "Erykah Badu", "Frank Ocean", "Jamie Lidell",
+    "Jill Scott", "Maxwell", "Mayer Hawthorne", "Meshell Ndegeocello"],
+  "Old School / Golden Age Hip Hop": ["A Tribe Called Quest", "Big Daddy Kane", "Brand Nubian", "Digable Planets",
+    "Grandmaster Flash", "J. Cole", "Jay Z", "Kanye West", "Kendrick Lamar", "Logic", "Pete Rock", "Rakim",
+    "The Sugarhill Gang"],
+  "Old School House": ["Basement Jaxx", "Black Box", "Crystal Waters", "Daft Punk", "Frankie Knuckles", "Ida Corr",
+    "Modjo", "Mr. Fingers", "Paul Oakenfold", "Supernova"],
+  "Pop Punk": ["blink-182", "Fall Out Boy", "Green Day", "Modern Baseball", "My Chemical Romance", "Say Anything",
+    "Simple Plan", "Sorority Noise", "Sum 41"],
+  "Pop Rock": ["Maroon 5", "Matchbox Twenty", "Semisonic", "Smash Mouth", "Sugar Ray", "Talking Heads", "The 1975",
+    "The Cars", "The Police", "Third Eye Blind"],
+  "Post Rock": ["Explosions in the Sky", "Godspeed You! Black Emperor", "Mogwai", "Sigur Ros", "Stars of the Lid",
+    "The American Analog Set", "Tortoise"],
+  "Progressive Rock": ["Electric Light Orchestra", "Emerson Lake & Palmer", "Kansas", "King Crimson", "Procol Harum",
+    "Rush", "Supertramp", "The Moody Blues", "Yes"],
+  "Psychedelic Rock": ["Cream", "Grateful Dead", "Iron Butterfly", "Jefferson Airplane", "Jimi Hendrix",
+    "King Gizzard & the Lizard Wizard", "Man Man", "Menomena", "Morning Teleportation", "Os Mutantes", "Pink Floyd",
+    "Tame Impala", "The 13th Floor Elevators", "The Brian Jonestown Massacre", "The Doors", "Wolf Parade"],
+  "Punk Rock": ["Bad Brains", "Bad Religion", "Black Flag", "Buzzcocks", "Catfish and the Bottlemen",
+    "Dead Kennedys", "Descendents", "Gorilla Biscuits", "Husker Du", "Pennywise", "Ramones", "Sex Pistols",
+    "Social Distortion", "The Casualties", "The Offspring", "The Vandals"],
+  "Ragtime": ["James P. Johnson", "Jelly Roll Morton", "Scott Joplin"],
+  "Reggae": ["Bob Marley & The Wailers", "Lee \"Scratch\" Perry", "Max Romeo", "Prince Buster"],
+  "Reggaeton": ["Daddy Yankee", "Don Omar", "Ivy Queen", "Tego Calderon"],
+  "Rockabilly": ["Bill Flagg", "Bill Haley", "Carl Perkins", "Elvis Presley", "Janis Martin"],
+  "Romantic": ["Felix Mendelssohn", "Franz Liszt", "Franz Schubert", "Frederic Chopin", "Johannes Brahms",
+    "Richard Wagner", "Robert Schumann"],
+  "Ska Punk": ["Madness", "Mighty Mighty Bosstones", "No Doubt", "Reel Big Fish", "Streetlight Manifesto", "Sublime",
+    "The English Beat", "The Specials", "The Toasters"],
+  "Smooth Jazz": ["Anita Baker", "David Sanborn", "George Benson", "Kenny G"],
+  "Soft Rock": ["ABBA", "America", "Billy Joel", "Chicago", "Elton John", "Fleetwood Mac", "Hall & Oates", "Journey",
+    "Seals & Crofts", "Stevie Nicks", "Van Morrison"],
+  "Soul": ["Al Green", "Aretha Franklin", "Bill Withers", "Grover Washington Jr.", "Isaac Hayes", "Jackie Wilson",
+    "Jackson 5", "James Brown", "Mahalia Jackson", "Marvin Gaye", "Otis Redding", "Ray Charles",
+    "Sister Rosetta Tharpe", "Stevie Wonder", "The Clark Sisters", "The Golden Gate Quartet", "The Soul Stirrers"],
+  "Southern Rock": ["Buffalo Springfield", "Canned Heat", "Creedence Clearwater Revival", "Lynyrd Skynyrd",
+    "Marshall Tucker Band", "The Allman Brothers", "The Doobie Brothers", "The Eagles", "The Flying Burrito Brothers"],
+  "Swing": ["Benny Goodman", "Billie Holiday", "Count Basie", "Duke Ellington", "Ella Fitzgerald", "Frank Sinatra",
+    "Glenn Miller", "Harry Connick Jr.", "Woody Herman"],
+  "Synthpop": ["Blondie", "Depeche Mode", "Devo", "Duran Duran", "Erasure", "Eurythmics", "Kraftwerk",
+    "Spandau Ballet", "Ultravox"],
+  "Techno": ["Alan Fitzpatrick", "Cybotron", "Deadmau5", "Derrick May", "Industrialyzer", "Josh Wink",
+    "Kevin Saunderson", "Robert Hood", "System 7", "The Advent"],
+  "Traditional Country": ["Bob Wills & His Texas Playboys", "Charlie Poole", "Conway Twitty", "Dolly Parton",
+    "Ernest Tubb", "Hank Williams", "Johnny Cash", "Roy Acuff"],
+  "Trance": ["Armin van Buuren", "Gypsy", "Maarten de Jong", "Paul van Dyk", "Schiller", "Trentemøller"],
+  "Trap": ["Cardi B", "Meek Mill", "Megan Thee Stallion", "Migos", "Rick Ross", "Young Thug"],
+  "Trip Hop": ["Cibo Matto", "Flying Lotus", "Massive Attack", "Morcheeba", "Portishead", "Sneaker Pimps",
+    "Supreme Beings of Leisure", "TOKiMONSTA"],
+  "West Coast Rap / G-Funk": ["2Pac", "Dr. Dre", "Ice Cube", "Snoop Dogg", "Snoop Doggy Dogg"],
+  "Zydeco": ["Buckwheat Zydeco", "Clifton Chenier", "Dr. John"]
+};
 
 const DEFAULT_ALBUMS = [
   { name: "60's Soul Christmas", code: "PTB114", catalog: "Producer's Toolbox" },
@@ -1268,7 +1421,7 @@ function getCurrentTrackGroup() { return tracks.find(t=>t.id===currentTrackId)||
 function getCurrentEntry() { const g=getCurrentTrackGroup(); if(!g)return null; return currentAltIndex===null?g.fullMix:g.alternates[currentAltIndex]||null; }
 
 function freshEntry(title='',isAlt=false) {
-  return { title, isAlt, catalog:'', label:"Producer's Toolbox", album:'', albumCode:'', artist:[], tempo:'', bpm:'', genre:[], hasVocals:'', explicit:'', isrc:'', description:[], styleOf:'', moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'',role:'Original Publisher'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'Composer/Writer',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
+  return { title, isAlt, catalog:'', label:"Producer's Toolbox", album:'', albumCode:'', artist:[], tempo:'', bpm:'', genre:[], hasVocals:'', explicit:'', isrc:'', description:[], styleOf:[], moods:[], styles:[], instruments:[], filmGenres:[], subGenres:[], publishers:[{company:'',pro:'',ipi:'',share:'',role:'Original Publisher'}], writers:[{firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'Composer/Writer',searchVal:''}], workTitle:'', altTitle1:'', altTitle2:'', altTitle3:'', altTitle4:'', ts_isrc:'', duration:'', library:"Producer's Toolbox", ts_writers:[{searchVal:'',firstName:'',lastName:'',pro:'',ipi:'',share:'',publisher:'',role:'C'}], ts_publishers:[{company:'',pro:'',ipi:'',share:''}] };
 }
 
 // ─── PAGE SWITCHING ────────────────────────────────────────────────
@@ -1456,15 +1609,18 @@ function loadEntryIntoForm() {
   document.getElementById('formTrackType').textContent=entry.isAlt?'ALTERNATE VERSION':'FULL MIX';
   
   // Basic & musical string fields
-  ['catalog','label','albumCode','tempo','bpm','hasVocals','explicit','isrc','styleOf'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=entry[f]||'';});
+  ['catalog','label','albumCode','tempo','bpm','hasVocals','explicit','isrc'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=entry[f]||'';});
   
   populateAlbumDropdown();
   
   if (typeof entry.artist === 'string') {
      entry.artist = entry.artist ? [entry.artist] : [];
   }
+  if (typeof entry.styleOf === 'string') {
+     entry.styleOf = entry.styleOf ? [entry.styleOf] : [];
+  }
 
-  const fieldMap={genre:'genreGroup',description:'descGroup',moods:'moodsGroup',styles:'stylesGroup',instruments:'instrumentsGroup',filmGenres:'filmGenreGroup',subGenres:'subGenreGroup'};
+  const fieldMap={genre:'genreGroup',description:'descGroup',moods:'moodsGroup',styles:'stylesGroup',instruments:'instrumentsGroup',filmGenres:'filmGenreGroup',subGenres:'subGenreGroup',styleOf:'styleOfGroup'};
   Object.entries(fieldMap).forEach(([field,groupId])=>{
     const c=document.getElementById(groupId);if(!c)return;
     c.querySelectorAll('input[type=checkbox]').forEach(cb=>{
@@ -1474,7 +1630,8 @@ function loadEntryIntoForm() {
     });
   });
   
-  ['genre', 'artist', 'description', 'moods', 'styles', 'instruments', 'filmGenres', 'subGenres'].forEach(f => renderTags(f));
+  ['genre', 'artist', 'description', 'moods', 'styles', 'instruments', 'filmGenres', 'subGenres', 'styleOf'].forEach(f => renderTags(f));
+  applyStyleOfFilter();
   document.getElementById('instrNote').textContent=entry.isAlt?'✦ edit for this version only':'';
   renderPublisherBlocks();renderWriterBlocks();renderAltChips();
   
@@ -1497,6 +1654,7 @@ function onCheckChange(field, val, checked) {
   } else {
     e[field] = e[field].filter(v => v !== val);
   }
+  if (field === 'subGenres') onSubGenresChange();
   renderTags(field);
   saveToStorage();
 }
@@ -1513,7 +1671,8 @@ function renderTags(field) {
     styles: { out: 'stylesOutput' },
     instruments: { out: 'instrumentsOutput' },
     filmGenres: { out: 'filmGenreOutput' },
-    subGenres: { out: 'subGenreOutput' }
+    subGenres: { out: 'subGenreOutput' },
+    styleOf: { out: 'styleOfOutput' }
   };
 
   if (!map[field]) return;
@@ -1525,7 +1684,7 @@ function renderTags(field) {
     return;
   }
 
-  container.innerHTML = e[field].map(p => `<div class="desc-tag">${p}<span class="desc-tag-x" onclick="removeTag('${field}','${p.replace(/'/g,"\\'")}')">×</span></div>`).join('');
+  container.innerHTML = e[field].map(p => `<div class="desc-tag">${p}<span class="desc-tag-x" onclick="removeTag('${field}','${p.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">×</span></div>`).join('');
 }
 
 function removeTag(field, phrase) {
@@ -1534,14 +1693,14 @@ function removeTag(field, phrase) {
   
   const cbMap = {
     genre: 'genreGroup', description: 'descGroup', moods: 'moodsGroup', styles: 'stylesGroup',
-    instruments: 'instrumentsGroup', filmGenres: 'filmGenreGroup', subGenres: 'subGenreGroup'
+    instruments: 'instrumentsGroup', filmGenres: 'filmGenreGroup', subGenres: 'subGenreGroup', styleOf: 'styleOfGroup'
   };
   
   if (cbMap[field]) {
     const container = document.getElementById(cbMap[field]);
-    const cb = container.querySelector(`input[value="${phrase}"]`);
-    if (cb) cb.checked = false;
+    container.querySelectorAll(`input[value="${phrase.replace(/"/g,'\\"')}"]`).forEach(cb => { cb.checked = false; });
   }
+  if (field === 'subGenres') onSubGenresChange();
   
   renderTags(field);
   saveToStorage();
@@ -1554,6 +1713,9 @@ function filterCheckboxes(input, groupId) {
   items.forEach(item => {
     const text = item.querySelector('span').textContent.toLowerCase();
     item.style.display = text.startsWith(term) ? 'flex' : 'none';
+  });
+  document.getElementById(groupId).querySelectorAll('.cb-section').forEach(sec => {
+    sec.style.display = Array.from(sec.querySelectorAll('.cb-item')).some(i => i.style.display !== 'none') ? '' : 'none';
   });
 }
 
@@ -1780,7 +1942,15 @@ document.addEventListener('mouseleave', (e) => {
 
 // ─── STORAGE ──────────────────────────────────────────────────────
 function saveToStorage(){try{localStorage.setItem('ptb_tracks',JSON.stringify(tracks));localStorage.setItem('ptb_queue',JSON.stringify(queue));}catch(e){}}
-function loadFromStorage(){try{const t=localStorage.getItem('ptb_tracks'),q=localStorage.getItem('ptb_queue');if(t)tracks=JSON.parse(t);if(q)queue=JSON.parse(q);}catch(e){}renderTrackList();renderQueue();}
+// "Alt-Country" was merged into "Alternative Country" — convert it in anything saved earlier (tracks, alternates, queue)
+function mergeLegacySubGenres(groups){
+  groups.forEach(g=>[g.fullMix,...(g.alternates||[])].forEach(en=>{
+    if(en&&Array.isArray(en.subGenres)&&en.subGenres.includes('Alt-Country')){
+      en.subGenres=en.subGenres.map(s=>s==='Alt-Country'?'Alternative Country':s).filter((s,i,a)=>a.indexOf(s)===i);
+    }
+  }));
+}
+function loadFromStorage(){try{const t=localStorage.getItem('ptb_tracks'),q=localStorage.getItem('ptb_queue');if(t)tracks=JSON.parse(t);if(q)queue=JSON.parse(q);mergeLegacySubGenres(tracks);mergeLegacySubGenres(queue);}catch(e){}renderTrackList();renderQueue();}
 function clearAll(){if(!confirm('Clear everything?'))return;tracks=[];queue=[];currentTrackId=null;currentAltIndex=null;localStorage.removeItem('ptb_tracks');localStorage.removeItem('ptb_queue');renderTrackList();renderQueue();document.getElementById('emptyForm').style.display='flex';document.getElementById('trackForm').style.display='none';}
 
 // ─── EXPORT ───────────────────────────────────────────────────────
@@ -1800,7 +1970,7 @@ function saEntryToRow(entry){
   set('Has Vocals',entry.hasVocals);set('Explicit',entry.explicit);set('ISRC',entry.isrc);
   set('Description',(entry.description||[]).join(', '));
   set('Moods',(entry.moods||[]).join(', '));set('Styles',(entry.styles||[]).join(', '));
-  set('Style Of',entry.styleOf);set('Instruments',(entry.instruments||[]).join(', '));
+  set('Style Of', Array.isArray(entry.styleOf) ? entry.styleOf.join(', ') : (entry.styleOf || ''));set('Instruments',(entry.instruments||[]).join(', '));
   set('Sub Genre',(entry.subGenres||[]).join(', '));set('Film/TV Genre',(entry.filmGenres||[]).join(', '));
   set('Has MP3','Yes');set('Has AIFF','Yes');set('Has WAV','Yes');
   const pubs=['Publisher 1','Publisher 2','Publisher 3'];
@@ -1907,13 +2077,63 @@ function init(){
   buildCheckboxGroup('instrumentsGroup',INSTRUMENTS,'instruments');
   buildCheckboxGroup('filmGenreGroup',FILM_GENRES,'filmGenres');
   buildCheckboxGroup('subGenreGroup',SUB_GENRES,'subGenres');
+  buildSectionedCheckboxGroup('styleOfGroup',STYLE_OF_ARTISTS,'styleOf');
   populateAlbumDropdown();loadFromStorage();
   document.addEventListener('click',e=>{if(!e.target.closest('.writer-search-wrap')&&!e.target.closest('#artistSearchWrap'))document.querySelectorAll('.writer-dropdown').forEach(d=>d.remove());});
 }
 
 function buildCheckboxGroup(containerId,items,field){
   const el=document.getElementById(containerId);
-  el.innerHTML=items.map(item=>`<label class="cb-item"><input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="onCheckChange('${field}','${item.replace(/'/g,"\\'")}',this.checked)"><span>${item}</span></label>`).join('');
+  el.innerHTML=items.map(item=>`<label class="cb-item"><input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="onCheckChange('${field}','${item.replace(/'/g,"\\'").replace(/"/g,'&quot;')}',this.checked)"><span>${item}</span></label>`).join('');
+}
+
+// Checklist grouped under Sub Genre headings. An artist listed under several sub genres has one checkbox per section; they stay in sync.
+function buildSectionedCheckboxGroup(containerId,sections,field){
+  const el=document.getElementById(containerId);
+  el.innerHTML=Object.entries(sections).map(([title,items])=>`<div class="cb-section"><div class="cb-section-title">${title}</div>${items.map(item=>`<label class="cb-item"><input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="onSectionedCheckChange('${field}','${containerId}','${item.replace(/'/g,"\\'").replace(/"/g,'&quot;')}',this.checked)"><span>${item}</span></label>`).join('')}</div>`).join('');
+}
+function onSectionedCheckChange(field,groupId,val,checked){
+  document.querySelectorAll(`#${groupId} input[type=checkbox]`).forEach(cb=>{if(cb.value===val)cb.checked=checked;});
+  onCheckChange(field,val,checked);
+}
+
+// ─── SUB GENRE → STYLE OF ─────────────────────────────────────────
+// Like Catalog → Album: the selected Sub Genres decide which Style Of sections are offered.
+// No Sub Genre selected (or none that has an artist list) = every Style Of option is offered.
+function getStyleOfSections(entry) {
+  const subs = Array.isArray(entry.subGenres) ? entry.subGenres : (entry.subGenres ? [entry.subGenres] : []);
+  const mapped = subs.filter(s => Object.prototype.hasOwnProperty.call(STYLE_OF_ARTISTS, s));
+  return { subs, mapped, unmapped: subs.filter(s => !mapped.includes(s)) };
+}
+function applyStyleOfFilter() {
+  const group = document.getElementById('styleOfGroup'); if (!group) return;
+  const e = getCurrentEntry();
+  const { subs, mapped, unmapped } = e ? getStyleOfSections(e) : { subs: [], mapped: [], unmapped: [] };
+  group.querySelectorAll('.cb-section').forEach(sec => {
+    const title = sec.querySelector('.cb-section-title').textContent;
+    sec.classList.toggle('sg-hidden', mapped.length > 0 && !mapped.includes(title));
+  });
+  const hint = document.getElementById('styleOfHint'); if (!hint) return;
+  if (mapped.length) hint.textContent = 'Showing options for Sub Genre: ' + mapped.join(', ') + (unmapped.length ? ' · no artist list for: ' + unmapped.join(', ') : '');
+  else if (subs.length) hint.textContent = 'No artist list for the selected Sub Genre — showing all options';
+  else hint.textContent = '';
+  hint.style.display = hint.textContent ? '' : 'none';
+}
+// Changing Sub Genres re-filters the list and, like Album when the Catalog changes, drops Style Of picks that are no longer offered.
+// Names that are not in the artist list (e.g. text typed before the checklist existed) are left alone.
+function onSubGenresChange() {
+  const e = getCurrentEntry(); if (!e) return;
+  applyStyleOfFilter();
+  const { mapped } = getStyleOfSections(e);
+  if (!mapped.length || !Array.isArray(e.styleOf) || !e.styleOf.length) return;
+  const known = new Set(), offered = new Set();
+  Object.entries(STYLE_OF_ARTISTS).forEach(([s, list]) => list.forEach(a => { known.add(a); if (mapped.includes(s)) offered.add(a); }));
+  const dropped = e.styleOf.filter(a => known.has(a) && !offered.has(a));
+  if (!dropped.length) return;
+  e.styleOf = e.styleOf.filter(a => !dropped.includes(a));
+  document.querySelectorAll('#styleOfGroup input[type=checkbox]').forEach(cb => { if (dropped.includes(cb.value)) cb.checked = false; });
+  renderTags('styleOf');
+  showToast(`Removed ${dropped.length} Style Of selection${dropped.length > 1 ? 's' : ''} outside the chosen Sub Genre`);
 }
 
 init();
